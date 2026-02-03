@@ -1,58 +1,32 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T10:18:59.747Z",
-  "summary": "REQ-1 and most of REQ-2 appear implemented via a new MobileLeftSidebarDrawer component and a mobile-only hamburger button in Header. RightSidebar received new outer container styling consistent with a light-gray rounded panel. However, the hamburger behavior does not strictly \"toggle\" (it only opens), and there are unrelated changes (not requested) including modifications to the Internet Identity hook and added project metadata files.",
+  "generatedAt": "2026-02-03T23:09:15.241Z",
+  "summary": "The diff does not provide visible evidence that the Lily detail page engagement row was repositioned as required, and it includes modifications to project/meta summary files that were not requested and appear out of scope.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Hamburger menu button toggles the LeftSidebar drawer (i.e., can both open and close it).",
-      "reason": "The hamburger handler in Layout only sets the drawer state to open (true). There is no evidence the hamburger click will close the drawer when already open; closing appears to rely on scrim click or route change.",
+      "requirement": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders directly below the lily’s main content block (title+description, then image/link if present, then engagement row), without changing other pages/components.",
+      "reason": "The provided LilyPage.tsx diff is truncated before showing the relevant JSX section where the engagement row would be rendered/moved, so there is no confirmable evidence in the diff summary that the engagement row placement was changed to the required fixed location.",
       "evidence": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/components/Header.tsx"
+        "frontend/src/pages/LilyPage.tsx (truncated before engagement-row rendering/placement is shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Preventing body scroll when the mobile left sidebar drawer is open (setting document.body.style.overflow).",
-      "reason": "Not requested in any requirement or acceptance criteria; additional behavior beyond the specified drawer + scrim.",
+      "description": "Updated/added extensive application-wide documentation/state summaries (including references to a TagPage route and multiple other components/pages) unrelated to the requested Lily detail page layout change.",
+      "reason": "BuildRequest constraints asked to keep changes scoped to the Lily detail page layout and not refactor other areas; modifying these meta summary/state files is not part of REQ-1 and appears out of scope.",
       "evidence": [
-        "frontend/src/components/MobileLeftSidebarDrawer.tsx"
-      ]
-    },
-    {
-      "description": "Changes to the Internet Identity hook implementation/options (AuthClient creation/login options, etc.).",
-      "reason": "BuildRequest is UI-only and focuses on sidebar/drawer and right sidebar styling; no authentication-related changes were requested.",
-      "evidence": [
-        "frontend/src/hooks/useInternetIdentity.ts"
-      ]
-    },
-    {
-      "description": "Added/updated project metadata files (project_state.json).",
-      "reason": "Not part of the requested UI changes.",
-      "evidence": [
+        "frontend-file-summaries.txt",
         "project_state.json"
-      ]
-    },
-    {
-      "description": "Added/updated frontend-file-summaries.txt.",
-      "reason": "Not part of the requested UI changes.",
-      "evidence": [
-        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/LeftSidebar.tsx",
-    "frontend/src/components/MobileLeftSidebarDrawer.tsx",
-    "frontend/src/components/RightSidebar.tsx",
-    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/pages/LilyPage.tsx",
     "project_state.json"
   ]
 }

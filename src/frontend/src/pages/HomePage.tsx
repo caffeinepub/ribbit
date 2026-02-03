@@ -73,9 +73,11 @@ export default function HomePage() {
             </div>
           </main>
 
-          {/* Right Sidebar - Hidden on mobile */}
+          {/* Right Sidebar - Hidden on mobile, constrained to ~280px */}
           <aside className="hidden lg:block lg:col-span-3">
-            <RightSidebar />
+            <div style={{ maxWidth: '280px' }}>
+              <RightSidebar />
+            </div>
           </aside>
         </div>
       </div>

@@ -58,13 +58,13 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             className="lg:hidden"
             onClick={onMobileLeftSidebarToggle}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
             <span className="sr-only">Menu</span>
           </Button>
 
           <Link to="/" className="flex items-center gap-2">
             <img src="/assets/frog-face_1f438.png" alt="ribbit" className="h-8 w-8" />
-            <span className="text-2xl font-bold text-primary">ribbit</span>
+            <span className="text-2xl font-bold text-primary" style={{ fontSize: '1.55rem', letterSpacing: '-0.025rem' }}>ribbit</span>
           </Link>
         </div>
 
@@ -93,14 +93,14 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             className="md:hidden"
             onClick={handleMobileSearchOpen}
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
             <span className="sr-only">Search</span>
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="default" size="icon" className="md:hidden">
-                <Plus className="h-5 w-5" />
+                <Plus className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

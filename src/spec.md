@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Add a Reddit-style mobile left sidebar drawer and adjust the desktop right sidebar styling to a gray rounded panel.
+**Goal:** Ensure the Lily detail page always shows the engagement row (likes/replies/views) directly below the lily’s main content (title/description, then image/link if present).
 
 **Planned changes:**
-- Add a mobile-only hamburger button to the left of the Ribbit logo in the header (hidden on `lg` and up).
-- Implement the existing `LeftSidebar` as a mobile off-canvas drawer that slides in from the left with a scrim overlay, supports scrolling, closes on scrim tap, and closes on navigation.
-- Restyle the desktop `RightSidebar` outer container to render as a single rounded panel with a soft light-gray/tinted background while keeping existing inner sections and mobile behavior unchanged.
+- Update `frontend/src/pages/LilyPage.tsx` layout so the engagement row always renders after the title + description block, then after the image (if present) and link (if present).
+- Keep engagement row styling and functionality unchanged; adjust placement only on the Lily detail page.
 
-**User-visible outcome:** On mobile, users can open and close the left navigation via a hamburger drawer like Reddit; on desktop, the right sidebar appears inside a rounded light-gray panel.
+**User-visible outcome:** On the Lily detail page, likes/replies/views always appear below the lily’s description and any image/link, never above the image, while other pages (including feed cards) remain unchanged.

@@ -143,39 +143,8 @@ export default function LilyPage() {
                 
                 {/* Description directly below title with 1rem font size */}
                 {lily.content && (
-                  <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed mb-4" style={{ fontSize: '1rem' }}>{lily.content}</p>
+                  <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed" style={{ fontSize: '1rem' }}>{lily.content}</p>
                 )}
-
-                {/* Action bar within the same flex container */}
-                <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                  <button
-                    onClick={handleLikeClick}
-                    disabled={isLiking || isUnliking}
-                    className="flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className={`transition-all`}
-                      style={{ width: '1rem', height: '1rem' }}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill={hasLiked ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    <span>{formatNumber(likeCount)}</span>
-                  </button>
-                  <div className="flex items-center gap-1.5">
-                    <MessageCircle style={{ width: '1rem', height: '1rem' }} />
-                    <span>{formatNumber(ribbitCount)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Eye style={{ width: '1rem', height: '1rem' }} />
-                    <span>{formatNumber(viewCount)}</span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -230,6 +199,37 @@ export default function LilyPage() {
                 </a>
               </div>
             )}
+
+            {/* Engagement row - always appears after image and link */}
+            <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+              <button
+                onClick={handleLikeClick}
+                disabled={isLiking || isUnliking}
+                className="flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className={`transition-all`}
+                  style={{ width: '1rem', height: '1rem' }}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill={hasLiked ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <span>{formatNumber(likeCount)}</span>
+              </button>
+              <div className="flex items-center gap-1.5">
+                <MessageCircle style={{ width: '1rem', height: '1rem' }} />
+                <span>{formatNumber(ribbitCount)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Eye style={{ width: '1rem', height: '1rem' }} />
+                <span>{formatNumber(viewCount)}</span>
+              </div>
+            </div>
           </div>
 
           {/* Lightbox Modal */}

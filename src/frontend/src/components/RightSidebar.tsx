@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router';
-import { TrendingUp, Hash, Flame } from 'lucide-react';
 import { useGetAllPonds, useGetAllLilies } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatNumber } from '@/lib/formatNumber';
@@ -45,111 +44,113 @@ export default function RightSidebar() {
   }, [allLilies]);
 
   return (
-    <div className="space-y-0 sticky top-4 bg-muted/40 p-4 rounded-xl">
-      <div className="pb-4 border-b border-border">
-        <h3 className="flex items-center gap-2 font-semibold mb-3">
-          <TrendingUp className="h-5 w-5" />
-          Trending Ponds
-        </h3>
-        {isLoadingPonds ? (
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        ) : trendingPonds.length > 0 ? (
-          <div className="space-y-2">
-            {trendingPonds.map((pond) => (
-              <Link
-                key={pond.name}
-                to="/pond/$name"
-                params={{ name: pond.name }}
-                className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/60 transition-colors"
-              >
-                {pond.profileImage && (
-                  <img
-                    src={pond.profileImage.getDirectURL()}
-                    alt={pond.title}
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{pond.title}</p>
-                  <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                    {formatNumber(Number(pond.memberCount))} members
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>No ponds yet</p>
-        )}
-      </div>
+    <div className="sticky top-20">
+      <div className="bg-sidebar rounded-lg p-4 overflow-hidden space-y-0">
+        {/* Trending Ponds Section */}
+        <div className="pb-4 border-b border-sidebar-border">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/60 mb-3">
+            Trending Ponds
+          </h3>
+          {isLoadingPonds ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : trendingPonds.length > 0 ? (
+            <div className="space-y-0.5">
+              {trendingPonds.map((pond) => (
+                <Link
+                  key={pond.name}
+                  to="/pond/$name"
+                  params={{ name: pond.name }}
+                  className="flex items-center gap-2.5 px-2 py-2 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                >
+                  {pond.profileImage && (
+                    <img
+                      src={pond.profileImage.getDirectURL()}
+                      alt={pond.title}
+                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate text-sidebar-foreground">{pond.title}</p>
+                    <p className="text-xs text-sidebar-foreground/60">
+                      {formatNumber(Number(pond.memberCount))} members
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-sidebar-foreground/60">No ponds yet</p>
+          )}
+        </div>
 
-      <div className="py-4 border-b border-border">
-        <h3 className="flex items-center gap-2 font-semibold mb-3">
-          <Hash className="h-5 w-5" />
-          Popular Tags
-        </h3>
-        {isLoadingLilies ? (
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ) : popularTags.length > 0 ? (
-          <div className="space-y-1">
-            {popularTags.map(([tag, count]) => (
-              <Link
-                key={tag}
-                to="/tag/$tag"
-                params={{ tag }}
-                className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/60 transition-colors"
-              >
-                <span className="text-accent font-medium">#{tag}</span>
-                <span className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                  {count} {count === 1 ? 'lily' : 'lilies'}
-                </span>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>No tags yet</p>
-        )}
-      </div>
+        {/* Popular Tags Section */}
+        <div className="py-4 border-b border-sidebar-border">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/60 mb-3">
+            Popular Tags
+          </h3>
+          {isLoadingLilies ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : popularTags.length > 0 ? (
+            <div className="space-y-0.5">
+              {popularTags.map(([tag, count]) => (
+                <Link
+                  key={tag}
+                  to="/tag/$tag"
+                  params={{ tag }}
+                  className="flex items-center justify-between px-2 py-1.5 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                >
+                  <span className="text-sm text-accent font-medium">#{tag}</span>
+                  <span className="text-xs text-sidebar-foreground/60">
+                    {count}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-sidebar-foreground/60">No tags yet</p>
+          )}
+        </div>
 
-      <div className="pt-4">
-        <h3 className="flex items-center gap-2 font-semibold mb-3">
-          <Flame className="h-5 w-5" />
-          Hot This Week
-        </h3>
-        {isLoadingLilies ? (
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        ) : popularPosts.length > 0 ? (
-          <div className="space-y-2">
-            {popularPosts.map((lily) => (
-              <Link
-                key={lily.id}
-                to="/lily/$id"
-                params={{ id: lily.id }}
-                className="block p-2 rounded-md hover:bg-muted/60 transition-colors"
-              >
-                <p className="font-medium line-clamp-2 mb-1">{lily.title}</p>
-                <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                  <span>{formatNumber(Number(lily.viewCount))} views</span>
-                  <span>•</span>
-                  <span className="truncate">{lily.pond}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>No recent posts</p>
-        )}
+        {/* Hot This Week Section */}
+        <div className="pt-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/60 mb-3">
+            Hot This Week
+          </h3>
+          {isLoadingLilies ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : popularPosts.length > 0 ? (
+            <div className="space-y-0.5">
+              {popularPosts.map((lily) => (
+                <Link
+                  key={lily.id}
+                  to="/lily/$id"
+                  params={{ id: lily.id }}
+                  className="block px-2 py-2 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                >
+                  <p className="text-sm font-medium line-clamp-2 mb-1 text-sidebar-foreground">{lily.title}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-sidebar-foreground/60">
+                    <span>{formatNumber(Number(lily.viewCount))} views</span>
+                    <span>•</span>
+                    <span className="truncate">{lily.pond}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-sidebar-foreground/60">No recent posts</p>
+          )}
+        </div>
       </div>
     </div>
   );

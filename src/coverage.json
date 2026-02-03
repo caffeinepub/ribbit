@@ -1,77 +1,35 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T10:18:59.793Z",
+  "generatedAt": "2026-02-03T23:09:15.259Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a mobile-only hamburger menu button to the left of the Ribbit logo in the header that toggles the LeftSidebar as an off-canvas drawer (Reddit-style).",
+        "summary": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders in a fixed location directly below the lily’s main content block: title + description, then image (if present) and link (if present), then the engagement row. Do not change engagement row placement on feed cards or any other pages/components.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/pages/LilyPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/Layout.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Implement the mobile left sidebar as an off-canvas drawer that slides in from the left with a scrim overlay, containing the existing LeftSidebar content without duplicating logic.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/MobileLeftSidebarDrawer.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/LeftSidebar.tsx",
-          "frontend/src/pages/HomePage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/MobileLeftSidebarDrawer.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/LeftSidebar.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Restyle the RightSidebar to match the requested Reddit-like right column container: a soft light-gray panel background on the whole column and a rounded border radius on the container.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/RightSidebar.tsx",
-          "frontend/src/pages/HomePage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/RightSidebar.tsx"
+          "frontend/src/pages/LilyPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/Dockerfile",
-    "build-template/LICENSE",
-    "build-template/README.md",
-    "build-template/deploy.sh",
-    "build-template/icp.yaml",
-    "build-template/src/backend/canister.yaml",
-    "build-template/src/frontend/canister.yaml",
     "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/LeftSidebar.tsx",
-    "frontend/src/components/MobileLeftSidebarDrawer.tsx",
-    "frontend/src/components/RightSidebar.tsx",
-    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/pages/LilyPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -53,7 +53,9 @@ export default function PondPage() {
               <Skeleton className="h-48 w-full" />
             </main>
             <aside className="hidden lg:block lg:col-span-3">
-              <RightSidebar />
+              <div style={{ maxWidth: '280px' }}>
+                <RightSidebar />
+              </div>
             </aside>
           </div>
         </div>
@@ -77,7 +79,9 @@ export default function PondPage() {
               </Button>
             </main>
             <aside className="hidden lg:block lg:col-span-3">
-              <RightSidebar />
+              <div style={{ maxWidth: '280px' }}>
+                <RightSidebar />
+              </div>
             </aside>
           </div>
         </div>
@@ -209,9 +213,11 @@ export default function PondPage() {
             </div>
           </main>
 
-          {/* Right Sidebar - Hidden on mobile */}
+          {/* Right Sidebar - Hidden on mobile, constrained to ~280px */}
           <aside className="hidden lg:block lg:col-span-3">
-            <RightSidebar />
+            <div style={{ maxWidth: '280px' }}>
+              <RightSidebar />
+            </div>
           </aside>
         </div>
       </div>
