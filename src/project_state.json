@@ -1,0 +1,368 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 8,
+  "summary": "Ribbit is an anonymous, Reddit-style discussion platform built on the Internet Computer (ICP). Users participate in themed communities called \"ponds\", create posts called \"lilies\" (text/image/link with optional tags), and discuss via threaded comments called \"ribbits\". The app supports searching ponds/posts, joining/leaving ponds, username registration with a 24-hour change cooldown, username-based avatar storage, like/unlike for lilies and ribbits, tag suggestions and tag pages, and an admin-only tag-merging system with canonical tag redirects. The frontend is a React/TypeScript SPA using TanStack Router + React Query and Tailwind/shadcn-style UI components; the backend is a Motoko canister with access control and Caffeine blob-storage integration for image uploads.",
+  "existing_features": [
+    {
+      "id": "IF-1",
+      "title": "ICP actor creation with optional Internet Identity authentication",
+      "synonyms": [
+        "Internet Identity login",
+        "actor initialization",
+        "useActor"
+      ],
+      "description": "Creates an authenticated or anonymous backend actor depending on whether an Internet Identity is available. When authenticated, the actor is created with the identity and initializeAccessControl() is called; when identity changes, all non-actor queries are invalidated/refetched.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-2",
+      "title": "Role-based access control with upgrade persistence",
+      "synonyms": [
+        "access-control",
+        "admin/user/guest roles"
+      ],
+      "description": "Backend assigns roles (first initialized principal becomes admin; others become user) and persists initialized principals + admin principal to restore roles in postupgrade(). Includes admin-only role assignment and admin status queries.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-3",
+      "title": "Pond creation with banner/profile images and Froggy Phrase validation",
+      "synonyms": [
+        "createPond",
+        "Start a Pond"
+      ],
+      "description": "Users can create ponds with name/title/description plus required banner and profile images stored as ExternalBlob. Creation requires a Froggy Phrase (min 5 words) and makes the creator the pond admin/moderator and first member; also adds the pond to the creator’s joined ponds profile data.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-4",
+      "title": "Pond discovery, retrieval, and search",
+      "synonyms": [
+        "list ponds",
+        "get pond",
+        "searchPonds"
+      ],
+      "description": "Public listing and retrieval of ponds (listPonds/getPond) and text search over pond name/title/description. Frontend provides an All Ponds page plus Trending Ponds sidebar sorting by memberCount.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-5",
+      "title": "Pond membership management (join/leave) with profile synchronization",
+      "synonyms": [
+        "joined ponds",
+        "joinPond",
+        "leavePond"
+      ],
+      "description": "Users can join or leave ponds; membership is tracked in pond.members/memberCount and mirrored into the caller’s UserProfile.joinedPonds. Frontend shows Join buttons on pond pages and a My Ponds tab in settings with leave confirmation dialogs.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "Pond About information endpoint",
+      "synonyms": [
+        "getPondAboutInfo",
+        "PondAboutPage"
+      ],
+      "description": "Provides a structured 'about' payload for ponds including images, creation date, member count, visibility, rules, moderators, admin, associated tags, and lily count; used by the dedicated pond about page.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "Pond administration capabilities (backend)",
+      "synonyms": [
+        "pond admin tools",
+        "moderation"
+      ],
+      "description": "Backend supports pond-admin-only operations: editPondSettings (title/description/visibility), add/remove moderators, add/remove rules, delete a lily, delete a ribbit (by pond ownership), and remove members from a pond.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Lily (post) creation with pond membership enforcement",
+      "synonyms": [
+        "createPost",
+        "Create Lily"
+      ],
+      "description": "Users can create posts (lilies) with title/content and optional image or link, targeted to a specific pond. Backend enforces that the pond exists and the caller is a member. Pond lilyCount is incremented and optional tags are normalized and tracked.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Lily listing, retrieval, and search",
+      "synonyms": [
+        "listPosts",
+        "getPost",
+        "searchPosts"
+      ],
+      "description": "Public queries to list all lilies, fetch a lily by ID, and search lilies by title/content/pond. Frontend uses these for Home feed, Pond feed filtering by pond, and search results.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Threaded ribbit discussions (comments) with replies",
+      "synonyms": [
+        "ribbits",
+        "threaded comments",
+        "getThreadedRibbits"
+      ],
+      "description": "Users can create ribbits on a lily with an optional parentId to form threads. Backend can list ribbits for a post and returns a flattened threaded order via getThreadedRibbits(); frontend renders indentation and supports replying inline.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-11",
+      "title": "Counts for ribbits and post views",
+      "synonyms": [
+        "ribbit count",
+        "view count"
+      ],
+      "description": "Backend exposes getRibbitCountForPost and getViewCountForPost; frontend displays ribbit count and views on lily cards and lily detail pages.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "Like/unlike system for lilies (posts)",
+      "synonyms": [
+        "post likes",
+        "heart"
+      ],
+      "description": "Users can like/unlike lilies. Backend stores per-post maps of principals who liked, exposes like count and caller-like status; frontend shows heart toggle with counts and invalidates relevant queries on mutation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Like/unlike system for ribbits (comments)",
+      "synonyms": [
+        "ribbit likes"
+      ],
+      "description": "Users can like/unlike ribbits. Backend stores per-ribbit principal likes and exposes count and caller-like status; frontend renders like toggle within ribbit items.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Tagging system with normalization and usage tracking",
+      "synonyms": [
+        "tags",
+        "normalizeTag",
+        "tagUsageCount"
+      ],
+      "description": "Optional lily tags are normalized (lowercase, hyphenated, limited charset, 25 chars) and stored on posts. Backend tracks tag usage counts and updates pond.associatedTags when new tags appear in that pond.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "Tag suggestions (autocomplete) for lily creation",
+      "synonyms": [
+        "getTagSuggestions",
+        "tag autocomplete"
+      ],
+      "description": "Backend provides prefix-based tag suggestions sorted by usage count with a limit parameter. Frontend debounces user input and displays a dropdown of popular matching tags.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Tag pages with sorting and canonical tag redirects",
+      "synonyms": [
+        "TagPage",
+        "getLiliesByTag",
+        "canonical tags"
+      ],
+      "description": "Public tag pages display lilies for a tag (resolving redirects via canonical tags) and support sorting by newest, most viewed, and most replied. Frontend redirects to canonical tag URLs when needed.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-17",
+      "title": "Admin-only tag merging and redirect registry",
+      "synonyms": [
+        "mergeSimilarTags",
+        "tag redirects"
+      ],
+      "description": "Global admins can merge similar tags based on normalization heuristics (case, pluralization, hyphen removal, repeated letter collapse). The higher-usage tag becomes canonical; posts are rewritten and redirects are exposed via getTagRedirects/getCanonicalTagForTag. Frontend provides an Admin tab to trigger merges and view redirects.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-18",
+      "title": "User profile storage (principal-based) including joined ponds",
+      "synonyms": [
+        "UserProfile",
+        "saveCallerUserProfile",
+        "getCallerUserProfile"
+      ],
+      "description": "Backend stores a UserProfile per principal (name, joinedPonds, optional avatar blob) and supports save/get for caller and for arbitrary principals. Frontend uses this to persist joined ponds and display moderator profiles.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-19",
+      "title": "Username registry with availability checks and 24-hour change cooldown",
+      "synonyms": [
+        "registerUsername",
+        "isUsernameAvailable",
+        "canChangeUsername"
+      ],
+      "description": "Backend tracks username availability/ownership and enforces a 24-hour cooldown between username changes. Frontend provides username validation rules (must include frog/toad/tadpole), debounced availability checking, and cooldown-aware save behavior.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-20",
+      "title": "Client-side anonymous identity with Froggy Phrase backup/restore",
+      "synonyms": [
+        "localStorage identity",
+        "Froggy Phrase"
+      ],
+      "description": "Frontend generates and stores an anonymous username and userId in localStorage. Users can set a Froggy Phrase (min 5 words) to back up settings locally and later restore them by re-entering the phrase; includes copy/show/clear flows in Settings.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-21",
+      "title": "Username-based avatar upload and retrieval",
+      "synonyms": [
+        "avatars",
+        "saveAvatarByUsername",
+        "getUserAvatarByUsername"
+      ],
+      "description": "Backend stores avatars keyed by username and exposes public retrieval; uploads do not require authorization to preserve anonymity. Frontend shows avatars in header/settings, supports file preview and upload progress, and can show avatars for lily/ribbit authors by username.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-22",
+      "title": "Recent activity endpoints and sidebar UI",
+      "synonyms": [
+        "Recent Activity",
+        "getAllRecentActivities"
+      ],
+      "description": "Backend exposes endpoints to fetch recent post/ribbit/like activities and an aggregated activity feed. Frontend shows a Recent Activity section in the left sidebar linking to target lilies with relative timestamps.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-23",
+      "title": "Responsive application shell with search and sidebars",
+      "synonyms": [
+        "Layout",
+        "Header search",
+        "LeftSidebar",
+        "RightSidebar"
+      ],
+      "description": "Frontend provides a responsive 3-column layout on desktop with mobile-friendly navigation. Header includes global search routing, quick actions (Start a Pond, Create Lily), and settings access via avatar. Right sidebar computes trending ponds, popular tags, and hot posts based on in-memory derived metrics.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-24",
+      "title": "Number formatting utility for UI metrics",
+      "synonyms": [
+        "formatNumber",
+        "k/M/B formatting"
+      ],
+      "description": "Frontend utility formats large counts into compact notation (k, M, B) and is used for likes, replies, views, and member counts in UI components.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-25",
+      "title": "Caffeine/ICP blob-storage canister integration utilities",
+      "synonyms": [
+        "blob storage mixin",
+        "gateway authorization",
+        "GC pruning"
+      ],
+      "description": "Backend includes blob-storage modules providing authorized gateway principal updates, dead-blob listing/pruning, and cashier refill logic using cycles; exposes certificate creation stubs for uploads.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-mobile-only-hamburger-menu-button-to-the-left-of-the-ribbit-logo-in-the-header-that-toggles-the-leftsidebar-as-an-off-canvas-drawer-reddit-style",
+      "title": "Add a mobile-only hamburger menu button to the left of the Ribbit logo in the header that toggles the LeftSidebar as an off-canvas drawer (Reddit-style).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-mobile-left-sidebar-as-an-off-canvas-drawer-that-slides-in-from-the-left-with-a-scrim-overlay-containing-the-existing-leftsidebar-content-without-duplicating-logic",
+      "title": "Implement the mobile left sidebar as an off-canvas drawer that slides in from the left with a scrim overlay, containing the existing LeftSidebar content without duplicating logic.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restyle-the-rightsidebar-to-match-the-requested-reddit-like-right-column-container-a-soft-light-gray-panel-background-on-the-whole-column-and-a-rounded-border-radius-on-the-container",
+      "title": "Restyle the RightSidebar to match the requested Reddit-like right column container: a soft light-gray panel background on the whole column and a rounded border radius on the container.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add mobile left sidebar accessible via a hamburger menu button placed left of the logo in the header (Reddit-style open/close behavior).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Redesign the right column/sidebar to look like Reddit’s (Reddit-style right sidebar layout).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Adjust right sidebar to match Reddit: use a gray background panel with border radius (instead of current styling).",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "architecturalNotes": [
+    "Frontend uses TanStack Router for fileless route definitions and TanStack React Query for data fetching/caching/mutations with targeted query invalidation.",
+    "A dedicated useActor hook constructs an ICP canister actor per identity (Internet Identity when available), and triggers refetch/invalidation of all dependent queries when identity changes.",
+    "Anonymous UX is primarily client-managed via localStorage (auto-generated frog-themed username, userId, and a \"Froggy Phrase\" backup/restore mechanism).",
+    "Backend is a single Motoko actor (Ribbit) using OrderedMap-based in-memory state for ponds, posts, ribbits, likes, tags, usernames, and activities.",
+    "Role-based access control is implemented in backend/authorization/access-control.mo; first initialized non-anonymous principal becomes global admin, subsequent principals become users.",
+    "Many backend update calls begin with ensureUserRole(caller) to automatically initialize and persist roles across upgrades (tracked via initializedUsers/adminPrincipal + postupgrade restore).",
+    "Blob storage is integrated via backend/blob-storage Mixin.mo + Storage.mo, exposing certificate/refill/gateway authorization utilities and using Prim storage GC hooks.",
+    "Images/avatars are represented as ExternalBlob values that can be rendered in the frontend via getDirectURL(); avatar uploads support client-side upload progress via ExternalBlob.withUploadProgress().",
+    "UI layout is a 3-column responsive shell (LeftSidebar / feed / RightSidebar) with shared Header/Footer; supports theming via next-themes and Tailwind design tokens (OKLCH palette).",
+    "Add mobile navigation pattern: header hamburger toggles the existing left sidebar as an off-canvas drawer on small screens (Reddit-style).",
+    "Right sidebar design decision: use a single contained Reddit-style panel for the entire right column with a light gray tinted background and rounded corners; sections inside remain stacked within the panel (optionally with dividers), while the main feed stays white/flat."
+  ],
+  "knownIssues": [
+    "Backend Activity feed appears incomplete: createPost and createRibbit do not call logActivity(#post/ #ribbit), and likePost calls logActivity(#like, ...) but passes empty username/pond, limiting usefulness of Recent Activity views.",
+    "Backend viewCount for posts is never incremented anywhere; frontend queries getViewCountForPost but there is no backend method called to record a view.",
+    "mergeSimilarTags() iterates using Iter.range(0, tagCount - 1); if tagCount is 0 this can underflow/trap (needs guard for empty/single-tag cases).",
+    "createPond() Froggy Phrase word counting uses Text.split by space without filtering empty tokens; multiple spaces may count as extra \"words\" and weaken validation consistency vs frontend.",
+    "AccessControl.getUserRole() traps for non-anonymous principals that haven't been initialized; the frontend mitigates this by calling initializeAccessControl on actor creation for authenticated identities, but direct API usage could still trigger traps.",
+    "Username ownership/registry is not enforced for posting (createPost updates ownership mappings regardless of registry), enabling posting under arbitrary usernames; may be intended for anonymity but undermines uniqueness semantics.",
+    "Some frontend files are present but empty in the provided snapshot (e.g., frontend/src/components/PostCard.tsx, CommentItem.tsx, PostPage.tsx, CreatePostPage.tsx, RibbitEmojiTray.tsx, EmojiReactions.tsx), suggesting incomplete/missing implementations relative to the repo summaries.",
+    "Avatar save/retrieve endpoints intentionally have no authorization checks (per comments/spec), which enables username squatting/overwriting avatars unless mitigated elsewhere."
+  ],
+  "isFixRequest": false,
+  "gameProjectType": "none",
+  "projectName": "ribbit",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0,
+  "requiresBackendChanges": false,
+  "requiresFrontendChanges": true
+}

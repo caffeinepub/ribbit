@@ -1,0 +1,82 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Mobile left sidebar drawer + Reddit-style right sidebar panel",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Add a mobile-only hamburger button in the header (left of the Ribbit logo) to toggle the left sidebar drawer.",
+      "acceptanceCriteria": [
+        "On viewport widths below the desktop breakpoint (below `lg`), a hamburger icon button is visible to the immediate left of the logo in the header.",
+        "On `lg` and above, the hamburger icon is hidden and the existing desktop left sidebar remains unchanged."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Add a `onMobileLeftSidebarToggle` (or similar) prop and render a `lg:hidden` hamburger icon button immediately left of the Ribbit logo that triggers the toggle callback when tapped."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Own the mobile left sidebar open/close state at the layout level and pass a toggle handler down to `Header` so the header button can open/close the drawer across all routed pages."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement the mobile LeftSidebar as an off-canvas drawer with a scrim overlay, reusing the existing LeftSidebar content and closing on navigation.",
+      "acceptanceCriteria": [
+        "Tapping the hamburger opens a left-side drawer showing the same navigation links and Recent Activity list as the current `LeftSidebar` component.",
+        "A semi-transparent scrim covers the rest of the page while the drawer is open.",
+        "Tapping the scrim closes the drawer.",
+        "The drawer is scrollable if its content exceeds the viewport height.",
+        "The drawer closes automatically on route navigation (e.g., tapping a link inside the sidebar).",
+        "Desktop layout in `HomePage` (left sidebar / feed / right sidebar grid) remains unchanged."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/MobileLeftSidebarDrawer.tsx",
+          "operation": "create",
+          "description": "Create a mobile-only off-canvas drawer component (fixed positioning + slide-in transition) that renders `LeftSidebar` inside a scrollable panel and includes a full-screen scrim overlay that closes the drawer when tapped."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Render `MobileLeftSidebarDrawer` at the layout level (so it overlays routed content), wire it to the layout-managed open/close state, and add a route-change listener (TanStack Router state) that automatically closes the drawer when navigation occurs."
+        },
+        {
+          "path": "frontend/src/components/LeftSidebar.tsx",
+          "operation": "modify",
+          "description": "Refactor `LeftSidebar` to support reuse in both desktop and mobile-drawer contexts without duplicating logic (e.g., accept an optional prop to adjust container styling like removing desktop-only sticky/border/padding when rendered inside the drawer)."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Confirm the existing desktop `lg` grid remains unchanged and that the desktop `LeftSidebar` continues to render only on `lg` and above while mobile behavior is handled exclusively by the drawer."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Restyle the RightSidebar to render as a single rounded, light-gray/tinted container on desktop while keeping its existing stacked sections and mobile-hidden behavior.",
+      "acceptanceCriteria": [
+        "On desktop (`lg` and above), the entire `RightSidebar` column renders as a single rounded container with a light gray/tinted background (not pure white).",
+        "The RightSidebar inner sections (Trending Ponds / Popular Tags / Hot This Week) remain stacked as they are now; only the outer container styling is updated to match the requested look.",
+        "Right sidebar remains hidden on mobile, consistent with the current layout."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/RightSidebar.tsx",
+          "operation": "modify",
+          "description": "Update the RightSidebar outer wrapper styling to match a Reddit-like right column panel (single rounded container with a soft light-gray/tinted background); keep inner section structure unchanged."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Ensure RightSidebar remains hidden on mobile via the existing `hidden lg:block` wrapping behavior and that only the RightSidebar container styling changes (no desktop column width/grid changes beyond what's necessary for the container appearance)."
+        }
+      ]
+    }
+  ]
+}

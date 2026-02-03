@@ -1,0 +1,83 @@
+{
+  "kind": "build_request",
+  "title": "Mobile left sidebar hamburger drawer + Reddit-style right sidebar panel styling",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Add a mobile-only hamburger menu button to the left of the Ribbit logo in the header that toggles the LeftSidebar as an off-canvas drawer (Reddit-style).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-3"
+        ],
+        "quotes": [
+          "Can you add the left sidebar on mobile? Add a hamburger menu to the left of the logo in the  header that activates it just like Reddit.",
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On viewport widths below the desktop breakpoint (below `lg`), a hamburger icon button is visible to the immediate left of the logo in the header.",
+        "On `lg` and above, the hamburger icon is hidden and the existing desktop left sidebar remains unchanged."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement the mobile left sidebar as an off-canvas drawer that slides in from the left with a scrim overlay, containing the existing LeftSidebar content without duplicating logic.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-3"
+        ],
+        "quotes": [
+          "Add the left sidebar on mobile... just like Reddit.",
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Tapping the hamburger opens a left-side drawer showing the same navigation links and Recent Activity list as the current `LeftSidebar` component.",
+        "A semi-transparent scrim covers the rest of the page while the drawer is open.",
+        "Tapping the scrim closes the drawer.",
+        "The drawer is scrollable if its content exceeds the viewport height.",
+        "The drawer closes automatically on route navigation (e.g., tapping a link inside the sidebar).",
+        "Desktop layout in `HomePage` (left sidebar / feed / right sidebar grid) remains unchanged."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Restyle the RightSidebar to match the requested Reddit-like right column container: a soft light-gray panel background on the whole column and a rounded border radius on the container.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-3"
+        ],
+        "quotes": [
+          "the right column on reddit has a gray background and a border radius",
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On desktop (`lg` and above), the entire `RightSidebar` column renders as a single rounded container with a light gray/tinted background (not pure white).",
+        "The RightSidebar inner sections (Trending Ponds / Popular Tags / Hot This Week) remain stacked as they are now; only the outer container styling is updated to match the requested look.",
+        "Right sidebar remains hidden on mobile, consistent with the current layout."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit any files under `frontend/src/components/ui` (compose existing UI components instead).",
+    "Do not edit any paths listed in `frontend.immutablePaths` in SYSTEM_CONTEXT.",
+    "Keep backend unchanged (UI-only request)."
+  ],
+  "nonGoals": [
+    "Do not add new right-sidebar content modules or change its data sources (only adjust styling to match the gray rounded panel request).",
+    "Do not implement new authentication or account features.",
+    "Do not change desktop grid sizing or column widths beyond what is required to apply the right sidebar container styling."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

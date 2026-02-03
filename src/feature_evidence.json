@@ -1,0 +1,68 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-a-mobile-only-hamburger-menu-button-to-the-left-of-the-ribbit-logo-in-the-header-that-toggles-the-leftsidebar-as-an-off-canvas-drawer-reddit-style",
+      "featureTitle": "Add a mobile-only hamburger menu button to the left of the Ribbit logo in the header that toggles the LeftSidebar as an off-canvas drawer (Reddit-style).",
+      "files": [
+        "frontend/src/components/Header.tsx",
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-mobile-left-sidebar-as-an-off-canvas-drawer-that-slides-in-from-the-left-with-a-scrim-overlay-containing-the-existing-leftsidebar-content-without-duplicating-logic",
+      "featureTitle": "Implement the mobile left sidebar as an off-canvas drawer that slides in from the left with a scrim overlay, containing the existing LeftSidebar content without duplicating logic.",
+      "files": [
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/components/LeftSidebar.tsx",
+        "frontend/src/components/MobileLeftSidebarDrawer.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-restyle-the-rightsidebar-to-match-the-requested-reddit-like-right-column-container-a-soft-light-gray-panel-background-on-the-whole-column-and-a-rounded-border-radius-on-the-container",
+      "featureTitle": "Restyle the RightSidebar to match the requested Reddit-like right column container: a soft light-gray panel background on the whole column and a rounded border radius on the container.",
+      "files": [
+        "frontend/src/components/RightSidebar.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
