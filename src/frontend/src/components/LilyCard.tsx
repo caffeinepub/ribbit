@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { MessageCircle, ExternalLink, Eye } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, Share2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Post } from '@/backend';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +15,8 @@ import {
   useUnlikePost
 } from '@/hooks/useQueries';
 import { formatNumber } from '@/lib/formatNumber';
+import { shareLily } from '@/lib/shareLily';
+import BookmarkButton from '@/components/BookmarkButton';
 
 interface LilyCardProps {
   lily: Post;
@@ -66,6 +68,12 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
     } else {
       likePost(lily.id);
     }
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    shareLily(lily.id);
   };
 
   return (
@@ -194,6 +202,13 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
               <Eye style={{ width: '1rem', height: '1rem' }} />
               <span>{formatNumber(viewCount)}</span>
             </div>
+            <button
+              onClick={handleShareClick}
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <Share2 style={{ width: '1rem', height: '1rem' }} />
+            </button>
+            <BookmarkButton lilyId={lily.id} />
           </div>
         </div>
       </div>

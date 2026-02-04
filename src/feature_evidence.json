@@ -2,9 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lily-detail-page-frontend-src-pages-lilypage-tsx-so-the-engagement-row-likes-replies-views-always-renders-in-a-fixed-location-directly-below-the-lily-s-main-content-block-title-description-then-image-if-present-and-link-if-present-then-the-engagement-row-do-not-change-engagement-row-placement-on-feed-cards-or-any-other-pages-components",
-      "featureTitle": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders in a fixed location directly below the lily’s main content block: title + description, then image (if present) and link (if present), then the engagement row. Do not change engagement row placement on feed cards or any other pages/components.",
+      "featureId": "feature-add-a-local-only-bookmark-toggle-for-each-lily-post-and-persist-bookmarked-lily-ids-in-browser-storage-no-backend-changes",
+      "featureTitle": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
       "files": [
+        "frontend/src/components/BookmarkButton.tsx",
+        "frontend/src/components/LilyCard.tsx",
+        "frontend/src/hooks/useBookmarks.ts",
         "frontend/src/pages/LilyPage.tsx"
       ],
       "components": [
@@ -17,7 +20,73 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-lily-action-bar-ui-order-to-include-bookmark-after-share-order-likes-replies-views-share-bookmark-wherever-the-action-bar-is-rendered",
+      "featureTitle": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+      "files": [
+        "frontend/src/components/BookmarkButton.tsx",
+        "frontend/src/components/LilyCard.tsx",
+        "frontend/src/pages/LilyPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-new-saved-lilies-view-that-lists-the-user-s-bookmarked-lilies-and-allows-navigating-to-each-lily-detail-page",
+      "featureTitle": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/Header.tsx",
+        "frontend/src/components/LeftSidebar.tsx",
+        "frontend/src/pages/SavedLiliesPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-handle-missing-unavailable-lilies-in-the-saved-lilies-view-gracefully-e-g-if-a-bookmarked-lily-id-no-longer-resolves-show-an-english-placeholder-row-and-allow-removing-that-bookmark",
+      "featureTitle": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
+      "files": [
+        "frontend/src/hooks/useBookmarks.ts",
+        "frontend/src/pages/SavedLiliesPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

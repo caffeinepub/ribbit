@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, ExternalLink, Eye, X } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, X, Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   useGetLily, 
@@ -20,6 +20,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import RibbitItem from '@/components/RibbitItem';
 import { getUsername } from '@/lib/user';
 import { formatNumber } from '@/lib/formatNumber';
+import { shareLily } from '@/lib/shareLily';
+import BookmarkButton from '@/components/BookmarkButton';
 
 export default function LilyPage() {
   const { id } = useParams({ strict: false }) as { id: string };
@@ -74,6 +76,11 @@ export default function LilyPage() {
     }
   };
 
+  const handleShareClick = () => {
+    if (!lily) return;
+    shareLily(lily.id);
+  };
+
   if (lilyLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -106,7 +113,7 @@ export default function LilyPage() {
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto lg:px-0">
-          <div className="overflow-hidden mb-4 p-6 border border-border lg:rounded-lg">
+          <div className="overflow-hidden mb-4 p-6 border-0 lg:border lg:border-border lg:rounded-lg">
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
                 <AvatarFallback className="text-lg">🐸</AvatarFallback>
@@ -143,91 +150,100 @@ export default function LilyPage() {
                 
                 {/* Description directly below title with 1rem font size */}
                 {lily.content && (
-                  <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed" style={{ fontSize: '1rem' }}>{lily.content}</p>
+                  <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed mb-4" style={{ fontSize: '1rem' }}>{lily.content}</p>
                 )}
-              </div>
-            </div>
 
-            {lily.image && (
-              <div className="mb-4">
-                {shouldShowBlurredBackdrop ? (
-                  <div 
-                    className="relative w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setLightboxOpen(true)}
-                  >
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{
-                        backgroundImage: `url(${lily.image.getDirectURL()})`,
-                        filter: 'blur(30px)',
-                        transform: 'scale(1.1)',
-                      }}
-                    />
-                    <div className="relative flex items-center justify-center w-full h-full">
-                      <img
-                        src={lily.image.getDirectURL()}
-                        alt={lily.title}
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div 
-                    className="w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                    onClick={() => setLightboxOpen(true)}
-                  >
-                    <img
-                      src={lily.image.getDirectURL()}
-                      alt={lily.title}
-                      className="w-full h-full object-cover"
-                    />
+                {/* Image block */}
+                {lily.image && (
+                  <div className="mb-4">
+                    {shouldShowBlurredBackdrop ? (
+                      <div 
+                        className="relative w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => setLightboxOpen(true)}
+                      >
+                        <div
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${lily.image.getDirectURL()})`,
+                            filter: 'blur(30px)',
+                            transform: 'scale(1.1)',
+                          }}
+                        />
+                        <div className="relative flex items-center justify-center w-full h-full">
+                          <img
+                            src={lily.image.getDirectURL()}
+                            alt={lily.title}
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className="w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => setLightboxOpen(true)}
+                      >
+                        <img
+                          src={lily.image.getDirectURL()}
+                          alt={lily.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {lily.link && (
-              <div className="mb-4">
-                <a
-                  href={lily.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  <ExternalLink style={{ width: '1rem', height: '1rem' }} />
-                  {lily.link}
-                </a>
-              </div>
-            )}
+                {/* Link block */}
+                {lily.link && (
+                  <div className="mb-4">
+                    <a
+                      href={lily.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      <ExternalLink style={{ width: '1rem', height: '1rem' }} />
+                      {lily.link}
+                    </a>
+                  </div>
+                )}
 
-            {/* Engagement row - always appears after image and link */}
-            <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-              <button
-                onClick={handleLikeClick}
-                disabled={isLiking || isUnliking}
-                className="flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`transition-all`}
-                  style={{ width: '1rem', height: '1rem' }}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill={hasLiked ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-                <span>{formatNumber(likeCount)}</span>
-              </button>
-              <div className="flex items-center gap-1.5">
-                <MessageCircle style={{ width: '1rem', height: '1rem' }} />
-                <span>{formatNumber(ribbitCount)}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Eye style={{ width: '1rem', height: '1rem' }} />
-                <span>{formatNumber(viewCount)}</span>
+                {/* Engagement row - now inside flex-1 min-w-0 container as last child */}
+                <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                  <button
+                    onClick={handleLikeClick}
+                    disabled={isLiking || isUnliking}
+                    className="flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={`transition-all`}
+                      style={{ width: '1rem', height: '1rem' }}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill={hasLiked ? 'currentColor' : 'none'}
+                      stroke="currentColor"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span>{formatNumber(likeCount)}</span>
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <MessageCircle style={{ width: '1rem', height: '1rem' }} />
+                    <span>{formatNumber(ribbitCount)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Eye style={{ width: '1rem', height: '1rem' }} />
+                    <span>{formatNumber(viewCount)}</span>
+                  </div>
+                  <button
+                    onClick={handleShareClick}
+                    className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                  >
+                    <Share2 style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                  <BookmarkButton lilyId={lily.id} />
+                </div>
               </div>
             </div>
           </div>

@@ -1,311 +1,59 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "ribbit is an anonymous, Reddit-style discussion platform built on the Internet Computer (ICP). Communities are “ponds”, posts are “lilies” (text/image/link with optional tags), and threaded comments are “ribbits”. The frontend is a React + TypeScript SPA using TanStack Router and React Query, featuring a responsive three-column layout with a mobile off-canvas left drawer, search, and settings. The backend is a Motoko canister implementing ponds, membership, posts, threaded comments, likes, tagging (canonical redirects + admin merging), principal-based user profiles, a username registry with cooldown, username-based avatar storage, recent-activity queries, access control roles, and a blob-storage mixin for image upload/serving and maintenance.",
+  "projectStateVersion": 20,
+  "summary": "ribbit is an anonymous, Reddit-style discussion platform built on the Internet Computer (ICP). Communities are “ponds”, posts are “lilies” (text/image/link with optional tags), and threaded comments are “ribbits”. The React + TypeScript frontend uses TanStack Router for navigation and React Query for caching and mutations against a Motoko canister actor (anonymous by default, optionally Internet Identity-authenticated). The backend canister manages ponds and membership, lily and ribbit creation and retrieval (including threaded views), likes on posts and ribbits, tag normalization + canonical redirects (with admin tag merging), principal-based user profiles, a username registry with cooldown enforcement, username-based avatar storage, and recent-activity feeds. Media is stored and transported via ExternalBlob, and the canister includes a Caffeine blob-storage mixin with maintenance endpoints.",
   "existing_features": [
     {
       "id": "IF-1",
       "title": "SPA routing and responsive application shell",
       "synonyms": [
-        "TanStack Router route tree",
+        "TanStack Router",
         "Layout",
-        "three-column layout",
-        "mobile drawer"
+        "mobile left drawer",
+        "three-column layout"
       ],
-      "description": "Implements SPA routing for Home, Pond feed, Pond About, Lily detail, All Ponds, Start Pond, Create Lily, Settings, About, and Tag pages. Provides a shared Layout with sticky Header/Footer, desktop sidebars, and a mobile off-canvas left sidebar drawer that locks body scroll and closes on route changes.",
+      "description": "Defines SPA routes for Home, All Ponds, Pond feed, Pond About, Lily detail, Create Lily, Start Pond, Tag pages, Settings, and About. Provides a shared Layout with Header/Footer and a mobile off-canvas left sidebar drawer that locks body scroll and closes on navigation.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-2",
-      "title": "Header navigation with search, create actions, and avatar",
+      "title": "Light/dark theming with OKLCH design tokens",
       "synonyms": [
-        "Header",
-        "search dialog",
-        "create menu",
-        "wordmark styling"
+        "next-themes",
+        "Tailwind semantic tokens",
+        "CSS variables theme"
       ],
-      "description": "Top header includes frog icon + “ribbit” wordmark, desktop search bar and mobile search dialog, navigation actions (All Ponds/Start Pond/Create Lily), mobile hamburger trigger for the left drawer, and username-based avatar display linking to Settings.",
+      "description": "Implements light/dark palettes via OKLCH CSS variables exposed as semantic Tailwind tokens (including dedicated sidebar tokens). Theme switching is handled via next-themes class-based dark mode.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-3",
-      "title": "Light/dark theming via OKLCH design tokens",
+      "title": "Header navigation with search and create actions",
       "synonyms": [
-        "next-themes",
-        "Tailwind semantic tokens",
-        "CSS variables theme",
-        "sidebar token set"
+        "Header",
+        "desktop search",
+        "mobile search dialog",
+        "create dropdown"
       ],
-      "description": "Defines OKLCH CSS variable palettes for light and dark mode, maps them to Tailwind semantic colors (background/foreground/card/sidebar/etc.), and switches themes using next-themes (darkMode via class).",
+      "description": "Sticky header includes brand/logo, desktop search bar, mobile search dialog, create actions (Start Pond/Create Lily) including a mobile dropdown, and a settings entry with username-based avatar.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-4",
-      "title": "Internet Identity authentication context",
+      "title": "Left sidebar navigation and recent activity list",
       "synonyms": [
-        "InternetIdentityProvider",
-        "AuthClient",
-        "DelegationIdentity"
+        "LeftSidebar",
+        "Recent Activity"
       ],
-      "description": "Provides an authentication provider using @dfinity/auth-client with identity restoration on reload, login/logout helpers, and login-status tracking (initializing/logging-in/success/error).",
+      "description": "Left sidebar provides navigation links (Home/All Ponds/Create Lily/Settings) with active-route styling and a Recent Activity section showing relative timestamps and links into lily pages.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-5",
-      "title": "ICP actor lifecycle management integrated with React Query",
-      "synonyms": [
-        "useActor",
-        "createActorWithConfig",
-        "actor-per-identity"
-      ],
-      "description": "Creates and caches the backend canister actor per identity (anonymous vs authenticated). For authenticated identities it calls initializeAccessControl() on the canister. When the actor changes, all other React Query caches are invalidated and refetched.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-6",
-      "title": "Pond discovery (list/get/search) and All Ponds page",
-      "synonyms": [
-        "listPonds",
-        "getPond",
-        "searchPonds",
-        "AllPondsPage"
-      ],
-      "description": "Supports listing all ponds, fetching a pond by name, and searching ponds by term. The All Ponds page renders a responsive grid with pond profile images, descriptions, member counts, and joined badges.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-7",
-      "title": "Pond creation with required images and Froggy Phrase validation",
-      "synonyms": [
-        "createPond",
-        "Start a Pond",
-        "banner/profile upload"
-      ],
-      "description": "Allows creating a pond with name/title/description, required banner + profile images uploaded as ExternalBlob, and a Froggy Phrase validated (minimum 5 words). Backend sets the creator as pond admin/moderator and first member and updates/creates the caller’s joined ponds in their profile.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-8",
-      "title": "Pond membership management (join/leave) with Settings “My Ponds” UI",
-      "synonyms": [
-        "joinPond",
-        "leavePond",
-        "getJoinedPonds"
-      ],
-      "description": "Backend supports joining/leaving ponds, maintaining memberCount/members, and mirroring membership into the caller’s UserProfile.joinedPonds. Frontend allows joining from Pond pages and viewing/leaving joined ponds from Settings with confirmation dialogs.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-9",
-      "title": "Pond feed page with banner header and join CTA",
-      "synonyms": [
-        "PondPage",
-        "pond feed"
-      ],
-      "description": "Displays a pond’s banner, profile image, title, and description in a header and renders a pond-scoped lily feed sorted by newest. Shows a Join Pond button when the viewer is not a member.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-10",
-      "title": "Pond About info and About page UI",
-      "synonyms": [
-        "getPondAboutInfo",
-        "PondAboutPage"
-      ],
-      "description": "Exposes structured pond metadata (createdAt, memberCount, visibility, rules, moderators/admin, associated tags, lilyCount, images). Frontend renders an About page with stats, rules, moderators (with username-based avatars), tag links, and a member-only Leave action.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-11",
-      "title": "Pond admin/moderation operations (backend)",
-      "synonyms": [
-        "editPondSettings",
-        "add/removeModerator",
-        "add/removePondRule",
-        "deleteLily",
-        "deleteRibbit",
-        "removeMemberFromPond",
-        "isPondAdmin"
-      ],
-      "description": "Implements pond-admin-only actions for editing settings, managing moderators and rules, deleting lilies/ribbits in the pond, and removing members while synchronizing the removed member’s joinedPonds.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-12",
-      "title": "Lily (post) feeds and search",
-      "synonyms": [
-        "listPosts",
-        "getPost",
-        "searchPosts",
-        "Home feed"
-      ],
-      "description": "Backend supports listing all posts, fetching individual posts, and searching posts by term. Frontend renders a Home feed with Trending/New tabs (currently recency-based) and supports searching lilies via the header (route search param q).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-13",
-      "title": "Create Lily form (text/image/link) with membership checks and tag suggestions",
-      "synonyms": [
-        "createPost",
-        "CreateLilyPage",
-        "getTagSuggestions"
-      ],
-      "description": "Create Lily form supports text, image, or link lilies, pond selection, optional tag with debounced tag suggestions, image preview/upload as ExternalBlob, and client-side membership validation; backend enforces pond existence and membership for creating posts.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-14",
-      "title": "Lily card UI with media handling and engagement metrics",
-      "synonyms": [
-        "LilyCard",
-        "blurred backdrop for non-4:3 images",
-        "like toggle in feed"
-      ],
-      "description": "Renders lilies as feed cards with pond/user metadata, optional image with aspect-aware blurred backdrop, optional link hostname display, and engagement metrics (likes, ribbits count, views) driven by React Query hooks, including in-card like toggling.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-15",
-      "title": "Lily detail page with lightbox, like toggle, and ribbit composer",
-      "synonyms": [
-        "LilyPage",
-        "lightbox modal",
-        "post detail"
-      ],
-      "description": "Displays a lily’s full content including optional image (click-to-open lightbox) and optional external link. Shows like/reply/view counts, supports liking/unliking, provides a ribbit composer, and renders threaded ribbits.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-16",
-      "title": "Threaded ribbits (comments) with replies",
-      "synonyms": [
-        "createRibbit",
-        "getThreadedRibbits",
-        "RibbitItem"
-      ],
-      "description": "Backend supports creating ribbits with optional parentId and fetching ribbits in threaded order. Frontend renders nested ribbits with indentation, inline reply forms, and per-ribbit user avatars by username.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-17",
-      "title": "Likes for lilies and ribbits",
-      "synonyms": [
-        "likePost/unlikePost",
-        "likeRibbit/unlikeRibbit",
-        "get*LikeCount",
-        "hasUserLiked*"
-      ],
-      "description": "Backend tracks per-post and per-ribbit likes keyed by (targetId, principal) and provides like counts and per-caller liked status. Frontend provides like toggles and invalidates relevant caches after mutations.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-18",
-      "title": "Tagging system with canonical redirects and tag feeds",
-      "synonyms": [
-        "normalizeTag",
-        "getLiliesByTag",
-        "getCanonicalTagForTag",
-        "TagPage"
-      ],
-      "description": "Backend normalizes tags, tracks tag usage counts, resolves canonical tags via a redirect registry, and returns lilies by tag with sorting (newest/most viewed/most replied). Frontend Tag page redirects to canonical tag and renders sorted tagged feeds.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-19",
-      "title": "Admin tag merging and redirect inspection UI",
-      "synonyms": [
-        "mergeSimilarTags",
-        "getTagRedirects",
-        "isCallerAdmin",
-        "Admin tab"
-      ],
-      "description": "Backend provides an admin-only tag merge operation using similarity heuristics and stores old→canonical redirects. Frontend Settings shows an Admin tab for admins to trigger merges and view active redirects.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-20",
-      "title": "Principal-based user profiles (save/load) and profile lookup",
-      "synonyms": [
-        "UserProfile",
-        "getCallerUserProfile",
-        "saveCallerUserProfile",
-        "getUserProfile",
-        "batch lookup"
-      ],
-      "description": "Stores a UserProfile per principal and supports reading/saving the caller profile and fetching other user profiles; frontend uses profile lookup for displaying pond moderators and stores joined ponds in the profile.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-21",
-      "title": "Username registry with availability checks and 24-hour change cooldown",
-      "synonyms": [
-        "isUsernameAvailable",
-        "registerUsername",
-        "releaseUsername",
-        "canChangeUsername",
-        "recordUsernameChange"
-      ],
-      "description": "Backend supports username registration, ownership tracking, release, and cooldown enforcement via timestamps. Frontend Settings provides debounced availability checks, frog/toad/tadpole substring validation, cooldown-aware saving, and updates the stored profile name for consistency.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-22",
-      "title": "Username-based avatar upload and retrieval with progress",
-      "synonyms": [
-        "saveAvatarByUsername",
-        "getUserAvatarByUsername",
-        "Settings avatar tab"
-      ],
-      "description": "Backend stores avatars by username and exposes public retrieval. Frontend supports avatar selection, preview, upload as ExternalBlob with progress callback, and rendering avatars in header, lily cards (optional), ribbits, and moderator lists.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-23",
-      "title": "Client-side anonymous identity and Froggy Phrase backup/restore",
-      "synonyms": [
-        "localStorage identity",
-        "Froggy Phrase",
-        "restore settings"
-      ],
-      "description": "Frontend generates/stores an anonymous username and userId in localStorage. Users can create a Froggy Phrase (>=5 words) that backs up local settings for restore on another device, with UI to show/copy/clear the phrase and to restore settings.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-24",
-      "title": "Recent activity APIs and left sidebar activity feed",
-      "synonyms": [
-        "getAllRecentActivities",
-        "LeftSidebar recent activity"
-      ],
-      "description": "Backend exposes recent activity queries (posts/ribbits/likes) and a combined recent activities list. Frontend left sidebar renders a Recent Activity section with relative timestamps and links into lily detail pages, including loading skeletons.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-25",
       "title": "Right sidebar discovery widgets",
       "synonyms": [
         "RightSidebar",
@@ -313,104 +61,417 @@
         "Popular Tags",
         "Hot This Week"
       ],
-      "description": "Renders a sticky right sidebar showing trending ponds (by memberCount), popular tags (computed from fetched lilies), and hot posts (by viewCount within last 7 days), with skeleton loading states.",
+      "description": "Sticky right sidebar computes and renders trending ponds by memberCount, popular tags by counting tags on fetched lilies, and hot posts for the last week sorted by viewCount, with skeleton loading states.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "Internet Identity authentication provider",
+      "synonyms": [
+        "InternetIdentityProvider",
+        "AuthClient",
+        "DelegationIdentity"
+      ],
+      "description": "Provides a React context for Internet Identity login/logout and persisted identity loading using @dfinity/auth-client, exposing explicit status flags for UI integration.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "ICP actor lifecycle management integrated with React Query",
+      "synonyms": [
+        "useActor",
+        "createActorWithConfig",
+        "actor-per-identity"
+      ],
+      "description": "Creates a backend canister actor per identity (anonymous vs authenticated). When authenticated, actor initialization calls initializeAccessControl(). Actor changes trigger broad React Query invalidation/refetch.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Centralized React Query API layer for backend operations",
+      "synonyms": [
+        "useQueries",
+        "query keys",
+        "mutations + invalidation"
+      ],
+      "description": "Implements React Query hooks/mutations for ponds, membership, lilies, ribbits, likes, tags, profiles, usernames, avatars, and recent activities with consistent query keys and cache invalidation patterns.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Pond discovery and search",
+      "synonyms": [
+        "listPonds",
+        "getPond",
+        "searchPonds",
+        "AllPondsPage"
+      ],
+      "description": "Supports listing all ponds, fetching a pond by name, and searching ponds by term. The All Ponds page displays a responsive grid of ponds with images, descriptions, member counts, and joined badges.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Pond creation with image uploads and Froggy Phrase validation",
+      "synonyms": [
+        "createPond",
+        "Start a Pond",
+        "profile/banner upload"
+      ],
+      "description": "Allows users to create a pond with name/title/description, required profile + banner images uploaded as ExternalBlob, and a Froggy Phrase validated client-side and by the canister (>= 5 words).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-11",
+      "title": "Pond membership management (join/leave) and joined-ponds UI",
+      "synonyms": [
+        "joinPond",
+        "leavePond",
+        "getJoinedPonds",
+        "My Ponds"
+      ],
+      "description": "Backend supports joining/leaving ponds and stores joined ponds in the caller’s UserProfile. Frontend shows a Join button on pond feeds and a Settings “My Ponds” tab with pond listing and leave confirmations.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "Pond feed page with responsive banner header and pond-scoped lily list",
+      "synonyms": [
+        "PondPage",
+        "pond feed",
+        "mobile banner height"
+      ],
+      "description": "Renders a full-width pond banner/profile header with title/description overlay and shows lilies filtered to the pond and sorted by newest. Banner height is responsive (shorter on mobile, unchanged on md+).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Pond About page (metadata, rules, moderators, tags)",
+      "synonyms": [
+        "getPondAboutInfo",
+        "PondAboutPage"
+      ],
+      "description": "Displays pond stats (created date, members, visibility), rules, associated tags, and moderators (with avatar lookup by username). Includes leave-pond action for members and feed/about tab navigation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Lily (post) listing and search",
+      "synonyms": [
+        "listPosts",
+        "getPost",
+        "searchPosts",
+        "Home feed"
+      ],
+      "description": "Backend supports listing all posts, fetching by id, and searching by term. Frontend Home page renders a feed with Trending/New tabs (currently recency-based) and supports query-param search (q).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "Create Lily form with content modes, membership gating, and tag suggestions",
+      "synonyms": [
+        "CreateLilyPage",
+        "createPost",
+        "getTagSuggestions"
+      ],
+      "description": "Create Lily supports text/image/link modes, pond selection, membership gating, optional tag input with debounced server suggestions, and optional image upload as ExternalBlob.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Lily feed card UI with media handling and engagement metrics",
+      "synonyms": [
+        "LilyCard",
+        "blurred backdrop",
+        "like toggle"
+      ],
+      "description": "Renders lilies as feed cards with pond/user metadata, optional tag link, optional image with aspect-aware blurred backdrop, optional external link hostname, and engagement metrics (likes, ribbit count, views) including in-card like toggling. Can show either pond avatar or user avatar depending on context.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-17",
+      "title": "Lily detail page with image lightbox and threaded ribbits",
+      "synonyms": [
+        "LilyPage",
+        "post detail",
+        "lightbox modal"
+      ],
+      "description": "Displays a lily’s full content (title, tag link, content, image with click-to-open lightbox, and optional external link), engagement metrics (likes/replies/views), a ribbit composer, and a threaded ribbit list.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-18",
+      "title": "Threaded ribbits (comments) with replies UI",
+      "synonyms": [
+        "createRibbit",
+        "getThreadedRibbits",
+        "RibbitItem"
+      ],
+      "description": "Backend supports creating ribbits with optional parentId and querying ribbits in threaded order. Frontend renders nested ribbits with indentation, reply forms, timestamps, and username-based avatars.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-19",
+      "title": "Likes for lilies and ribbits",
+      "synonyms": [
+        "likePost/unlikePost",
+        "likeRibbit/unlikeRibbit",
+        "get*LikeCount",
+        "hasUserLiked*"
+      ],
+      "description": "Backend tracks per-target likes keyed by (targetId, principal) and exposes like counts and per-caller liked status. Frontend provides toggles and invalidates relevant caches after mutations.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-20",
+      "title": "Tagging system with canonical redirects and tag feeds",
+      "synonyms": [
+        "normalizeTag",
+        "getLiliesByTag",
+        "getCanonicalTagForTag",
+        "TagPage",
+        "getTagRedirects"
+      ],
+      "description": "Backend normalizes tags, tracks usage counts, supports suggestions, resolves canonical tags via redirects, and returns lilies by tag with sorting (newest/most_viewed/most_replied). Frontend Tag page redirects to canonical tags and renders sorted tagged feeds.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-21",
+      "title": "Admin tag merging and redirect inspection UI",
+      "synonyms": [
+        "mergeSimilarTags",
+        "isCallerAdmin",
+        "Admin tab"
+      ],
+      "description": "Backend provides an admin-only tag merge operation using similarity heuristics and stores old→canonical redirects. Frontend Settings shows an Admin tab (only for admins) to trigger merges and view active redirects.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-22",
+      "title": "Principal-based user profiles (save/load) and profile lookup",
+      "synonyms": [
+        "UserProfile",
+        "getCallerUserProfile",
+        "saveCallerUserProfile",
+        "getUserProfile"
+      ],
+      "description": "Stores a UserProfile per principal (including joined ponds). Frontend can load/save the caller profile and fetch other profiles (e.g., for displaying moderators).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-23",
+      "title": "Username registry with availability checks and 24-hour cooldown",
+      "synonyms": [
+        "isUsernameAvailable",
+        "registerUsername",
+        "releaseUsername",
+        "canChangeUsername",
+        "recordUsernameChange"
+      ],
+      "description": "Backend supports username registration, ownership, release, and cooldown checks. Frontend Settings provides debounced availability checks, frog/toad/tadpole substring validation, cooldown-aware saving, and profile-name synchronization after changes.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-24",
+      "title": "Username-based avatar upload and retrieval with progress",
+      "synonyms": [
+        "saveAvatarByUsername",
+        "getUserAvatarByUsername",
+        "Settings avatar tab"
+      ],
+      "description": "Backend stores avatars by username and exposes public retrieval. Frontend supports avatar selection, preview, uploading as ExternalBlob with progress callback, and rendering avatars in header, lily cards, and ribbits when available.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-25",
+      "title": "Local anonymous identity and Froggy Phrase backup/restore (client-side)",
+      "synonyms": [
+        "localStorage identity",
+        "Froggy Phrase",
+        "restore settings"
+      ],
+      "description": "Frontend generates/stores an anonymous username and user id in localStorage. Users can create a Froggy Phrase (>=5 words) that backs up/restores local settings across devices, with UI to show/copy/clear and restore.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-26",
-      "title": "Blob storage mixin endpoints with gateway/cashier controls (backend)",
+      "title": "Recent activity endpoints and sidebar consumption",
       "synonyms": [
-        "_caffeineStorageUpdateGatewayPrincipals",
-        "_caffeineStorageRefillCashier",
-        "_caffeineStorageBlobsToDelete",
-        "_caffeineStorageConfirmBlobDeletion"
+        "getAllRecentActivities",
+        "getRecentPosts",
+        "getRecentRibbits",
+        "getRecentlyLikedPosts"
       ],
-      "description": "Backend includes a blob-storage mixin exposing endpoints for updating authorized gateway principals, listing/pruning dead blobs, triggering GC after pruning, and topping up cycles via a cashier canister with authorization checks for maintenance operations.",
+      "description": "Backend exposes recent activity query endpoints and a combined recent activity list. Frontend consumes getAllRecentActivities() to render a recent activity list in the left sidebar.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-27",
-      "title": "Access control roles with upgrade restoration (backend)",
+      "title": "Role-based access control with upgrade restoration (backend)",
       "synonyms": [
         "AccessControl",
         "initializeAccessControl",
-        "admin/user roles",
-        "postupgrade role restore"
+        "admin/user/guest roles",
+        "postupgrade restore"
       ],
-      "description": "Implements role-based access control where the first initialized principal becomes admin and others become users. Tracks initialized principals/admin principal and attempts to restore roles in postupgrade; exposes role/admin checks and admin role assignment.",
+      "description": "Implements role-based access control (admin/user/guest), initialization, admin-only role assignment, and postupgrade restoration using persisted initialized principal tracking; frontend calls initializeAccessControl() on authenticated actor creation.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-28",
+      "title": "Blob storage mixin with maintenance endpoints (backend)",
+      "synonyms": [
+        "_caffeineStorageUpdateGatewayPrincipals",
+        "_caffeineStorageBlobsToDelete",
+        "_caffeineStorageConfirmBlobDeletion",
+        "_caffeineStorageRefillCashier"
+      ],
+      "description": "Backend composes a Caffeine blob-storage mixin supporting gateway principal updates, authorized dead-blob listing/pruning (with GC trigger), and a cashier refill endpoint for cycles top-ups.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-29",
       "title": "Compact number formatting utility",
       "synonyms": [
         "formatNumber",
         "k/M/B formatting"
       ],
-      "description": "Utility function formats large counts into compact k/M/B notation for member counts, likes, replies, and views in the UI.",
+      "description": "Utility formats large counts into compact k/M/B notation for display in the UI (members, likes, replies, views).",
       "reqIds": [],
       "version": 1
     },
     {
-      "id": "feature-update-the-lily-detail-page-frontend-src-pages-lilypage-tsx-so-the-engagement-row-likes-replies-views-always-renders-in-a-fixed-location-directly-below-the-lily-s-main-content-block-title-description-then-image-if-present-and-link-if-present-then-the-engagement-row-do-not-change-engagement-row-placement-on-feed-cards-or-any-other-pages-components",
-      "title": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders in a fixed location directly below the lily’s main content block: title + description, then image (if present) and link (if present), then the engagement row. Do not change engagement row placement on feed cards or any other pages/components.",
+      "id": "IF-30",
+      "title": "Reproducible build/deploy template scaffolding",
+      "synonyms": [
+        "build-template",
+        "Dockerfile",
+        "deploy.sh",
+        "icp.yaml",
+        "image resize/prune scripts",
+        "workspace template"
+      ],
+      "description": "Adds a reusable build-template (frontend+backend canister YAMLs, Dockerfile, deploy script, workspace/package scaffolding, lint rules, and image resize/prune utilities) to support consistent local/CI builds and deployments.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-31",
+      "title": "Share Lily (copy link + native share sheet)",
+      "synonyms": [
+        "Share button",
+        "copy link",
+        "navigator.share",
+        "shareLily"
+      ],
+      "description": "Adds a Share action for lilies that copies the canonical lily URL to the clipboard by default and uses the native share sheet when available (e.g., on mobile via navigator.share). Integrated into the lily action bar per the decided button order.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-local-only-bookmark-toggle-for-each-lily-post-and-persist-bookmarked-lily-ids-in-browser-storage-no-backend-changes",
+      "title": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-lily-action-bar-ui-order-to-include-bookmark-after-share-order-likes-replies-views-share-bookmark-wherever-the-action-bar-is-rendered",
+      "title": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-saved-lilies-view-that-lists-the-user-s-bookmarked-lilies-and-allows-navigating-to-each-lily-detail-page",
+      "title": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-handle-missing-unavailable-lilies-in-the-saved-lilies-view-gracefully-e-g-if-a-bookmarked-lily-id-no-longer-resolves-show-an-english-placeholder-row-and-allow-removing-that-bookmark",
+      "title": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "On Lily detail page, always render the engagement row (likes/replies/views) below the image and description (fixed placement for consistency)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
       "id": "AR-2",
-      "summary": "Mobile left sidebar access: add a hamburger icon in the header (left of logo) that opens the left sidebar as an off-canvas drawer (Reddit-like)",
+      "summary": "Add a bookmark/save feature for lilies so users can save and later view a list of bookmarked lilies.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Right sidebar styling update to Reddit-like: neutral very light gray background (no green tint), padding, border radius, and no outer border",
+      "summary": "Implement Bookmark Lily as a local-only save (browser storage) with a Saved Lilies view (e.g., in Settings/sidebar) and a bookmark toggle in the lily action bar (order: Likes → Replies → Views → Share → Bookmark).",
       "reqIds": [],
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
   "architectural_notes": [
-    "Frontend uses TanStack Router for fileless route-tree routing and @tanstack/react-query for all backend reads/writes via stable query keys and explicit invalidations after mutations.",
-    "Backend access is wrapped behind an ICP canister actor created per identity; authenticated identities call initializeAccessControl() during actor initialization (useActor), and actor changes trigger React Query invalidation/refetch for all dependent queries.",
-    "Authentication is implemented via an InternetIdentityProvider using @dfinity/auth-client; identities are persisted across reloads and login uses DelegationIdentity with long TTL.",
-    "UI uses TailwindCSS + shadcn/ui components; theming is driven by OKLCH CSS variables and next-themes (class-based dark mode), including a separate neutral-gray sidebar token set.",
-    "Backend is a single Motoko canister with persistent state held in OrderedMap maps (ponds, posts, ribbits, profiles, username registry, avatars, likes, tags, activities).",
-    "Images/avatars are stored and transported as ExternalBlob; frontend renders blobs via getDirectURL() and uploads via File → Uint8Array → ExternalBlob (avatar upload supports progress callbacks).",
-    "Backend composes a Caffeine blob-storage mixin that exposes maintenance endpoints (gateway principal refresh, dead-blob listing/pruning, cashier refill) with authorization checks.",
-    "Backend access control module assigns the first initialized principal as admin and supports role assignment; the canister attempts to restore roles post-upgrade by tracking initialized principals."
+    "Frontend is a React SPA using TanStack Router with a shared Layout (Header/Footer) and responsive sidebars (desktop 3-column layout; mobile off-canvas left drawer).",
+    "All backend/canister interactions are centralized in a single React Query hook module (queries + mutations) keyed by stable query keys and explicit cache invalidation on writes.",
+    "Actor lifecycle is identity-aware: useActor creates an anonymous actor when unauthenticated; when authenticated, it creates an identity-bound actor and calls initializeAccessControl() before use. Actor changes trigger broad query invalidation/refetch.",
+    "Internet Identity authentication is encapsulated in a React context/provider using @dfinity/auth-client with persisted identity loading and explicit login status flags.",
+    "Styling uses TailwindCSS with shadcn/ui components and OKLCH CSS-variable design tokens; theme switching is handled via next-themes class-based dark mode.",
+    "Backend is a single Motoko canister using OrderedMap for persistent collections, with role/access control and postupgrade restoration of roles via persisted initialized principal tracking.",
+    "Images/avatars are handled as ExternalBlob values; the frontend converts File -> Uint8Array -> ExternalBlob, and uses getDirectURL() for rendering (avatar upload supports progress callbacks).",
+    "Backend includes a blob-storage mixin exposing authorized dead-blob pruning, gateway principal refresh, and cashier cycles refill endpoints.",
+    "Project now includes a build-template scaffold (Dockerfile, deploy.sh, icp.yaml, workspace/package configs, canister.yaml stubs, and helper scripts like prune-unused-images/resize-images) to standardize builds and deployments across environments.",
+    "Planned: add 'Bookmark Lily' as local-only (browser storage) to preserve anonymity; optionally restorable via Froggy Phrase; include a 'Saved Lilies' view (e.g., Settings/sidebar) and an action-bar toggle icon.",
+    "Decision: Lily action bar button order should be: Likes → Replies → Views → Share → Bookmark (Share/Bookmark to follow views, not placed earlier).",
+    "Implemented 'Share Lily' via a shared frontend utility (shareLily) that prefers navigator.share on supported devices and falls back to clipboard copy; wired into lily UI action surfaces following the agreed action-bar order."
   ],
   "known_issues": [
-    "Post viewCount is readable (getViewCountForPost) and used for “Hot This Week”, but the backend provides no update path to increment viewCount; view-based sorting/widgets will likely remain at 0.",
-    "Recent Activity UI assumes Activity.targetId is always a post id (it fetches the lily by targetId); backend also stores #viewRibbit activities with ribbit IDs, so those entries won’t render in the sidebar.",
-    "Activity logging is inconsistent/incomplete: createPost does not log a #post activity; createRibbit logs #viewRibbit activity (not #ribbit); likePost logs activity without username/pond context.",
-    "mergeSimilarTags() iterates Iter.range(0, tagCount - 1); when tagCount is 0 this can underflow/trap—should guard for tagCount < 2.",
-    "ensureUserRole() calls AccessControl.getUserRole(), which traps for non-anonymous principals that have not been initialized; the frontend mitigates this by calling initializeAccessControl() when creating an authenticated actor, but direct canister calls or missed initialization can still trap.",
-    "Anonymous users share the same anonymous principal on-chain, so membership, profiles, and like status collide across anonymous users (local usernames are not enforced on-chain).",
-    "Post/ribbit ID generation uses map size (e.g., \"post_\" # (size+1)); after deletions, IDs can be reused/collide.",
-    "Backend Froggy Phrase validation in createPond splits only on the single space character; multiple whitespace sequences can be counted differently than the frontend’s regex-based validation.",
-    "CreatePondPage messaging implies the Froggy Phrase secures pond admin access, but the backend does not store the phrase; pond admin rights are based solely on the caller principal.",
-    "Username-based avatar save/retrieve intentionally has no authorization checks, allowing anyone to overwrite an avatar for a given username.",
-    "createPost updates usernameOwnership/principalToUsername mappings solely from the provided username, which can undermine the intended username registry semantics (a caller can post under an arbitrary username and overwrite mappings).",
-    "createRibbit does not validate that the post exists nor enforce pond membership before allowing comments.",
-    "Several source files are empty/placeholder stubs (e.g., frontend/src/components/PostCard.tsx, frontend/src/components/CommentItem.tsx, frontend/src/components/EmojiReactions.tsx, frontend/src/components/RibbitEmojiTray.tsx, frontend/src/pages/PostPage.tsx, frontend/src/pages/CreatePostPage.tsx), suggesting unfinished or dead code paths."
+    "Post viewCount is read and displayed (and used for “Hot This Week” and tag sorting), but there is no backend update path to increment viewCount; view-based widgets will likely remain at 0.",
+    "Recent Activity UI assumes Activity.targetId is always a lily id (it fetches a lily for each activity). Backend also records #viewRibbit activities whose targetId is a ribbit id, so those entries won’t render.",
+    "Activity logging is inconsistent/incomplete: createPost does not log #post activity; createRibbit records a #viewRibbit activity rather than a #ribbit activity; likePost logs like activity with empty username/pond fields.",
+    "mergeSimilarTags() uses Iter.range(0, tagCount - 1); when tagCount is 0 this can underflow/trap in Motoko (Nat subtraction).",
+    "AccessControl.getUserRole() traps for non-anonymous principals that have not been initialized; the frontend mitigates this for authenticated users by calling initializeAccessControl(), but direct calls/missed initialization can still trap.",
+    "Anonymous users share the same anonymous principal on-chain, so likes, membership, and profiles can collide between anonymous users; local usernames are not enforced at the principal level.",
+    "Post and ribbit IDs are generated from map size (e.g., \"post_\" # (size+1)); after deletions IDs can be reused/collide.",
+    "Frontend Froggy Phrase validation splits on whitespace, while backend createPond validates by splitting only on the literal ' ' character; unusual whitespace may disagree on word count.",
+    "CreatePondPage implies the Froggy Phrase secures pond admin access, but the backend does not persist the phrase; pond admin rights are based on the caller principal.",
+    "Username-based avatar save/retrieve has no authorization checks (by design in code), allowing anyone to overwrite an avatar for a given username.",
+    "createPost updates usernameOwnership/principalToUsername mappings based on the provided username argument, allowing callers to post under arbitrary usernames and undermining intended username registry semantics.",
+    "createRibbit does not validate that the referenced post exists nor enforce pond membership before allowing comments.",
+    "Backend getRecentRibbitViews() comment says “last 30 days” but uses a 1-day window (24h) constant (lastDay)."
   ],
   "isFixRequest": false,
   "gameProjectType": "none",
   "projectName": "ribbit",
-  "clarification_mode": "instant",
+  "clarification_mode": "pro",
   "clarification_rounds": 0
 }

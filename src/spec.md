@@ -1,10 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure the Lily detail page always shows the engagement row (likes/replies/views) directly below the lily’s main content (title/description, then image/link if present).
+**Goal:** Add a local-only bookmarking feature for lilies and a “Saved Lilies” page to revisit bookmarked posts.
 
 **Planned changes:**
-- Update `frontend/src/pages/LilyPage.tsx` layout so the engagement row always renders after the title + description block, then after the image (if present) and link (if present).
-- Keep engagement row styling and functionality unchanged; adjust placement only on the Lily detail page.
+- Add a Bookmark toggle to each lily’s action bar and persist bookmarked lily IDs in browser storage (local-only; no backend calls).
+- Update the lily action bar order everywhere it appears to: Likes → Replies → Views → Share → Bookmark, with clear English labeling/aria-labels.
+- Add a new “Saved Lilies” route/page reachable from existing navigation that lists bookmarked lilies using existing card/list UI patterns and supports navigation to lily detail pages.
+- Support removing bookmarks from the Saved Lilies page with immediate list updates, including an English empty state when none are saved.
+- Handle missing/unavailable bookmarked lilies gracefully by showing an English placeholder entry and allowing removal of that bookmark without errors.
 
-**User-visible outcome:** On the Lily detail page, likes/replies/views always appear below the lily’s description and any image/link, never above the image, while other pages (including feed cards) remain unchanged.
+**User-visible outcome:** Users can bookmark/unbookmark lilies from both the feed and lily detail page, see consistent bookmark state across navigation and refresh, and open a “Saved Lilies” page to view (or remove) their saved posts—even if some saved posts are no longer available.

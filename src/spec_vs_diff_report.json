@@ -1,32 +1,56 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T23:09:15.241Z",
-  "summary": "The diff does not provide visible evidence that the Lily detail page engagement row was repositioned as required, and it includes modifications to project/meta summary files that were not requested and appear out of scope.",
+  "generatedAt": "2026-02-04T01:45:18.026Z",
+  "summary": "Implements a local bookmark hook with localStorage persistence, adds a BookmarkButton component, wires a Saved Lilies page at /saved, and adds Saved Lilies navigation. However, the bookmark state management appears to be per-hook-instance (not shared globally), and the diff truncation prevents confirming the required action-bar ordering and consistent rendering placement. Saved Lilies removal for available lilies is not explicitly shown except via LilyCard (truncated).",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders directly below the lily’s main content block (title+description, then image/link if present, then engagement row), without changing other pages/components.",
-      "reason": "The provided LilyPage.tsx diff is truncated before showing the relevant JSX section where the engagement row would be rendered/moved, so there is no confirmable evidence in the diff summary that the engagement row placement was changed to the required fixed location.",
+      "id": "REQ-2",
+      "requirement": "Bookmark toggle state must stay consistent across the feed card view, lily detail page, and after navigation/refresh (bookmark in one place appears bookmarked elsewhere).",
+      "reason": "useBookmarks maintains internal component state per hook instance and only syncs to localStorage; there is no shared context/store or cross-instance synchronization (e.g., storage event subscription). This can cause different pages/components to show stale bookmark state until reload.",
       "evidence": [
-        "frontend/src/pages/LilyPage.tsx (truncated before engagement-row rendering/placement is shown)"
+        "frontend/src/hooks/useBookmarks.ts"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Action bar ordering must be Likes → Replies → Views → Share → Bookmark wherever rendered (LilyCard and LilyPage), with Bookmark immediately after Share.",
+      "reason": "Both LilyCard.tsx and LilyPage.tsx are truncated before the action bar rendering; the diff does not provide enough evidence that the Bookmark control is placed immediately after Share and that ordering is consistent in both views.",
+      "evidence": [
+        "frontend/src/components/LilyCard.tsx",
+        "frontend/src/pages/LilyPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Removing a bookmark from the Saved Lilies page updates the list immediately (including for available lilies).",
+      "reason": "SavedLiliesPage only shows an explicit Remove button for the missing/unavailable-lily placeholder. For available lilies it renders LilyCard, but the diff is truncated and does not confirm a bookmark/remove control is present and functional within LilyCard in this context.",
+      "evidence": [
+        "frontend/src/pages/SavedLiliesPage.tsx",
+        "frontend/src/components/LilyCard.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Updated/added extensive application-wide documentation/state summaries (including references to a TagPage route and multiple other components/pages) unrelated to the requested Lily detail page layout change.",
-      "reason": "BuildRequest constraints asked to keep changes scoped to the Lily detail page layout and not refactor other areas; modifying these meta summary/state files is not part of REQ-1 and appears out of scope.",
+      "description": "Additional bookmark management APIs (addBookmark, clearBookmarks) beyond the required toggle/persist behavior.",
+      "reason": "BuildRequest only asks for a local-only toggle + persistence and Saved Lilies functionality; these extra APIs are implemented but not requested.",
       "evidence": [
-        "frontend-file-summaries.txt",
-        "project_state.json"
+        "frontend/src/hooks/useBookmarks.ts"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BookmarkButton.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/components/LeftSidebar.tsx",
+    "frontend/src/components/LilyCard.tsx",
+    "frontend/src/hooks/useBookmarks.ts",
     "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/pages/SavedLiliesPage.tsx",
     "project_state.json"
   ]
 }

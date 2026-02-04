@@ -114,6 +114,9 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
                 <Link to="/ponds">All Ponds</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link to="/saved">Saved Lilies</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/settings">Settings</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>

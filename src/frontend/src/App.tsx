@@ -12,6 +12,7 @@ import CreateLilyPage from './pages/CreateLilyPage';
 import UserSettingsPage from './pages/UserSettingsPage';
 import AboutPage from './pages/AboutPage';
 import TagPage from './pages/TagPage';
+import SavedLiliesPage from './pages/SavedLiliesPage';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -77,6 +78,12 @@ const tagRoute = createRoute({
   component: TagPage,
 });
 
+const savedLiliesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/saved',
+  component: SavedLiliesPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   pondRoute,
@@ -88,6 +95,7 @@ const routeTree = rootRoute.addChildren([
   userSettingsRoute,
   aboutRoute,
   tagRoute,
+  savedLiliesRoute,
 ]);
 
 const router = createRouter({ routeTree });

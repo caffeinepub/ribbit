@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Home, Compass, PlusCircle, Settings, Clock } from 'lucide-react';
+import { Home, Compass, PlusCircle, Settings, Clock, Bookmark } from 'lucide-react';
 import { useGetAllRecentActivities, useGetLily } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
@@ -35,6 +35,7 @@ export default function LeftSidebar({ isMobileDrawer = false }: LeftSidebarProps
   const isHomeActive = !!matchRoute({ to: '/', fuzzy: false });
   const isPondsActive = !!matchRoute({ to: '/ponds' });
   const isCreateLilyActive = !!matchRoute({ to: '/create-lily' });
+  const isSavedActive = !!matchRoute({ to: '/saved' });
   const isSettingsActive = !!matchRoute({ to: '/settings' });
 
   return (
@@ -107,6 +108,21 @@ export default function LeftSidebar({ isMobileDrawer = false }: LeftSidebarProps
               <PlusCircle className="h-5 w-5" />
             )}
             <span>Create Lily</span>
+          </Link>
+          <Link
+            to="/saved"
+            className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              isSavedActive
+                ? 'bg-gray-200'
+                : 'hover:bg-gray-100 active:bg-gray-200'
+            }`}
+          >
+            {isSavedActive ? (
+              <Bookmark className="h-5 w-5 fill-current" />
+            ) : (
+              <Bookmark className="h-5 w-5" />
+            )}
+            <span>Saved Lilies</span>
           </Link>
           <Link
             to="/settings"

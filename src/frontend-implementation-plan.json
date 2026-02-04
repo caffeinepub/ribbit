@@ -1,22 +1,116 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Lily detail page engagement row placement fix",
+  "title": "Local bookmarks and Saved Lilies page",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Ensure the Lily detail page engagement row (likes/replies/views) always renders directly below the main content block (title + description, then image/link if present), without affecting any other pages/components.",
+      "id": "REQ-2",
+      "summary": "Implement a local-only bookmark toggle per lily and persist bookmarked lily IDs in browser storage without backend calls.",
       "acceptanceCriteria": [
-        "On the lily detail page, when a lily has an image, the likes/replies/views row appears below the image and below the description text (it is not shown above the image).",
-        "On the lily detail page, when a lily has no image, the likes/replies/views row still appears below the description (or below the title if there is no description).",
-        "The likes/replies/views row styling and functionality (like toggle, counts formatting) remain unchanged aside from its placement.",
-        "No layout/placement changes are made to the engagement row in frontend/src/components/LilyCard.tsx or other pages."
+        "Bookmark state persists across page reloads in the same browser profile",
+        "Bookmarking/unbookmarking does not call any backend method",
+        "Bookmark toggle works for lilies displayed in both the feed card view and the lily detail page",
+        "If a lily is bookmarked in one place (card or detail), it appears bookmarked when viewed elsewhere after navigation or refresh"
       ],
       "file_operations": [
         {
+          "path": "frontend/src/hooks/useBookmarks.ts",
+          "operation": "create",
+          "description": "Create a local-only bookmarks hook that stores bookmarked lily IDs in browser storage (e.g., localStorage), exposes read helpers (isBookmarked, list IDs) and write helpers (toggle/add/remove/clear), and updates React state on changes without calling any backend capability."
+        },
+        {
+          "path": "frontend/src/components/BookmarkButton.tsx",
+          "operation": "create",
+          "description": "Create a reusable Bookmark button component that uses the local bookmarks hook to render bookmarked/unbookmarked state and toggles persistence locally; include clear English accessible labeling (aria-label/title) such as \"Bookmark\" and \"Remove bookmark\"."
+        },
+        {
+          "path": "frontend/src/components/LilyCard.tsx",
+          "operation": "modify",
+          "description": "Integrate the BookmarkButton into the lily card action bar and wire it to the card’s lily ID using the local bookmarks hook (no backend calls)."
+        },
+        {
           "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Move the existing engagement/action bar block (likes/replies/views with like toggle and formatted counts) out of the header/title area and render it after the optional image block and optional link block, ensuring it always appears directly below the lily’s main content (title/description → image/link → engagement row) while keeping styling and behavior unchanged."
+          "description": "Integrate the BookmarkButton into the lily detail page action bar and wire it to the current lily ID using the local bookmarks hook (no backend calls)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Ensure the lily action bar order includes Bookmark immediately after Share everywhere it is rendered.",
+      "acceptanceCriteria": [
+        "Action bar ordering is consistent across LilyCard (feed) and LilyPage (detail)",
+        "Bookmark control appears immediately after the existing Share control",
+        "The Bookmark control has clear English label/tooltip/aria-label (e.g., \"Bookmark\" / \"Remove bookmark\")"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/LilyCard.tsx",
+          "operation": "modify",
+          "description": "Reorder the LilyCard action bar controls to: Likes → Replies → Views → Share → Bookmark, placing the BookmarkButton immediately after the existing Share control and ensuring English accessible labeling."
+        },
+        {
+          "path": "frontend/src/pages/LilyPage.tsx",
+          "operation": "modify",
+          "description": "Reorder the LilyPage action bar controls to: Likes → Replies → Views → Share → Bookmark, placing the BookmarkButton immediately after the existing Share control and ensuring English accessible labeling."
+        },
+        {
+          "path": "frontend/src/components/BookmarkButton.tsx",
+          "operation": "modify",
+          "description": "Ensure the Bookmark button exposes a clear English tooltip/title/aria-label that reflects state (e.g., \"Bookmark\" vs \"Remove bookmark\") so both LilyCard and LilyPage meet accessibility and labeling requirements."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Add a Saved Lilies page/route that lists bookmarked lilies using existing lily UI patterns and supports navigation to lily detail pages.",
+      "acceptanceCriteria": [
+        "There is a dedicated route/page for \"Saved Lilies\" reachable from the existing app navigation (e.g., sidebar and/or settings)",
+        "The Saved Lilies page renders a list of bookmarked lilies using existing lily card/list UI patterns",
+        "Removing a bookmark from the Saved Lilies page updates the list immediately",
+        "Empty state is shown (in English) when there are no bookmarked lilies"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/SavedLiliesPage.tsx",
+          "operation": "create",
+          "description": "Create a Saved Lilies page that reads bookmarked lily IDs from the local bookmarks hook and renders them using existing lily list/card patterns (e.g., LilyCard) with navigation to each lily detail page; include an English empty state when there are no saved lilies."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register a new route for the Saved Lilies page (e.g., \"/saved\") and wire it into the TanStack Router route tree so it is navigable."
+        },
+        {
+          "path": "frontend/src/components/LeftSidebar.tsx",
+          "operation": "modify",
+          "description": "Add a \"Saved Lilies\" navigation item to the existing sidebar that links to the Saved Lilies route and shows active-route highlighting consistent with other nav items."
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Add a \"Saved Lilies\" link to an existing header navigation affordance (e.g., the mobile dropdown) so the route is reachable from existing app navigation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "In Saved Lilies, handle missing/unavailable bookmarked lilies gracefully with a placeholder row and allow removing stale bookmarks.",
+      "acceptanceCriteria": [
+        "If a bookmarked lily cannot be fetched/resolved, the Saved Lilies page still loads and shows a clear English message for that entry (e.g., \"This post is no longer available\")",
+        "User can remove the missing entry from bookmarks",
+        "No unhandled exceptions occur when saved IDs contain invalid/stale values"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/SavedLiliesPage.tsx",
+          "operation": "modify",
+          "description": "Add graceful handling for stale/invalid saved IDs by rendering an English placeholder row (e.g., \"This post is no longer available\") when a lily cannot be resolved, and include a remove-bookmark action that updates the list immediately without errors."
+        },
+        {
+          "path": "frontend/src/hooks/useBookmarks.ts",
+          "operation": "modify",
+          "description": "Harden local bookmark storage parsing and normalization (e.g., handle invalid JSON, duplicates, and non-string entries) to prevent runtime errors when saved IDs contain invalid/stale values."
         }
       ]
     }

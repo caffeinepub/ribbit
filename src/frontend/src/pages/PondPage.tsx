@@ -91,8 +91,8 @@ export default function PondPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Full-width banner image with overlay - fixed height 12rem */}
-      <div className="relative w-full overflow-hidden" style={{ height: '12rem' }}>
+      {/* Full-width banner image with overlay - responsive height: 8rem mobile, 12rem md+ */}
+      <div className="relative w-full overflow-hidden h-32 md:h-48">
         {pond.bannerImage ? (
           <img
             src={pond.bannerImage.getDirectURL()}
@@ -183,7 +183,7 @@ export default function PondPage() {
                 </div>
               </div>
 
-              <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-4">
+              <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
                 <TabsList>
                   <TabsTrigger value="new">New</TabsTrigger>
                 </TabsList>

@@ -1,39 +1,95 @@
 {
   "kind": "build_request",
-  "title": "Fix Lily detail page engagement row placement (likes/replies/views always below content)",
+  "title": "Add local Bookmark + Saved Lilies feature",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update the Lily detail page (frontend/src/pages/LilyPage.tsx) so the engagement row (likes, replies, views) always renders in a fixed location directly below the lily’s main content block: title + description, then image (if present) and link (if present), then the engagement row. Do not change engagement row placement on feed cards or any other pages/components.",
+      "id": "REQ-2",
+      "text": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3",
-          "msg-5",
-          "msg-7"
+          "msg-4",
+          "msg-5"
         ],
         "quotes": [
-          "the likes replies and views in the lilypage should always be displayed below the image and description.",
-          "the only page that needs it is the lily page as far as i know",
-          "ok do it clocksucker"
+          "Bookmark + Saved Lilies feature as described: a local-only bookmark toggle in the lily action bar (after Share)"
         ]
       },
       "acceptanceCriteria": [
-        "On the lily detail page, when a lily has an image, the likes/replies/views row appears below the image and below the description text (it is not shown above the image).",
-        "On the lily detail page, when a lily has no image, the likes/replies/views row still appears below the description (or below the title if there is no description).",
-        "The likes/replies/views row styling and functionality (like toggle, counts formatting) remain unchanged aside from its placement.",
-        "No layout/placement changes are made to the engagement row in frontend/src/components/LilyCard.tsx or other pages."
+        "Bookmark state persists across page reloads in the same browser profile",
+        "Bookmarking/unbookmarking does not call any backend method",
+        "Bookmark toggle works for lilies displayed in both the feed card view and the lily detail page",
+        "If a lily is bookmarked in one place (card or detail), it appears bookmarked when viewed elsewhere after navigation or refresh"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4",
+          "msg-5"
+        ],
+        "quotes": [
+          "a local-only bookmark toggle in the lily action bar (after Share)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Action bar ordering is consistent across LilyCard (feed) and LilyPage (detail)",
+        "Bookmark control appears immediately after the existing Share control",
+        "The Bookmark control has clear English label/tooltip/aria-label (e.g., \"Bookmark\" / \"Remove bookmark\")"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "plus a Saved Lilies view for later access"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a dedicated route/page for \"Saved Lilies\" reachable from the existing app navigation (e.g., sidebar and/or settings)",
+        "The Saved Lilies page renders a list of bookmarked lilies using existing lily card/list UI patterns",
+        "Removing a bookmark from the Saved Lilies page updates the list immediately",
+        "Empty state is shown (in English) when there are no bookmarked lilies"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "Saved Lilies view so users can revisit bookmarked posts"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If a bookmarked lily cannot be fetched/resolved, the Saved Lilies page still loads and shows a clear English message for that entry (e.g., \"This post is no longer available\")",
+        "User can remove the missing entry from bookmarks",
+        "No unhandled exceptions occur when saved IDs contain invalid/stale values"
       ]
     }
   ],
   "constraints": [
-    "Frontend changes must not modify any files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT.",
-    "Keep changes scoped to the Lily detail page layout; do not refactor backend or shared query hooks for this request."
+    "Do not add or modify backend Motoko APIs for bookmarking; this feature must be local-only (browser storage).",
+    "Do not edit any files under frontend/src/components/ui, frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, or frontend/src/main.tsx (compose instead).",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Repositioning engagement metrics on feed cards or other post listings",
-    "Changing like/reply/view logic, counts, or backend behavior"
+    "Syncing bookmarks across devices or identities",
+    "Making bookmarks visible to other users",
+    "Adding backend persistence, indexing, or analytics for bookmarks",
+    "Changing the existing Share Lily behavior beyond placing Bookmark after Share in the action bar"
   ],
   "imageRequirements": {
     "required": [],
