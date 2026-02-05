@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Globe, Calendar, Users, Tag } from 'lucide-react';
+import { Globe, Calendar, Users, Tag, ArrowLeft } from 'lucide-react';
 import { useGetPondAboutInfo, useGetUserProfiles, useGetUserAvatarByUsername, useGetJoinedPonds, useLeavePond } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Visibility } from '@/backend';
@@ -66,6 +66,19 @@ export default function PondAboutPage() {
   return (
     <div className="container py-8">
       <div className="max-w-3xl mx-auto">
+        {/* Desktop: Show back to feed button */}
+        <div className="hidden lg:block mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ to: '/pond/$name', params: { name } })}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Feed
+          </Button>
+        </div>
+
         {/* Pond Header */}
         <Card className="mb-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
           <CardHeader>
@@ -87,8 +100,8 @@ export default function PondAboutPage() {
           </CardHeader>
         </Card>
 
-        {/* Navigation Tabs */}
-        <div className="mb-4 border-b border-border">
+        {/* Navigation Tabs - Mobile only */}
+        <div className="mb-4 border-b border-border lg:hidden">
           <div className="flex gap-4">
             <button
               onClick={() => navigate({ to: '/pond/$name', params: { name } })}

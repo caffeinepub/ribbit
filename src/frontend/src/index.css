@@ -98,4 +98,12 @@
     .hover-darken-light:hover:not(:disabled) {
         filter: brightness(0.95);
     }
+
+    /* Standardized action icon sizing for engagement/action icons */
+    .action-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        min-width: 1.25rem;
+        min-height: 1.25rem;
+    }
 }

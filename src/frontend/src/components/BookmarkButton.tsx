@@ -19,13 +19,14 @@ export default function BookmarkButton({ lilyId, className = '' }: BookmarkButto
   return (
     <button
       onClick={handleClick}
-      className={`flex items-center gap-1.5 hover:text-foreground transition-colors ${className}`}
+      className={`flex items-center gap-1.5 hover:text-foreground transition-colors ${
+        bookmarked ? 'text-primary' : ''
+      } ${className}`}
       aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
       title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
     >
       <Bookmark
-        style={{ width: '1rem', height: '1rem' }}
-        className={bookmarked ? 'fill-current' : ''}
+        className={`action-icon ${bookmarked ? 'fill-current' : ''}`}
       />
     </button>
   );

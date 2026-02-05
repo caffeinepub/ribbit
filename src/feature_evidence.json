@@ -2,13 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-local-only-bookmark-toggle-for-each-lily-post-and-persist-bookmarked-lily-ids-in-browser-storage-no-backend-changes",
-      "featureTitle": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
+      "featureId": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-keep-the-feed-as-the-center-column-content",
+      "featureTitle": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
       "files": [
-        "frontend/src/components/BookmarkButton.tsx",
-        "frontend/src/components/LilyCard.tsx",
-        "frontend/src/hooks/useBookmarks.ts",
-        "frontend/src/pages/LilyPage.tsx"
+        "frontend/src/pages/PondPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -25,12 +22,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-lily-action-bar-ui-order-to-include-bookmark-after-share-order-likes-replies-views-share-bookmark-wherever-the-action-bar-is-rendered",
-      "featureTitle": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+      "featureId": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-replace-the-current-generic-rightsidebar-discovery-widgets-with-a-pond-specific-about-sidebar-that-displays-the-same-information-currently-shown-in-pondaboutpage-e-g-about-this-pond-created-date-member-count-visibility-rules-tags-moderators-and-join-leave-actions-as-applicable",
+      "featureTitle": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
       "files": [
-        "frontend/src/components/BookmarkButton.tsx",
-        "frontend/src/components/LilyCard.tsx",
-        "frontend/src/pages/LilyPage.tsx"
+        "frontend/src/components/PondAboutSidebar.tsx",
+        "frontend/src/pages/PondAboutPage.tsx",
+        "frontend/src/pages/PondPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -47,13 +44,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-create-a-new-saved-lilies-view-that-lists-the-user-s-bookmarked-lilies-and-allows-navigating-to-each-lily-detail-page",
-      "featureTitle": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+      "featureId": "feature-on-the-pond-about-route-pond-name-about-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-avoid-presenting-redundant-desktop-only-navigation-ensure-the-desktop-experience-aligns-with-the-new-reddit-style-layout-where-the-about-content-is-presented-in-the-right-sidebar-on-the-feed-route",
+      "featureTitle": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Header.tsx",
-        "frontend/src/components/LeftSidebar.tsx",
-        "frontend/src/pages/SavedLiliesPage.tsx"
+        "frontend/src/pages/PondAboutPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -66,27 +60,6 @@
       ],
       "testIds": [
         "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-handle-missing-unavailable-lilies-in-the-saved-lilies-view-gracefully-e-g-if-a-bookmarked-lily-id-no-longer-resolves-show-an-english-placeholder-row-and-allow-removing-that-bookmark",
-      "featureTitle": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
-      "files": [
-        "frontend/src/hooks/useBookmarks.ts",
-        "frontend/src/pages/SavedLiliesPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

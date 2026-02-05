@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
+import PondAboutSidebar from '@/components/PondAboutSidebar';
 import { useGetPond, useGetAllLilies, useGetJoinedPonds, useJoinPond } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -146,8 +147,8 @@ export default function PondPage() {
 
           {/* Main Content */}
           <main className="lg:col-span-6">
-            {/* Join button - only show if not a member */}
-            <div className="py-4 px-4 lg:px-0 lg:py-0">
+            {/* Join button - only show on mobile if not a member */}
+            <div className="py-4 px-4 lg:hidden">
               {!isMember && (
                 <div className="mb-4">
                   {isLoadingJoined ? (
@@ -165,7 +166,7 @@ export default function PondPage() {
                 </div>
               )}
 
-              {/* Navigation Tabs */}
+              {/* Navigation Tabs - Mobile only */}
               <div className="mb-4 border-b border-border">
                 <div className="flex gap-4">
                   <button
@@ -182,7 +183,10 @@ export default function PondPage() {
                   </button>
                 </div>
               </div>
+            </div>
 
+            {/* Desktop: No tabs, just sorting */}
+            <div className="py-4 px-4 lg:px-0 lg:py-0">
               <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
                 <TabsList>
                   <TabsTrigger value="new">New</TabsTrigger>
@@ -214,9 +218,10 @@ export default function PondPage() {
           </main>
 
           {/* Right Sidebar - Hidden on mobile, constrained to ~280px */}
+          {/* Desktop: Show pond-specific About sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <div style={{ maxWidth: '280px' }}>
-              <RightSidebar />
+              <PondAboutSidebar pondName={name} />
             </div>
           </aside>
         </div>

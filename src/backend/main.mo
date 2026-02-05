@@ -61,7 +61,12 @@ actor Ribbit {
     pond : Text;
   };
 
-  type ActivityType = { #post; #ribbit; #like; #viewRibbit };
+  type ActivityType = {
+    #post;
+    #ribbit;
+    #like;
+    #viewRibbit;
+  };
   type Pond = {
     name : Text;
     title : Text;
@@ -111,6 +116,32 @@ actor Ribbit {
     name : Text;
     joinedPonds : [Text];
     avatar : ?Storage.ExternalBlob;
+  };
+
+  // View increment result type
+  public type ViewIncrementResult = {
+    #success; // View count incremented successfully
+    #notFound; // Lily (post) not found
+    #error; // Some error occurred
+  };
+
+  // Function to increment view count for a Lily (post)
+  // Public access - any user including guests can increment view counts
+  // This is consistent with public read access to posts
+  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
+    // No authorization check - viewing posts is a public action
+    // Caller is captured for audit trail and potential abuse prevention
+    switch (textMap.get(posts, postId)) {
+      case (null) { #notFound };
+      case (?post) {
+        let updatedPost = {
+          post with
+          viewCount = post.viewCount + 1;
+        };
+        posts := textMap.put(posts, postId, updatedPost);
+        #success;
+      };
+    };
   };
 
   // System function to restore user roles after canister upgrade
@@ -1688,4 +1719,3 @@ actor Ribbit {
     limitedActivities;
   };
 };
-

@@ -68,6 +68,9 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export type ViewIncrementResult = { 'error' : null } |
+  { 'notFound' : null } |
+  { 'success' : null };
 export type Visibility = { 'privateVisibility' : null } |
   { 'publicVisibility' : null };
 export interface _CaffeineStorageCreateCertificateResult {
@@ -172,6 +175,7 @@ export interface _SERVICE {
   'getViewCountForPost' : ActorMethod<[string], bigint>,
   'hasUserLikedPost' : ActorMethod<[string], boolean>,
   'hasUserLikedRibbit' : ActorMethod<[string], boolean>,
+  'incrementLilyViewCount' : ActorMethod<[string], ViewIncrementResult>,
   'initializeAccessControl' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isPondAdmin' : ActorMethod<[string], boolean>,

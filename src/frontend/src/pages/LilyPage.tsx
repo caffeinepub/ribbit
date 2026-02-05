@@ -1,9 +1,9 @@
 import { useParams, Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, ExternalLink, Eye, X, Share2 } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, X, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   useGetLily, 
@@ -14,7 +14,8 @@ import {
   useGetPostLikeCount,
   useHasUserLikedPost,
   useLikePost,
-  useUnlikePost
+  useUnlikePost,
+  useIncrementLilyViewCount
 } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import RibbitItem from '@/components/RibbitItem';
@@ -22,12 +23,17 @@ import { getUsername } from '@/lib/user';
 import { formatNumber } from '@/lib/formatNumber';
 import { shareLily } from '@/lib/shareLily';
 import BookmarkButton from '@/components/BookmarkButton';
+import { isWithinCooldown, recordViewIncrement } from '@/lib/viewCountCooldown';
+import { ViewIncrementResult } from '@/backend';
 
 export default function LilyPage() {
   const { id } = useParams({ strict: false }) as { id: string };
   const [ribbitContent, setRibbitContent] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
+  
+  // Track if we've already attempted to increment view for this lily ID
+  const viewIncrementAttemptedRef = useRef<string | null>(null);
 
   const { data: lily, isLoading: lilyLoading } = useGetLily(id);
   const { data: ribbits, isLoading: ribbitsLoading } = useGetRibbits(id);
@@ -38,6 +44,47 @@ export default function LilyPage() {
   const { mutate: createRibbit, isPending: isCreatingRibbit } = useCreateRibbit();
   const { mutate: likePost, isPending: isLiking } = useLikePost();
   const { mutate: unlikePost, isPending: isUnliking } = useUnlikePost();
+  const { mutate: incrementViewCount } = useIncrementLilyViewCount();
+
+  // Increment view count immediately on page open (with cooldown guard)
+  useEffect(() => {
+    // Only attempt once per lily ID to prevent duplicate calls from StrictMode/re-renders
+    if (!id || viewIncrementAttemptedRef.current === id) {
+      return;
+    }
+
+    // Check cooldown before attempting increment
+    if (isWithinCooldown(id)) {
+      // Still mark as attempted to prevent re-checking on every render
+      viewIncrementAttemptedRef.current = id;
+      return;
+    }
+
+    // Mark as attempted immediately to prevent duplicate calls
+    viewIncrementAttemptedRef.current = id;
+
+    // Attempt to increment view count
+    incrementViewCount(id, {
+      onSuccess: ({ result }) => {
+        if (result === ViewIncrementResult.success) {
+          // Record the successful increment timestamp
+          recordViewIncrement(id);
+        }
+        // On notFound or error, we don't record cooldown - allow retry on next visit
+      },
+      onError: (error) => {
+        // Log error but don't break the page
+        console.error('View count increment failed:', error);
+      },
+    });
+  }, [id, incrementViewCount]);
+
+  // Reset the attempted ref when navigating to a different lily
+  useEffect(() => {
+    if (viewIncrementAttemptedRef.current && viewIncrementAttemptedRef.current !== id) {
+      viewIncrementAttemptedRef.current = null;
+    }
+  }, [id]);
 
   useEffect(() => {
     if (lily?.image) {
@@ -113,7 +160,7 @@ export default function LilyPage() {
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto lg:px-0">
-          <div className="overflow-hidden mb-4 p-6 border-0 lg:border lg:border-border lg:rounded-lg">
+          <div className="overflow-hidden mb-4 p-6">
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
                 <AvatarFallback className="text-lg">🐸</AvatarFallback>
@@ -201,7 +248,7 @@ export default function LilyPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-primary hover:underline"
                     >
-                      <ExternalLink style={{ width: '1rem', height: '1rem' }} />
+                      <ExternalLink className="action-icon" />
                       {lily.link}
                     </a>
                   </div>
@@ -212,12 +259,13 @@ export default function LilyPage() {
                   <button
                     onClick={handleLikeClick}
                     disabled={isLiking || isUnliking}
-                    className="flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors"
+                    className={`flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors ${
+                      hasLiked ? 'text-primary' : ''
+                    }`}
                   >
                     <svg
                       viewBox="0 0 24 24"
-                      className={`transition-all`}
-                      style={{ width: '1rem', height: '1rem' }}
+                      className={`action-icon transition-all`}
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -229,18 +277,18 @@ export default function LilyPage() {
                     <span>{formatNumber(likeCount)}</span>
                   </button>
                   <div className="flex items-center gap-1.5">
-                    <MessageCircle style={{ width: '1rem', height: '1rem' }} />
+                    <MessageCircle className="action-icon" />
                     <span>{formatNumber(ribbitCount)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Eye style={{ width: '1rem', height: '1rem' }} />
+                    <Eye className="action-icon" />
                     <span>{formatNumber(viewCount)}</span>
                   </div>
                   <button
                     onClick={handleShareClick}
                     className="flex items-center gap-1.5 hover:text-foreground transition-colors"
                   >
-                    <Share2 style={{ width: '1rem', height: '1rem' }} />
+                    <Send className="action-icon" />
                   </button>
                   <BookmarkButton lilyId={lily.id} />
                 </div>

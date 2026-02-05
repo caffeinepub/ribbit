@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { MessageCircle, ExternalLink, Eye, Share2 } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, Send } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Post } from '@/backend';
 import { formatDistanceToNow } from 'date-fns';
@@ -167,7 +167,7 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline mb-3"
             >
-              <ExternalLink className="h-5 w-5" style={{ width: '1rem', height: '1rem' }} />
+              <ExternalLink className="action-icon" />
               {new URL(lily.link).hostname}
             </a>
           )}
@@ -176,37 +176,36 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
             <button
               onClick={handleLikeClick}
               disabled={isLiking || isUnliking}
-              className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50"
+              className={`flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50 ${
+                hasLiked ? 'text-primary' : ''
+              }`}
             >
               <svg
                 viewBox="0 0 24 24"
-                className={`transition-colors ${
-                  hasLiked 
-                    ? 'fill-primary stroke-primary' 
-                    : 'fill-none stroke-current'
-                }`}
-                style={{ width: '1rem', height: '1rem' }}
+                className={`action-icon transition-colors`}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                fill={hasLiked ? 'currentColor' : 'none'}
+                stroke="currentColor"
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               <span>{formatNumber(likeCount)}</span>
             </button>
             <Link to="/lily/$id" params={{ id: lily.id }} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-              <MessageCircle style={{ width: '1rem', height: '1rem' }} />
+              <MessageCircle className="action-icon" />
               <span>{formatNumber(ribbitCount)}</span>
             </Link>
             <div className="flex items-center gap-1.5">
-              <Eye style={{ width: '1rem', height: '1rem' }} />
+              <Eye className="action-icon" />
               <span>{formatNumber(viewCount)}</span>
             </div>
             <button
               onClick={handleShareClick}
               className="flex items-center gap-1.5 hover:text-foreground transition-colors"
             >
-              <Share2 style={{ width: '1rem', height: '1rem' }} />
+              <Send className="action-icon" />
             </button>
             <BookmarkButton lilyId={lily.id} />
           </div>

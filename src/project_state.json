@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 20,
+  "projectStateVersion": 64,
   "summary": "ribbit is an anonymous, Reddit-style discussion platform built on the Internet Computer (ICP). Communities are “ponds”, posts are “lilies” (text/image/link with optional tags), and threaded comments are “ribbits”. The React + TypeScript frontend uses TanStack Router for navigation and React Query for caching and mutations against a Motoko canister actor (anonymous by default, optionally Internet Identity-authenticated). The backend canister manages ponds and membership, lily and ribbit creation and retrieval (including threaded views), likes on posts and ribbits, tag normalization + canonical redirects (with admin tag merging), principal-based user profiles, a username registry with cooldown enforcement, username-based avatar storage, and recent-activity feeds. Media is stored and transported via ExternalBlob, and the canister includes a Caffeine blob-storage mixin with maintenance endpoints.",
   "existing_features": [
     {
@@ -394,50 +394,141 @@
       "version": 1
     },
     {
-      "id": "feature-add-a-local-only-bookmark-toggle-for-each-lily-post-and-persist-bookmarked-lily-ids-in-browser-storage-no-backend-changes",
-      "title": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
+      "id": "IF-32",
+      "title": "Bookmark Lily (local-only) with Saved Lilies view",
+      "synonyms": [
+        "Save lily",
+        "Bookmarks",
+        "Saved posts",
+        "useBookmarks",
+        "SavedLiliesPage"
+      ],
+      "description": "Adds a local-only (browser storage) bookmark/save system for lilies to preserve anonymity. Provides a bookmark toggle button on lily action surfaces following the agreed order (Likes → Replies → Views → Share → Bookmark), stores saved lily IDs in client storage via a dedicated hook, and includes a \"Saved Lilies\" page/view for browsing bookmarked lilies.",
+      "reqIds": [
+        "AR-2",
+        "AR-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-33",
+      "title": "Share Lily uses Lucide \"share\" icon",
+      "synonyms": [
+        "AR-1",
+        "share icon swap",
+        "lucide-share"
+      ],
+      "description": "Updates the Share Lily action to use the Lucide \"share\" icon consistently across lily action surfaces (replacing the prior share icon).",
+      "reqIds": [
+        "AR-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-34",
+      "title": "Circular hover effect for header avatar",
+      "synonyms": [
+        "AR-2",
+        "header avatar hover",
+        "rounded hover background"
+      ],
+      "description": "Adjusts the header avatar hover styling so the hover background/shape is circular (rounded) rather than the previous non-circular shape.",
+      "reqIds": [
+        "AR-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-35",
+      "title": "Standardized action icon sizing (1.25rem) across UI surfaces",
+      "synonyms": [
+        "AR-1",
+        "icon size standardization",
+        "action icons 20px"
+      ],
+      "description": "Updates all action icons used throughout the UI (e.g., like/reply/view/share/bookmark and similar action surfaces) to a consistent 1.25rem (20px) width/height for visual consistency across views and components.",
+      "reqIds": [
+        "AR-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-36",
+      "title": "Header avatar/settings hover uses 2px ring/outline",
+      "synonyms": [
+        "AR-2",
+        "header avatar ring hover",
+        "2px outline hover"
+      ],
+      "description": "Adjusts the header avatar/user settings button hover styling to use a 2px ring/outline treatment (rather than border/glow/size expansion), matching the clarified interaction spec.",
+      "reqIds": [
+        "AR-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-37",
+      "title": "Lily viewCount persistence + frontend view recording with cooldown",
+      "synonyms": [
+        "incrementPostViewCount",
+        "record view on LilyPage open",
+        "viewCountCooldown",
+        "throttled view counting"
+      ],
+      "description": "Adds an end-to-end pathway for lily (post) view counting: the backend exposes an update method to increment and persist a post's viewCount, and the frontend records a view when the Lily detail page opens while throttling repeat increments via a cooldown to reduce refresh spam. React Query caches are invalidated/refetched so updated view counts render in the UI.",
+      "reqIds": [
+        "AR-1",
+        "AR-3",
+        "AR-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-38",
+      "title": "Saved (filled) Bookmark icon uses accent green",
+      "synonyms": [
+        "bookmark active color",
+        "accent green bookmark",
+        "saved state styling"
+      ],
+      "description": "Updates the bookmarked (filled) bookmark icon/button styling so that when a lily is saved, the icon uses the site's accent green color token instead of inheriting muted/foreground styling.",
+      "reqIds": [
+        "AR-2",
+        "AR-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-keep-the-feed-as-the-center-column-content",
+      "title": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-lily-action-bar-ui-order-to-include-bookmark-after-share-order-likes-replies-views-share-bookmark-wherever-the-action-bar-is-rendered",
-      "title": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+      "id": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-replace-the-current-generic-rightsidebar-discovery-widgets-with-a-pond-specific-about-sidebar-that-displays-the-same-information-currently-shown-in-pondaboutpage-e-g-about-this-pond-created-date-member-count-visibility-rules-tags-moderators-and-join-leave-actions-as-applicable",
+      "title": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-new-saved-lilies-view-that-lists-the-user-s-bookmarked-lilies-and-allows-navigating-to-each-lily-detail-page",
-      "title": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+      "id": "feature-on-the-pond-about-route-pond-name-about-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-avoid-presenting-redundant-desktop-only-navigation-ensure-the-desktop-experience-aligns-with-the-new-reddit-style-layout-where-the-about-content-is-presented-in-the-right-sidebar-on-the-feed-route",
+      "title": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
       "reqIds": [
         "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-handle-missing-unavailable-lilies-in-the-saved-lilies-view-gracefully-e-g-if-a-bookmarked-lily-id-no-longer-resolves-show-an-english-placeholder-row-and-allow-removing-that-bookmark",
-      "title": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
-      "reqIds": [
-        "REQ-5"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-2",
-      "summary": "Add a bookmark/save feature for lilies so users can save and later view a list of bookmarked lilies.",
+      "id": "AR-12",
+      "summary": "Desktop Pond page: remove Feed/About tabs and instead show the About-tab content persistently in the right sidebar (Reddit-style), with the feed remaining in the center column.",
       "reqIds": [],
       "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Implement Bookmark Lily as a local-only save (browser storage) with a Saved Lilies view (e.g., in Settings/sidebar) and a bookmark toggle in the lily action bar (order: Likes → Replies → Views → Share → Bookmark).",
-      "reqIds": [],
-      "status": "in_progress"
     }
   ],
   "architectural_notes": [
@@ -450,12 +541,9 @@
     "Images/avatars are handled as ExternalBlob values; the frontend converts File -> Uint8Array -> ExternalBlob, and uses getDirectURL() for rendering (avatar upload supports progress callbacks).",
     "Backend includes a blob-storage mixin exposing authorized dead-blob pruning, gateway principal refresh, and cashier cycles refill endpoints.",
     "Project now includes a build-template scaffold (Dockerfile, deploy.sh, icp.yaml, workspace/package configs, canister.yaml stubs, and helper scripts like prune-unused-images/resize-images) to standardize builds and deployments across environments.",
-    "Planned: add 'Bookmark Lily' as local-only (browser storage) to preserve anonymity; optionally restorable via Froggy Phrase; include a 'Saved Lilies' view (e.g., Settings/sidebar) and an action-bar toggle icon.",
-    "Decision: Lily action bar button order should be: Likes → Replies → Views → Share → Bookmark (Share/Bookmark to follow views, not placed earlier).",
-    "Implemented 'Share Lily' via a shared frontend utility (shareLily) that prefers navigator.share on supported devices and falls back to clipboard copy; wired into lily UI action surfaces following the agreed action-bar order."
+    "Decision: Lily action bar button order should be: Likes → Replies → Views → Share → Bookmark (Share/Bookmark to follow views, not placed earlier)."
   ],
   "known_issues": [
-    "Post viewCount is read and displayed (and used for “Hot This Week” and tag sorting), but there is no backend update path to increment viewCount; view-based widgets will likely remain at 0.",
     "Recent Activity UI assumes Activity.targetId is always a lily id (it fetches a lily for each activity). Backend also records #viewRibbit activities whose targetId is a ribbit id, so those entries won’t render.",
     "Activity logging is inconsistent/incomplete: createPost does not log #post activity; createRibbit records a #viewRibbit activity rather than a #ribbit activity; likePost logs like activity with empty username/pond fields.",
     "mergeSimilarTags() uses Iter.range(0, tagCount - 1); when tagCount is 0 this can underflow/trap in Motoko (Nat subtraction).",
@@ -465,9 +553,7 @@
     "Frontend Froggy Phrase validation splits on whitespace, while backend createPond validates by splitting only on the literal ' ' character; unusual whitespace may disagree on word count.",
     "CreatePondPage implies the Froggy Phrase secures pond admin access, but the backend does not persist the phrase; pond admin rights are based on the caller principal.",
     "Username-based avatar save/retrieve has no authorization checks (by design in code), allowing anyone to overwrite an avatar for a given username.",
-    "createPost updates usernameOwnership/principalToUsername mappings based on the provided username argument, allowing callers to post under arbitrary usernames and undermining intended username registry semantics.",
-    "createRibbit does not validate that the referenced post exists nor enforce pond membership before allowing comments.",
-    "Backend getRecentRibbitViews() comment says “last 30 days” but uses a 1-day window (24h) constant (lastDay)."
+    "createPost updates usernameOwnership/principalToUsername mappings based on the provided username argument, allowing callers to post under arbitrary usernames and undermining intended username registry semantics."
   ],
   "isFixRequest": false,
   "gameProjectType": "none",

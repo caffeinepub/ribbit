@@ -58,7 +58,7 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             className="lg:hidden"
             onClick={onMobileLeftSidebarToggle}
           >
-            <Menu className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
+            <Menu className="action-icon" />
             <span className="sr-only">Menu</span>
           </Button>
 
@@ -93,14 +93,14 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             className="md:hidden"
             onClick={handleMobileSearchOpen}
           >
-            <Search className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
+            <Search className="action-icon" />
             <span className="sr-only">Search</span>
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="default" size="icon" className="md:hidden">
-                <Plus className="h-5 w-5" style={{ width: '1.25rem', height: '1.25rem', minWidth: '1.25rem', minHeight: '1.25rem' }} />
+                <Plus className="action-icon" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -130,18 +130,19 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <Link to="/create-lily">Create Lily</Link>
           </Button>
 
-          <Button variant="ghost" size="icon" asChild className="hidden md:inline-flex">
-            <Link to="/settings">
-              <span className="sr-only">Settings</span>
-              <Avatar className="h-8 w-8 bg-primary/10">
-                {userAvatar ? (
-                  <AvatarImage src={userAvatar.getDirectURL()} alt={username} />
-                ) : (
-                  <AvatarFallback>🐸</AvatarFallback>
-                )}
-              </Avatar>
-            </Link>
-          </Button>
+          <Link 
+            to="/settings" 
+            className="hidden md:inline-flex rounded-full p-0 transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:ring-offset-background"
+          >
+            <span className="sr-only">Settings</span>
+            <Avatar className="h-8 w-8 bg-primary/10">
+              {userAvatar ? (
+                <AvatarImage src={userAvatar.getDirectURL()} alt={username} />
+              ) : (
+                <AvatarFallback>🐸</AvatarFallback>
+              )}
+            </Avatar>
+          </Link>
         </nav>
       </div>
 

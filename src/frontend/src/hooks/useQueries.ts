@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { Pond, Post, Ribbit, UserProfile, Activity } from '@/backend';
-import { ExternalBlob } from '@/backend';
+import { ExternalBlob, ViewIncrementResult } from '@/backend';
 import type { Principal } from '@icp-sdk/core/principal';
 
 // Ponds
@@ -523,6 +523,33 @@ export function useCreateRibbit() {
       queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
       queryClient.invalidateQueries({ queryKey: ['ribbitCount', variables.postId] });
       queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
+    },
+  });
+}
+
+// View Count Increment Mutation
+export function useIncrementLilyViewCount() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      const result = await actor.incrementLilyViewCount(postId);
+      return { postId, result };
+    },
+    onSuccess: ({ postId, result }) => {
+      // Only invalidate queries if the increment was successful
+      if (result === ViewIncrementResult.success) {
+        queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+        queryClient.invalidateQueries({ queryKey: ['lily', postId] });
+      }
+      // Return result for caller to handle
+      return result;
+    },
+    // Don't throw on error - let the page continue loading
+    onError: (error) => {
+      console.error('Failed to increment view count:', error);
     },
   });
 }

@@ -85,6 +85,11 @@ export const Ribbit = IDL.Record({
   'parentId' : IDL.Opt(IDL.Text),
   'postId' : IDL.Text,
 });
+export const ViewIncrementResult = IDL.Variant({
+  'error' : IDL.Null,
+  'notFound' : IDL.Null,
+  'success' : IDL.Null,
+});
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -234,6 +239,7 @@ export const idlService = IDL.Service({
   'getViewCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'hasUserLikedPost' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'hasUserLikedRibbit' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'incrementLilyViewCount' : IDL.Func([IDL.Text], [ViewIncrementResult], []),
   'initializeAccessControl' : IDL.Func([], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isPondAdmin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
@@ -339,6 +345,11 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Int,
     'parentId' : IDL.Opt(IDL.Text),
     'postId' : IDL.Text,
+  });
+  const ViewIncrementResult = IDL.Variant({
+    'error' : IDL.Null,
+    'notFound' : IDL.Null,
+    'success' : IDL.Null,
   });
   
   return IDL.Service({
@@ -497,6 +508,7 @@ export const idlFactory = ({ IDL }) => {
     'getViewCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'hasUserLikedPost' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'hasUserLikedRibbit' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'incrementLilyViewCount' : IDL.Func([IDL.Text], [ViewIncrementResult], []),
     'initializeAccessControl' : IDL.Func([], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isPondAdmin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),

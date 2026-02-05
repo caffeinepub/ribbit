@@ -103,7 +103,7 @@ export default function RibbitItem({ ribbit, depth = 0, postId }: RibbitItemProp
             >
               <svg
                 viewBox="0 0 24 24"
-                className={`h-5 w-5 transition-colors ${
+                className={`action-icon transition-colors ${
                   hasLiked 
                     ? 'fill-primary stroke-primary' 
                     : 'fill-none stroke-current'
@@ -123,7 +123,7 @@ export default function RibbitItem({ ribbit, depth = 0, postId }: RibbitItemProp
               className="h-7 px-2 text-muted-foreground hover:text-foreground"
               style={{ fontSize: '0.875rem' }}
             >
-              <MessageSquare className="h-5 w-5 mr-1" />
+              <MessageSquare className="action-icon mr-1" />
               Reply
             </Button>
           </div>

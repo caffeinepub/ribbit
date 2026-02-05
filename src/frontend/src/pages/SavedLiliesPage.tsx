@@ -25,7 +25,7 @@ function SavedLilyItem({ lilyId, onRemove }: { lilyId: string; onRemove: () => v
             onClick={onRemove}
             className="text-muted-foreground hover:text-foreground"
           >
-            <X className="h-4 w-4" />
+            <X className="action-icon" />
             <span className="ml-1">Remove</span>
           </Button>
         </div>
@@ -63,7 +63,7 @@ export default function SavedLiliesPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-0 border-0 lg:border lg:border-border lg:rounded-lg overflow-hidden">
+            <div className="space-y-0 overflow-hidden">
               {bookmarkedIds.map((lilyId) => (
                 <SavedLilyItem
                   key={lilyId}

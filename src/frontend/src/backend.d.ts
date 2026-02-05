@@ -14,6 +14,14 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface Ribbit {
+    id: string;
+    content: string;
+    username: string;
+    timestamp: bigint;
+    parentId?: string;
+    postId: string;
+}
 export interface Activity {
     id: string;
     username: string;
@@ -56,14 +64,6 @@ export interface UserProfile {
     joinedPonds: Array<string>;
     avatar?: ExternalBlob;
 }
-export interface Ribbit {
-    id: string;
-    content: string;
-    username: string;
-    timestamp: bigint;
-    parentId?: string;
-    postId: string;
-}
 export enum ActivityType {
     like = "like",
     post = "post",
@@ -74,6 +74,11 @@ export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
+}
+export enum ViewIncrementResult {
+    error = "error",
+    notFound = "notFound",
+    success = "success"
 }
 export enum Visibility {
     privateVisibility = "privateVisibility",
@@ -133,6 +138,7 @@ export interface backendInterface {
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
+    incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isPondAdmin(pondName: string): Promise<boolean>;

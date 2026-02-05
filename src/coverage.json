@@ -1,92 +1,67 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-04T01:45:18.069Z",
+  "generatedAt": "2026-02-05T00:46:35.435Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-2",
-        "summary": "Add a local-only Bookmark toggle for each lily (post) and persist bookmarked lily IDs in browser storage (no backend changes).",
+        "summary": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useBookmarks.ts",
-          "frontend/src/components/BookmarkButton.tsx",
-          "frontend/src/components/LilyCard.tsx",
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/pages/PondPage.tsx",
+          "frontend/src/pages/PondPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useBookmarks.ts",
-          "frontend/src/components/BookmarkButton.tsx",
-          "frontend/src/components/LilyCard.tsx",
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/pages/PondPage.tsx",
+          "frontend/src/pages/PondPage.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Update the lily action bar UI order to include Bookmark after Share (order: Likes → Replies → Views → Share → Bookmark) wherever the action bar is rendered.",
+        "summary": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/LilyCard.tsx",
-          "frontend/src/pages/LilyPage.tsx",
-          "frontend/src/components/BookmarkButton.tsx"
+          "frontend/src/components/PondAboutSidebar.tsx",
+          "frontend/src/pages/PondPage.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/LilyCard.tsx",
-          "frontend/src/pages/LilyPage.tsx",
-          "frontend/src/components/BookmarkButton.tsx"
+          "frontend/src/components/PondAboutSidebar.tsx",
+          "frontend/src/pages/PondPage.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Create a new \"Saved Lilies\" view that lists the user’s bookmarked lilies and allows navigating to each lily detail page.",
+        "summary": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/SavedLiliesPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/LeftSidebar.tsx",
-          "frontend/src/components/Header.tsx"
+          "frontend/src/pages/PondAboutPage.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/SavedLiliesPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/LeftSidebar.tsx",
-          "frontend/src/components/Header.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Handle missing/unavailable lilies in the Saved Lilies view gracefully (e.g., if a bookmarked lily ID no longer resolves): show an English placeholder row and allow removing that bookmark.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/SavedLiliesPage.tsx",
-          "frontend/src/hooks/useBookmarks.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/SavedLiliesPage.tsx",
-          "frontend/src/hooks/useBookmarks.ts"
+          "frontend/src/pages/PondAboutPage.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BookmarkButton.tsx",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/components/LeftSidebar.tsx",
-    "frontend/src/components/LilyCard.tsx",
-    "frontend/src/hooks/useBookmarks.ts",
-    "frontend/src/pages/LilyPage.tsx",
-    "frontend/src/pages/SavedLiliesPage.tsx",
+    "frontend/src/components/PondAboutSidebar.tsx",
+    "frontend/src/pages/PondAboutPage.tsx",
+    "frontend/src/pages/PondPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

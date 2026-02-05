@@ -1,116 +1,72 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Local bookmarks and Saved Lilies page",
+  "title": "Pond desktop layout: move About into right sidebar and remove redundant tabs",
   "requirements": [
     {
       "id": "REQ-2",
-      "summary": "Implement a local-only bookmark toggle per lily and persist bookmarked lily IDs in browser storage without backend calls.",
+      "summary": "Hide the in-page Feed/About tab buttons on the pond feed route at desktop breakpoints while preserving mobile tab navigation.",
       "acceptanceCriteria": [
-        "Bookmark state persists across page reloads in the same browser profile",
-        "Bookmarking/unbookmarking does not call any backend method",
-        "Bookmark toggle works for lilies displayed in both the feed card view and the lily detail page",
-        "If a lily is bookmarked in one place (card or detail), it appears bookmarked when viewed elsewhere after navigation or refresh"
+        "At viewport width >= Tailwind `lg`, PondPage no longer renders the \"Feed\" and \"About\" tab buttons currently shown above the feed (PondPage.tsx navigation section).",
+        "At viewport width < `lg`, the current tab UI remains available (or an equivalent mobile navigation remains) so users can still reach the About view from mobile."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useBookmarks.ts",
-          "operation": "create",
-          "description": "Create a local-only bookmarks hook that stores bookmarked lily IDs in browser storage (e.g., localStorage), exposes read helpers (isBookmarked, list IDs) and write helpers (toggle/add/remove/clear), and updates React state on changes without calling any backend capability."
-        },
-        {
-          "path": "frontend/src/components/BookmarkButton.tsx",
-          "operation": "create",
-          "description": "Create a reusable Bookmark button component that uses the local bookmarks hook to render bookmarked/unbookmarked state and toggles persistence locally; include clear English accessible labeling (aria-label/title) such as \"Bookmark\" and \"Remove bookmark\"."
-        },
-        {
-          "path": "frontend/src/components/LilyCard.tsx",
+          "path": "frontend/src/pages/PondPage.tsx",
           "operation": "modify",
-          "description": "Integrate the BookmarkButton into the lily card action bar and wire it to the card’s lily ID using the local bookmarks hook (no backend calls)."
+          "description": "Update the PondPage navigation section so the Feed/About tab buttons are only rendered for mobile/tablet (e.g., use Tailwind responsive visibility classes) and are not shown at `lg` and up; keep the feed list as the center column content."
         },
         {
-          "path": "frontend/src/pages/LilyPage.tsx",
+          "path": "frontend/src/pages/PondPage.tsx",
           "operation": "modify",
-          "description": "Integrate the BookmarkButton into the lily detail page action bar and wire it to the current lily ID using the local bookmarks hook (no backend calls)."
+          "description": "Adjust the current inline Join Pond button placement/visibility so mobile users still have a clear join affordance while desktop can rely on the new About sidebar’s join/leave actions (e.g., hide the inline join button at `lg` if it becomes redundant)."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Ensure the lily action bar order includes Bookmark immediately after Share everywhere it is rendered.",
+      "summary": "Replace generic RightSidebar widgets on pond pages (desktop) with a pond-specific About sidebar that mirrors the About route content and uses existing pond membership/query behaviors.",
       "acceptanceCriteria": [
-        "Action bar ordering is consistent across LilyCard (feed) and LilyPage (detail)",
-        "Bookmark control appears immediately after the existing Share control",
-        "The Bookmark control has clear English label/tooltip/aria-label (e.g., \"Bookmark\" / \"Remove bookmark\")"
+        "At viewport width >= `lg`, the right column on PondPage shows pond-specific About content (not Trending Ponds / Popular Tags / Hot This Week).",
+        "The About sidebar uses the pond’s current data (name/title/description/images/stats/rules/tags/moderators) and updates consistently with existing join/leave mutations and query invalidation behavior.",
+        "At viewport width < `lg`, the existing RightSidebar behavior (hidden on mobile) and the separate About page behavior remain functional."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/LilyCard.tsx",
-          "operation": "modify",
-          "description": "Reorder the LilyCard action bar controls to: Likes → Replies → Views → Share → Bookmark, placing the BookmarkButton immediately after the existing Share control and ensuring English accessible labeling."
+          "path": "frontend/src/components/PondAboutSidebar.tsx",
+          "operation": "create",
+          "description": "Create a pond-specific About sidebar component that renders the pond About information currently shown on PondAboutPage (About This Pond header, created date, member count, visibility, rules, tags, moderators) and includes join/leave actions using existing React Query hooks; if pond images are shown, render them via ExternalBlob direct URLs (Use the blob-storage component capability: ExternalBlob.getDirectURL() for efficient image display; Verify the component's usage instructions before implementing.)"
         },
         {
-          "path": "frontend/src/pages/LilyPage.tsx",
+          "path": "frontend/src/pages/PondPage.tsx",
           "operation": "modify",
-          "description": "Reorder the LilyPage action bar controls to: Likes → Replies → Views → Share → Bookmark, placing the BookmarkButton immediately after the existing Share control and ensuring English accessible labeling."
+          "description": "Wire the new PondAboutSidebar into the PondPage right column for `lg` and up, replacing the current RightSidebar discovery widgets on this route only; ensure the right column remains hidden on mobile per existing behavior."
         },
         {
-          "path": "frontend/src/components/BookmarkButton.tsx",
+          "path": "frontend/src/pages/PondAboutPage.tsx",
           "operation": "modify",
-          "description": "Ensure the Bookmark button exposes a clear English tooltip/title/aria-label that reflects state (e.g., \"Bookmark\" vs \"Remove bookmark\") so both LilyCard and LilyPage meet accessibility and labeling requirements."
+          "description": "Refactor any duplicated About rendering logic (as needed) so PondAboutPage and the new PondAboutSidebar stay consistent (e.g., share small formatting helpers/sections where appropriate) while keeping PondAboutPage fully usable on mobile."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Add a Saved Lilies page/route that lists bookmarked lilies using existing lily UI patterns and supports navigation to lily detail pages.",
+      "summary": "Remove redundant Feed/About tab buttons from the pond About route on desktop and align the desktop experience with the Reddit-style layout (About info available from the feed route sidebar).",
       "acceptanceCriteria": [
-        "There is a dedicated route/page for \"Saved Lilies\" reachable from the existing app navigation (e.g., sidebar and/or settings)",
-        "The Saved Lilies page renders a list of bookmarked lilies using existing lily card/list UI patterns",
-        "Removing a bookmark from the Saved Lilies page updates the list immediately",
-        "Empty state is shown (in English) when there are no bookmarked lilies"
+        "At viewport width >= `lg`, PondAboutPage does not render the current \"Feed\" and \"About\" tab buttons.",
+        "The desktop UX does not require users to use the About route to see pond About information (it is available on the feed route via the right sidebar).",
+        "At viewport width < `lg`, PondAboutPage remains accessible and usable for viewing pond About details."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/SavedLiliesPage.tsx",
-          "operation": "create",
-          "description": "Create a Saved Lilies page that reads bookmarked lily IDs from the local bookmarks hook and renders them using existing lily list/card patterns (e.g., LilyCard) with navigation to each lily detail page; include an English empty state when there are no saved lilies."
+          "path": "frontend/src/pages/PondAboutPage.tsx",
+          "operation": "modify",
+          "description": "Update the PondAboutPage navigation tab UI so the Feed/About tab buttons are not rendered at `lg` and up (keep mobile/tablet navigation intact)."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/PondAboutPage.tsx",
           "operation": "modify",
-          "description": "Register a new route for the Saved Lilies page (e.g., \"/saved\") and wire it into the TanStack Router route tree so it is navigable."
-        },
-        {
-          "path": "frontend/src/components/LeftSidebar.tsx",
-          "operation": "modify",
-          "description": "Add a \"Saved Lilies\" navigation item to the existing sidebar that links to the Saved Lilies route and shows active-route highlighting consistent with other nav items."
-        },
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Add a \"Saved Lilies\" link to an existing header navigation affordance (e.g., the mobile dropdown) so the route is reachable from existing app navigation."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "In Saved Lilies, handle missing/unavailable bookmarked lilies gracefully with a placeholder row and allow removing stale bookmarks.",
-      "acceptanceCriteria": [
-        "If a bookmarked lily cannot be fetched/resolved, the Saved Lilies page still loads and shows a clear English message for that entry (e.g., \"This post is no longer available\")",
-        "User can remove the missing entry from bookmarks",
-        "No unhandled exceptions occur when saved IDs contain invalid/stale values"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/SavedLiliesPage.tsx",
-          "operation": "modify",
-          "description": "Add graceful handling for stale/invalid saved IDs by rendering an English placeholder row (e.g., \"This post is no longer available\") when a lily cannot be resolved, and include a remove-bookmark action that updates the list immediately without errors."
-        },
-        {
-          "path": "frontend/src/hooks/useBookmarks.ts",
-          "operation": "modify",
-          "description": "Harden local bookmark storage parsing and normalization (e.g., handle invalid JSON, duplicates, and non-string entries) to prevent runtime errors when saved IDs contain invalid/stale values."
+          "description": "Align desktop behavior with the new layout by adding a desktop-only redirect or prominent call-to-action to return to the feed route (where the About information is now available in the right sidebar), while ensuring the About content remains accessible on < `lg`."
         }
       ]
     }
