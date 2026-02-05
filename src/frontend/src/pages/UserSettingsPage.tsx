@@ -374,6 +374,7 @@ export default function UserSettingsPage() {
             <Button 
               onClick={handleSave} 
               disabled={isSaveDisabled}
+              className="rounded-full"
             >
               {(registerUsername.isPending || releaseUsername.isPending || recordUsernameChange.isPending) ? (
                 <>
@@ -421,7 +422,7 @@ export default function UserSettingsPage() {
 
               <div className="flex flex-col items-center gap-2">
                 <Label htmlFor="avatar" className="cursor-pointer">
-                  <Button variant="outline" asChild className="hover-darken-light">
+                  <Button variant="outline" asChild className="hover-darken-light rounded-full">
                     <span>Choose Avatar</span>
                   </Button>
                 </Label>
@@ -438,7 +439,7 @@ export default function UserSettingsPage() {
                 <Button 
                   onClick={handleSaveAvatar}
                   disabled={saveAvatar.isPending}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 rounded-full"
                 >
                   {saveAvatar.isPending ? (
                     <>
@@ -528,7 +529,7 @@ export default function UserSettingsPage() {
                     </Button>
                   </div>
                 ) : (
-                  <Button onClick={handleSaveFroggyPhrase}>
+                  <Button onClick={handleSaveFroggyPhrase} className="rounded-full">
                     Save Froggy Phrase
                   </Button>
                 )}

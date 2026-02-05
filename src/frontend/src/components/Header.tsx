@@ -55,7 +55,7 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden rounded-full"
             onClick={onMobileLeftSidebarToggle}
           >
             <Menu className="action-icon" />
@@ -74,7 +74,7 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <Input
               type="search"
               placeholder="Search ponds and lilies..."
-              className="pl-10"
+              className="pl-10 rounded-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ fontSize: '1rem' }}
@@ -83,14 +83,14 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
         </form>
 
         <nav className="flex items-center gap-2">
-          <Button variant="ghost" asChild className="hidden md:inline-flex">
+          <Button variant="ghost" asChild className="hidden md:inline-flex rounded-full">
             <Link to="/ponds">All Ponds</Link>
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden rounded-full"
             onClick={handleMobileSearchOpen}
           >
             <Search className="action-icon" />
@@ -99,7 +99,7 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="default" size="icon" className="md:hidden">
+              <Button variant="default" size="icon" className="md:hidden rounded-full">
                 <Plus className="action-icon" />
               </Button>
             </DropdownMenuTrigger>
@@ -122,11 +122,11 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="outline" asChild className="hidden md:inline-flex hover-darken-light">
+          <Button variant="outline" asChild className="hidden md:inline-flex hover-darken-light rounded-full">
             <Link to="/start-pond">Start a Pond</Link>
           </Button>
 
-          <Button asChild className="hidden md:inline-flex">
+          <Button asChild className="hidden md:inline-flex rounded-full">
             <Link to="/create-lily">Create Lily</Link>
           </Button>
 
@@ -158,13 +158,13 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
                 ref={mobileSearchInputRef}
                 type="search"
                 placeholder="Search ponds and lilies..."
-                className="pl-10"
+                className="pl-10 rounded-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{ fontSize: '1rem' }}
               />
             </div>
-            <Button type="submit" className="mt-4 w-full">
+            <Button type="submit" className="mt-4 w-full rounded-full">
               Search
             </Button>
           </form>

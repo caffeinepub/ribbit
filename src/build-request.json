@@ -1,75 +1,88 @@
 {
   "kind": "build_request",
-  "title": "Desktop Pond page: remove Feed/About tabs and show About content in right sidebar (Reddit-style)",
+  "title": "Apply fully-rounded (9999px) border radius to specified UI inputs and buttons",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-2",
-      "text": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
+      "id": "REQ-1",
+      "text": "Update the Header search input to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so the input appears pill-shaped in all responsive layouts.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-3",
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "in desktop mode, in the pond page, can you make the right sidebar/column contain the content in the about tab just like reddit does it.",
-          "the about tab and the feed tab need to be removed  (just for desktop mode) additionally since they would be redundant",
-          "ok go ahead"
+          "can you make the border radius 9999px for the search input"
         ]
       },
       "acceptanceCriteria": [
-        "At viewport width >= Tailwind `lg`, PondPage no longer renders the \"Feed\" and \"About\" tab buttons currently shown above the feed (PondPage.tsx navigation section).",
-        "At viewport width < `lg`, the current tab UI remains available (or an equivalent mobile navigation remains) so users can still reach the About view from mobile."
+        "On all pages where the Header is shown, the search input renders with a pill-shaped/fully-rounded border radius.",
+        "The updated border radius applies consistently in both light and dark themes.",
+        "The search input focus/hover styles still render correctly (no clipping or visual artifacts at the corners)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Update all buttons in the Header to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so they appear pill-shaped across desktop and mobile header layouts.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the buttons in the header"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All clickable button-style controls in `frontend/src/components/Header.tsx` render with a fully-rounded/pill border radius.",
+        "No Header button regresses in spacing/alignment (icons and text remain centered).",
+        "Mobile header and desktop header both reflect the fully-rounded styling."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
+      "text": "Update the 'Start a Pond' button on the All Ponds page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "in desktop mode, in the pond page, can you make the right sidebar/column contain the content in the about tab just like reddit does it.",
-          "the about tab and the feed tab need to be removed  (just for desktop mode) additionally since they would be redundant"
+          "the 'Start a Pond' button in the all ponds page"
         ]
       },
       "acceptanceCriteria": [
-        "At viewport width >= `lg`, the right column on PondPage shows pond-specific About content (not Trending Ponds / Popular Tags / Hot This Week).",
-        "The About sidebar uses the pond’s current data (name/title/description/images/stats/rules/tags/moderators) and updates consistently with existing join/leave mutations and query invalidation behavior.",
-        "At viewport width < `lg`, the existing RightSidebar behavior (hidden on mobile) and the separate About page behavior remain functional."
+        "On `frontend/src/pages/AllPondsPage.tsx`, the 'Start a Pond' button displays as fully-rounded/pill-shaped.",
+        "The button remains visually consistent with other primary actions (no loss of padding, font size, or hover/focus behavior)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
+      "text": "Update the following buttons on the User Settings page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`): 'Save Changes', 'Save Froggy Phrase', and 'Choose Avatar'.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "the about tab and the feed tab need to be removed  (just for desktop mode) additionally since they would be redundant"
+          "the save changes, save froggy phrase and choose avatar button in the user  settings page"
         ]
       },
       "acceptanceCriteria": [
-        "At viewport width >= `lg`, PondAboutPage does not render the current \"Feed\" and \"About\" tab buttons.",
-        "The desktop UX does not require users to use the About route to see pond About information (it is available on the feed route via the right sidebar).",
-        "At viewport width < `lg`, PondAboutPage remains accessible and usable for viewing pond About details."
+        "On `frontend/src/pages/UserSettingsPage.tsx`, each of the three specified buttons renders with a fully-rounded/pill-shaped border radius.",
+        "Button disabled/loading states (if present) still look correct with the new border radius.",
+        "No other settings controls unintentionally change shape unless they are one of the specified buttons."
       ]
     }
   ],
   "constraints": [
-    "Frontend files under frontend.immutablePaths must not be modified (compose existing components instead).",
-    "Do not introduce additional backend canisters/services; keep the existing single-actor Motoko backend unchanged unless strictly required by this UI change."
+    "Do not edit files under `frontend/src/components/ui` (compose existing UI components instead).",
+    "Do not modify `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx`."
   ],
   "nonGoals": [
-    "Do not redesign the global RightSidebar widgets for other routes (Home, Tag, etc.); limit the pond-specific sidebar behavior to pond pages only.",
-    "Do not change pond data models, backend APIs, or persistence as part of this layout change."
+    "Do not change any backend Motoko code or canister interfaces.",
+    "Do not redesign the overall layout, typography, or color system beyond the requested border-radius updates.",
+    "Do not change button labels, routing behavior, or feature logic related to ponds or user settings."
   ],
   "imageRequirements": {
     "required": [],

@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Update the desktop Pond page layout to remove redundant Feed/About tabs and show the pond’s About information in the right sidebar (Reddit-style).
+**Goal:** Make specified search input and buttons render with a fully-rounded (9999px) pill-shaped border radius across responsive layouts and themes.
 
 **Planned changes:**
-- On `/pond/$name` at desktop breakpoints (`lg` and up), remove the in-page "Feed" and "About" tab buttons while keeping the feed as the center column content.
-- On `/pond/$name` at desktop breakpoints (`lg` and up), replace the generic RightSidebar widgets with a pond-specific About sidebar that displays the same information as the current Pond About view (including join/leave actions as applicable).
-- On `/pond/$name/about` at desktop breakpoints (`lg` and up), remove the in-page "Feed" and "About" tab buttons and avoid redundant desktop-only navigation; keep the About route usable on mobile.
+- Update the Header search input to use a fully-rounded border radius while preserving hover/focus styling in light and dark themes.
+- Update all button-style controls in `frontend/src/components/Header.tsx` to use a fully-rounded border radius without affecting alignment or spacing on mobile/desktop.
+- Update the “Start a Pond” button on `frontend/src/pages/AllPondsPage.tsx` to use a fully-rounded border radius while keeping existing padding/typography/interaction styles.
+- Update the “Save Changes”, “Save Froggy Phrase”, and “Choose Avatar” buttons on `frontend/src/pages/UserSettingsPage.tsx` to use a fully-rounded border radius while keeping disabled/loading states (if present) intact.
 
-**User-visible outcome:** On desktop, pond feed pages show posts in the center and pond About details in the right sidebar without Feed/About tabs; on mobile, the existing tab/navigation behavior remains so users can still access About details.
+**User-visible outcome:** The Header search input and the specified buttons appear pill-shaped and consistent across pages, themes, and responsive layouts.

@@ -1,67 +1,69 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T00:46:35.435Z",
+  "generatedAt": "2026-02-05T01:17:05.057Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-2",
-        "summary": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
+        "id": "REQ-1",
+        "summary": "Update the Header search input to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so the input appears pill-shaped in all responsive layouts.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondPage.tsx"
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondPage.tsx"
+          "frontend/src/components/Header.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Update all buttons in the Header to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so they appear pill-shaped across desktop and mobile header layouts.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Header.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Header.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
+        "summary": "Update the 'Start a Pond' button on the All Ponds page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/PondAboutSidebar.tsx",
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
+          "frontend/src/pages/AllPondsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/PondAboutSidebar.tsx",
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
+          "frontend/src/pages/AllPondsPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
+        "summary": "Update the following buttons on the User Settings page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`): 'Save Changes', 'Save Froggy Phrase', and 'Choose Avatar'.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/PondAboutPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
+          "frontend/src/pages/UserSettingsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/PondAboutPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
+          "frontend/src/pages/UserSettingsPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/PondAboutSidebar.tsx",
-    "frontend/src/pages/PondAboutPage.tsx",
-    "frontend/src/pages/PondPage.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/pages/AllPondsPage.tsx",
+    "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

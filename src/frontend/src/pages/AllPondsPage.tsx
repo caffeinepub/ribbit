@@ -19,7 +19,7 @@ export default function AllPondsPage() {
         </div>
 
         <div className="mb-6">
-          <Button asChild className="hover-darken-light">
+          <Button asChild className="hover-darken-light rounded-full">
             <Link to="/start-pond">Start a Pond</Link>
           </Button>
         </div>

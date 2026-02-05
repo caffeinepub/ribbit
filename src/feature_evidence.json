@@ -2,10 +2,30 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-keep-the-feed-as-the-center-column-content",
-      "featureTitle": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and keep the feed as the center column content.",
+      "featureId": "feature-update-the-header-search-input-to-use-a-fully-rounded-border-radius-equivalent-to-9999px-e-g-tailwind-rounded-full-so-the-input-appears-pill-shaped-in-all-responsive-layouts",
+      "featureTitle": "Update the Header search input to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so the input appears pill-shaped in all responsive layouts.",
       "files": [
-        "frontend/src/pages/PondPage.tsx"
+        "frontend/src/components/Header.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-all-buttons-in-the-header-to-use-a-fully-rounded-border-radius-equivalent-to-9999px-e-g-tailwind-rounded-full-so-they-appear-pill-shaped-across-desktop-and-mobile-header-layouts",
+      "featureTitle": "Update all buttons in the Header to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so they appear pill-shaped across desktop and mobile header layouts.",
+      "files": [
+        "frontend/src/components/Header.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -22,12 +42,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-on-the-pond-feed-page-route-pond-name-for-desktop-breakpoints-lg-and-up-replace-the-current-generic-rightsidebar-discovery-widgets-with-a-pond-specific-about-sidebar-that-displays-the-same-information-currently-shown-in-pondaboutpage-e-g-about-this-pond-created-date-member-count-visibility-rules-tags-moderators-and-join-leave-actions-as-applicable",
-      "featureTitle": "On the Pond feed page route (/pond/$name), for desktop breakpoints (lg and up) replace the current generic RightSidebar discovery widgets with a pond-specific About sidebar that displays the same information currently shown in PondAboutPage (e.g., About This Pond, created date, member count, visibility, rules, tags, moderators, and join/leave actions as applicable).",
+      "featureId": "feature-update-the-start-a-pond-button-on-the-all-ponds-page-to-use-a-fully-rounded-border-radius-equivalent-to-9999px-e-g-tailwind-rounded-full",
+      "featureTitle": "Update the 'Start a Pond' button on the All Ponds page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`).",
       "files": [
-        "frontend/src/components/PondAboutSidebar.tsx",
-        "frontend/src/pages/PondAboutPage.tsx",
-        "frontend/src/pages/PondPage.tsx"
+        "frontend/src/pages/AllPondsPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -44,10 +62,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-on-the-pond-about-route-pond-name-about-for-desktop-breakpoints-lg-and-up-remove-the-in-page-feed-and-about-navigation-tabs-and-avoid-presenting-redundant-desktop-only-navigation-ensure-the-desktop-experience-aligns-with-the-new-reddit-style-layout-where-the-about-content-is-presented-in-the-right-sidebar-on-the-feed-route",
-      "featureTitle": "On the Pond About route (/pond/$name/about), for desktop breakpoints (lg and up) remove the in-page \"Feed\" and \"About\" navigation tabs and avoid presenting redundant desktop-only navigation; ensure the desktop experience aligns with the new Reddit-style layout where the About content is presented in the right sidebar on the feed route.",
+      "featureId": "feature-update-the-following-buttons-on-the-user-settings-page-to-use-a-fully-rounded-border-radius-equivalent-to-9999px-e-g-tailwind-rounded-full-save-changes-save-froggy-phrase-and-choose-avatar",
+      "featureTitle": "Update the following buttons on the User Settings page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`): 'Save Changes', 'Save Froggy Phrase', and 'Choose Avatar'.",
       "files": [
-        "frontend/src/pages/PondAboutPage.tsx"
+        "frontend/src/pages/UserSettingsPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
