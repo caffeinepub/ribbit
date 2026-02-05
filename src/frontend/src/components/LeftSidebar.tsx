@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Home, Compass, PlusCircle, Settings, Clock, Bookmark } from 'lucide-react';
+import { Home, Compass, PlusCircle, Settings, Clock, Bookmark, Hash } from 'lucide-react';
 import { useGetAllRecentActivities, useGetLily } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
@@ -36,6 +36,7 @@ export default function LeftSidebar({ isMobileDrawer = false }: LeftSidebarProps
   const isPondsActive = !!matchRoute({ to: '/ponds' });
   const isCreateLilyActive = !!matchRoute({ to: '/create-lily' });
   const isSavedActive = !!matchRoute({ to: '/saved' });
+  const isTagsActive = !!matchRoute({ to: '/tags' });
   const isSettingsActive = !!matchRoute({ to: '/settings' });
 
   return (
@@ -86,6 +87,21 @@ export default function LeftSidebar({ isMobileDrawer = false }: LeftSidebarProps
               <Compass className="h-5 w-5" />
             )}
             <span>All Ponds</span>
+          </Link>
+          <Link
+            to="/tags"
+            className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              isTagsActive
+                ? 'bg-gray-200'
+                : 'hover:bg-gray-100 active:bg-gray-200'
+            }`}
+          >
+            {isTagsActive ? (
+              <Hash className="h-5 w-5 fill-current" />
+            ) : (
+              <Hash className="h-5 w-5" />
+            )}
+            <span>Tags</span>
           </Link>
           <Link
             to="/create-lily"

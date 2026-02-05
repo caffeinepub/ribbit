@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
-import { useGetLiliesByTag, useGetCanonicalTag, useGetPond } from '@/hooks/useQueries';
+import { useGetLiliesByTag, useGetCanonicalTag } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tag } from 'lucide-react';
 
 type SortOption = 'newest' | 'most_viewed' | 'most_replied';
 
@@ -17,10 +17,6 @@ export default function TagPage() {
   
   const { data: canonicalTag, isLoading: isLoadingCanonical } = useGetCanonicalTag(tag);
   const { data: lilies, isLoading: isLoadingLilies } = useGetLiliesByTag(canonicalTag || tag, sortBy);
-
-  // Get the pond from the first lily with this tag
-  const firstLily = lilies && lilies.length > 0 ? lilies[0] : null;
-  const { data: pond } = useGetPond(firstLily?.pond || '');
 
   // Redirect to canonical tag if different
   useEffect(() => {
@@ -44,23 +40,16 @@ export default function TagPage() {
           <main className="lg:col-span-6">
             <div className="py-4 px-4 lg:px-0 lg:py-0">
               <div className="mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  {pond?.profileImage ? (
-                    <img
-                      src={pond.profileImage.getDirectURL()}
-                      alt={pond.title}
-                      className="w-16 h-16 rounded-full object-cover border-4 border-primary/20 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-4 border-primary/20 flex-shrink-0">
-                      <span className="text-2xl">🐸</span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-4 mb-2">
+                  {/* Tag Icon Avatar - circular background with light green tint */}
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full tag-icon-circle-bg flex-shrink-0">
+                    <Tag className="w-6 h-6 text-primary" />
+                  </div>
+                  
+                  {/* Tag Name and Count */}
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold flex items-center gap-2 mb-0.5">
-                      <Badge variant="default" className="text-base px-2.5 py-0.5">
-                        #{canonicalTag || tag}
-                      </Badge>
+                    <h1 className="text-3xl font-bold mb-0.5">
+                      #{canonicalTag || tag}
                     </h1>
                     <p className="text-muted-foreground">
                       {lilies ? `${lilies.length} ${lilies.length === 1 ? 'lily' : 'lilies'}` : 'Loading...'}

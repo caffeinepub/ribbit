@@ -14,22 +14,6 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
-export interface Ribbit {
-    id: string;
-    content: string;
-    username: string;
-    timestamp: bigint;
-    parentId?: string;
-    postId: string;
-}
-export interface Activity {
-    id: string;
-    username: string;
-    pond: string;
-    type: ActivityType;
-    timestamp: bigint;
-    targetId: string;
-}
 export interface Pond {
     title: string;
     associatedTags: Array<string>;
@@ -46,6 +30,29 @@ export interface Pond {
     moderators: Array<Principal>;
     visibility: Visibility;
     rules: Array<string>;
+}
+export interface TagStats {
+    id: string;
+    firstUsedAt: bigint;
+    repliesTotal: bigint;
+    postsTotal: bigint;
+    lastActivityAt: bigint;
+}
+export interface Ribbit {
+    id: string;
+    content: string;
+    username: string;
+    timestamp: bigint;
+    parentId?: string;
+    postId: string;
+}
+export interface Activity {
+    id: string;
+    username: string;
+    pond: string;
+    type: ActivityType;
+    timestamp: bigint;
+    targetId: string;
 }
 export interface Post {
     id: string;
@@ -103,6 +110,7 @@ export interface backendInterface {
     getJoinedPonds(): Promise<Array<string>>;
     getLikeCountForPost(postId: string): Promise<bigint>;
     getLiliesByTag(tag: string, sortBy: string): Promise<Array<Post>>;
+    getNewestTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getPond(name: string): Promise<Pond | null>;
     getPondAboutInfo(pondName: string): Promise<{
         title: string;
@@ -130,9 +138,17 @@ export interface backendInterface {
     getRibbit(id: string): Promise<Ribbit | null>;
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
+    getTagRank(tag: string): Promise<{
+        tag: string;
+        rank?: bigint;
+        canonicalTag: string;
+    }>;
     getTagRedirects(): Promise<Array<[string, string]>>;
+    getTagStatsForTag(tag: string): Promise<TagStats | null>;
     getTagSuggestions(prefix: string, limit: bigint): Promise<Array<string>>;
     getThreadedRibbits(postId: string): Promise<Array<Ribbit>>;
+    getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
+    getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getViewCountForPost(postId: string): Promise<bigint>;

@@ -1,4 +1,45 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-update-the-tag-detail-page-to-remove-the-total-activity-and-last-activity-fields-from-the-ui-including-their-labels-icons-and-values",
+      "featureTitle": "Update the Tag detail page to remove the “Total Activity” and “Last Activity” fields from the UI (including their labels, icons, and values).",
+      "files": [
+        "frontend/src/pages/TagPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-transparency-effects-from-the-global-top-header-so-it-renders-fully-opaque-no-translucent-background-and-no-backdrop-blur-based-translucency",
+      "featureTitle": "Remove transparency effects from the global top header so it renders fully opaque (no translucent background and no backdrop blur-based translucency).",
+      "files": [
+        "frontend/src/components/Header.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

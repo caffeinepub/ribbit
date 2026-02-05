@@ -89,22 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface Ribbit {
-    id: string;
-    content: string;
-    username: string;
-    timestamp: bigint;
-    parentId?: string;
-    postId: string;
-}
-export interface Activity {
-    id: string;
-    username: string;
-    pond: string;
-    type: ActivityType;
-    timestamp: bigint;
-    targetId: string;
-}
 export interface Pond {
     title: string;
     associatedTags: Array<string>;
@@ -125,6 +109,33 @@ export interface Pond {
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
+export interface TagStats {
+    id: string;
+    firstUsedAt: bigint;
+    repliesTotal: bigint;
+    postsTotal: bigint;
+    lastActivityAt: bigint;
+}
+export interface _CaffeineStorageCreateCertificateResult {
+    method: string;
+    blob_hash: string;
+}
+export interface Ribbit {
+    id: string;
+    content: string;
+    username: string;
+    timestamp: bigint;
+    parentId?: string;
+    postId: string;
+}
+export interface Activity {
+    id: string;
+    username: string;
+    pond: string;
+    type: ActivityType;
+    timestamp: bigint;
+    targetId: string;
+}
 export interface Post {
     id: string;
     tag?: string;
@@ -136,10 +147,6 @@ export interface Post {
     viewCount: bigint;
     timestamp: bigint;
     image?: ExternalBlob;
-}
-export interface _CaffeineStorageCreateCertificateResult {
-    method: string;
-    blob_hash: string;
 }
 export interface UserProfile {
     name: string;
@@ -195,6 +202,7 @@ export interface backendInterface {
     getJoinedPonds(): Promise<Array<string>>;
     getLikeCountForPost(postId: string): Promise<bigint>;
     getLiliesByTag(tag: string, sortBy: string): Promise<Array<Post>>;
+    getNewestTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getPond(name: string): Promise<Pond | null>;
     getPondAboutInfo(pondName: string): Promise<{
         title: string;
@@ -222,9 +230,17 @@ export interface backendInterface {
     getRibbit(id: string): Promise<Ribbit | null>;
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
+    getTagRank(tag: string): Promise<{
+        tag: string;
+        rank?: bigint;
+        canonicalTag: string;
+    }>;
     getTagRedirects(): Promise<Array<[string, string]>>;
+    getTagStatsForTag(tag: string): Promise<TagStats | null>;
     getTagSuggestions(prefix: string, limit: bigint): Promise<Array<string>>;
     getThreadedRibbits(postId: string): Promise<Array<Ribbit>>;
+    getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
+    getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getViewCountForPost(postId: string): Promise<bigint>;
@@ -256,7 +272,7 @@ export interface backendInterface {
     unlikePost(postId: string): Promise<void>;
     unlikeRibbit(ribbitId: string): Promise<void>;
 }
-import type { Activity as _Activity, ActivityType as _ActivityType, ExternalBlob as _ExternalBlob, Pond as _Pond, Post as _Post, Ribbit as _Ribbit, UserProfile as _UserProfile, UserRole as _UserRole, ViewIncrementResult as _ViewIncrementResult, Visibility as _Visibility, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { Activity as _Activity, ActivityType as _ActivityType, ExternalBlob as _ExternalBlob, Pond as _Pond, Post as _Post, Ribbit as _Ribbit, TagStats as _TagStats, UserProfile as _UserProfile, UserRole as _UserRole, ViewIncrementResult as _ViewIncrementResult, Visibility as _Visibility, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -595,6 +611,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getNewestTags(arg0: bigint): Promise<Array<[string, TagStats]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getNewestTags(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getNewestTags(arg0);
+            return result;
+        }
+    }
     async getPond(arg0: string): Promise<Pond | null> {
         if (this.processError) {
             try {
@@ -791,6 +821,24 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getTagRank(arg0: string): Promise<{
+        tag: string;
+        rank?: bigint;
+        canonicalTag: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTagRank(arg0);
+                return from_candid_record_n43(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTagRank(arg0);
+            return from_candid_record_n43(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getTagRedirects(): Promise<Array<[string, string]>> {
         if (this.processError) {
             try {
@@ -803,6 +851,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getTagRedirects();
             return result;
+        }
+    }
+    async getTagStatsForTag(arg0: string): Promise<TagStats | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTagStatsForTag(arg0);
+                return from_candid_opt_n44(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTagStatsForTag(arg0);
+            return from_candid_opt_n44(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTagSuggestions(arg0: string, arg1: bigint): Promise<Array<string>> {
@@ -823,14 +885,42 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getThreadedRibbits(arg0);
-                return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getThreadedRibbits(arg0);
-            return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getTopTags(arg0: bigint): Promise<Array<[string, TagStats]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTopTags(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTopTags(arg0);
+            return result;
+        }
+    }
+    async getTrendingTags(arg0: bigint): Promise<Array<[string, TagStats]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTrendingTags(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTrendingTags(arg0);
+            return result;
         }
     }
     async getUserAvatarByUsername(arg0: string): Promise<ExternalBlob | null> {
@@ -907,14 +997,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.incrementLilyViewCount(arg0);
-                return from_candid_ViewIncrementResult_n44(this._uploadFile, this._downloadFile, result);
+                return from_candid_ViewIncrementResult_n46(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.incrementLilyViewCount(arg0);
-            return from_candid_ViewIncrementResult_n44(this._uploadFile, this._downloadFile, result);
+            return from_candid_ViewIncrementResult_n46(this._uploadFile, this._downloadFile, result);
         }
     }
     async initializeAccessControl(): Promise<void> {
@@ -1033,14 +1123,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.listPonds();
-                return from_candid_vec_n46(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listPonds();
-            return from_candid_vec_n46(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
         }
     }
     async listPosts(): Promise<Array<Post>> {
@@ -1061,14 +1151,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.listRibbits(arg0);
-                return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listRibbits(arg0);
-            return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
         }
     }
     async mergeSimilarTags(): Promise<void> {
@@ -1186,14 +1276,14 @@ export class Backend implements backendInterface {
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n47(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n47(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -1201,14 +1291,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.searchPonds(arg0);
-                return from_candid_vec_n46(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.searchPonds(arg0);
-            return from_candid_vec_n46(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n48(this._uploadFile, this._downloadFile, result);
         }
     }
     async searchPosts(arg0: string): Promise<Array<Post>> {
@@ -1278,8 +1368,8 @@ async function from_candid_UserProfile_n22(_uploadFile: (file: ExternalBlob) => 
 function from_candid_UserRole_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n27(_uploadFile, _downloadFile, value);
 }
-function from_candid_ViewIncrementResult_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ViewIncrementResult): ViewIncrementResult {
-    return from_candid_variant_n45(_uploadFile, _downloadFile, value);
+function from_candid_ViewIncrementResult_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ViewIncrementResult): ViewIncrementResult {
+    return from_candid_variant_n47(_uploadFile, _downloadFile, value);
 }
 function from_candid_Visibility_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Visibility): Visibility {
     return from_candid_variant_n36(_uploadFile, _downloadFile, value);
@@ -1335,6 +1425,9 @@ async function from_candid_opt_n39(_uploadFile: (file: ExternalBlob) => Promise<
 }
 function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Ribbit]): Ribbit | null {
     return value.length === 0 ? null : from_candid_Ribbit_n41(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_TagStats]): TagStats | null {
+    return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
@@ -1537,6 +1630,21 @@ function from_candid_record_n42(_uploadFile: (file: ExternalBlob) => Promise<Uin
         postId: value.postId
     };
 }
+function from_candid_record_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    tag: string;
+    rank: [] | [bigint];
+    canonicalTag: string;
+}): {
+    tag: string;
+    rank?: bigint;
+    canonicalTag: string;
+} {
+    return {
+        tag: value.tag,
+        rank: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.rank)),
+        canonicalTag: value.canonicalTag
+    };
+}
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     success: [] | [boolean];
     topped_up_amount: [] | [bigint];
@@ -1576,7 +1684,7 @@ function from_candid_variant_n36(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): Visibility {
     return "privateVisibility" in value ? Visibility.privateVisibility : "publicVisibility" in value ? Visibility.publicVisibility : value;
 }
-function from_candid_variant_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     error: null;
 } | {
     notFound: null;
@@ -1591,17 +1699,17 @@ function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 async function from_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Post>): Promise<Array<Post>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Post_n29(_uploadFile, _downloadFile, x)));
 }
-function from_candid_vec_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Array<Ribbit> {
+function from_candid_vec_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Array<Ribbit> {
     return value.map((x)=>from_candid_Ribbit_n41(_uploadFile, _downloadFile, x));
 }
-async function from_candid_vec_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Pond>): Promise<Array<Pond>> {
+async function from_candid_vec_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Pond>): Promise<Array<Pond>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Pond_n33(_uploadFile, _downloadFile, x)));
 }
 async function to_candid_ExternalBlob_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);
 }
-async function to_candid_UserProfile_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): Promise<_UserProfile> {
-    return await to_candid_record_n48(_uploadFile, _downloadFile, value);
+async function to_candid_UserProfile_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): Promise<_UserProfile> {
+    return await to_candid_record_n50(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n9(_uploadFile, _downloadFile, value);
@@ -1633,7 +1741,7 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
         proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
     };
 }
-async function to_candid_record_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+async function to_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     name: string;
     joinedPonds: Array<string>;
     avatar?: ExternalBlob;

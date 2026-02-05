@@ -1,6 +1,39 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Tag Hub Step 1: Backend tag stats + activity window groundwork (Frontend-only)",
-  "requirements": []
+  "title": "Simplify Tag page stats and make the global header fully opaque",
+  "requirements": [
+    {
+      "id": "REQ-4",
+      "summary": "Remove “Total Activity” and “Last Activity” fields from the Tag detail page stats block while preserving the rest of the page content and layout.",
+      "acceptanceCriteria": [
+        "On /tag/:tag, the tag stats block no longer shows “Total Activity” or “Last Activity”.",
+        "No empty/placeholder layout gaps remain where those fields were previously rendered.",
+        "The tag page continues to load and render the tag name, lily count, sort tabs, and lily list as before."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/TagPage.tsx",
+          "operation": "modify",
+          "description": "Remove rendering of the Tag Stats UI section that displays “Total Activity” and “Last Activity” (including labels/icons/values), and clean up any now-unused imports/hooks (e.g., date formatting and icons) so the page continues to render tag name, lily count, sort tabs, and lily list without layout gaps."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Make the global header fully opaque by removing translucent background and backdrop-blur styling while keeping sticky behavior and controls intact.",
+      "acceptanceCriteria": [
+        "The header background is fully opaque in both light and dark mode (no alpha background classes like bg-*/xx).",
+        "The header no longer uses backdrop blur styling to create translucent effects.",
+        "Header remains sticky and continues to render navigation/search controls correctly across pages."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Update the header container classes to remove translucent background styling (e.g., bg-*/xx) and remove backdrop-blur/supports-[backdrop-filter] translucency, replacing with an opaque background class so the header remains sticky and functions/controls remain unchanged."
+        }
+      ]
+    }
+  ]
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useParams, Link, useNavigate } from '@tanstack/react-router';
+import { useParams, Link } from '@tanstack/react-router';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import PondAboutSidebar from '@/components/PondAboutSidebar';
+import PondMobileHeader from '@/components/PondMobileHeader';
 import { useGetPond, useGetAllLilies, useGetJoinedPonds, useJoinPond } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -14,7 +15,6 @@ type SortOption = 'new';
 
 export default function PondPage() {
   const { name } = useParams({ strict: false }) as { name: string };
-  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>('new');
 
   const { data: pond, isLoading: isLoadingPond } = useGetPond(name);
@@ -92,8 +92,11 @@ export default function PondPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Full-width banner image with overlay - responsive height: 8rem mobile, 12rem md+ */}
-      <div className="relative w-full overflow-hidden h-32 md:h-48">
+      {/* Mobile: Shared header with tabs */}
+      {pond && <PondMobileHeader pond={pond} currentTab="feed" />}
+
+      {/* Desktop: Full-width banner image with overlay - responsive height: 8rem mobile, 12rem md+ */}
+      <div className="relative w-full overflow-hidden h-32 md:h-48 hidden lg:block">
         {pond.bannerImage ? (
           <img
             src={pond.bannerImage.getDirectURL()}
@@ -165,24 +168,6 @@ export default function PondPage() {
                   )}
                 </div>
               )}
-
-              {/* Navigation Tabs - Mobile only */}
-              <div className="mb-4 border-b border-border">
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => navigate({ to: '/pond/$name', params: { name } })}
-                    className="pb-2 px-1 border-b-2 border-primary font-medium text-primary"
-                  >
-                    Feed
-                  </button>
-                  <button
-                    onClick={() => navigate({ to: '/pond/$name/about', params: { name } })}
-                    className="pb-2 px-1 border-b-2 border-transparent font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                  >
-                    About
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Desktop: No tabs, just sorting */}

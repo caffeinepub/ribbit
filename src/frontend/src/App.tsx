@@ -13,6 +13,7 @@ import UserSettingsPage from './pages/UserSettingsPage';
 import AboutPage from './pages/AboutPage';
 import TagPage from './pages/TagPage';
 import SavedLiliesPage from './pages/SavedLiliesPage';
+import TagHubPage from './pages/TagHubPage';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -84,6 +85,12 @@ const savedLiliesRoute = createRoute({
   component: SavedLiliesPage,
 });
 
+const tagHubRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/tags',
+  component: TagHubPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   pondRoute,
@@ -96,6 +103,7 @@ const routeTree = rootRoute.addChildren([
   aboutRoute,
   tagRoute,
   savedLiliesRoute,
+  tagHubRoute,
 ]);
 
 const router = createRouter({ routeTree });

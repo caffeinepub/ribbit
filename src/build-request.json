@@ -1,77 +1,53 @@
 {
   "kind": "build_request",
-  "title": "Tag Hub Step 1: Backend tag stats + activity window groundwork",
+  "title": "Simplify Tag page stats and make the global header fully opaque",
   "priority": "normal",
   "requirements": [
     {
+      "id": "REQ-4",
+      "text": "Update the Tag detail page to remove the “Total Activity” and “Last Activity” fields from the UI (including their labels, icons, and values).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-1"
+        ],
+        "quotes": [
+          "Remove total activity and last activity from the tag view page."
+        ]
+      },
+      "acceptanceCriteria": [
+        "On /tag/:tag, the tag stats block no longer shows “Total Activity” or “Last Activity”.",
+        "No empty/placeholder layout gaps remain where those fields were previously rendered.",
+        "The tag page continues to load and render the tag name, lily count, sort tabs, and lily list as before."
+      ]
+    },
+    {
       "id": "REQ-5",
-      "text": "Extend the backend tag data model to persist per-tag usage stats, including: total post count, total reply (ribbit) count, first-used timestamp, and last-activity timestamp. Stats must be stored per canonical tag (respecting the existing tagMergeRegistry canonicalization behavior).",
-      "target": "backend",
+      "text": "Remove transparency effects from the global top header so it renders fully opaque (no translucent background and no backdrop blur-based translucency).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-user-1"
         ],
         "quotes": [
-          "Extend the backend tag system so every post automatically updates tag stats: total posts, total replies, recent activity, and first‑use timestamps."
+          "Also remove the transparency from the header"
         ]
       },
       "acceptanceCriteria": [
-        "Backend stores a per-tag stats record keyed by canonical tag text.",
-        "Stats include at least: postsTotal, repliesTotal, firstUsedAt, lastActivityAt.",
-        "When a tag is referenced via a merged/non-canonical tag, the canonical tag’s stats are updated (not the non-canonical key)."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Update backend write paths so tag stats are automatically updated on content creation: creating a Lily (post) must increment the canonical tag’s post count and update first-used/last-activity timestamps; creating a Ribbit (reply) must increment the canonical tag’s reply count and update last-activity timestamp based on the parent post’s tag.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1",
-          "msg-2"
-        ],
-        "quotes": [
-          "Extend the backend tag system so every post automatically updates tag stats: total posts, total replies, recent activity, and first‑use timestamps."
-        ]
-      },
-      "acceptanceCriteria": [
-        "On createPost with a non-null tag, the tag’s postsTotal increases by 1 and lastActivityAt is set to the post timestamp.",
-        "On the first ever use of a tag, firstUsedAt is set (and remains unchanged on subsequent uses).",
-        "On createRibbit, if the associated post has a non-null tag, that tag’s repliesTotal increases by 1 and lastActivityAt is updated to the ribbit timestamp.",
-        "If a post has no tag, createRibbit does not update any tag stats."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Add lightweight time-window tracking for per-tag activity suitable for later Trending/Newest ranking computations. The backend must record enough per-tag time-bucketed activity so later endpoints can identify spikes (trending) and recently created/first-used tags (newest) without scanning all posts/ribbits.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1",
-          "msg-2"
-        ],
-        "quotes": [
-          "Add lightweight time‑window tracking so we can detect spikes (for Trending) and detect newly‑created tags (for Newest)."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend stores per-tag time-window/bucket activity data that is updated during createPost and createRibbit when a tag exists.",
-        "The time-window tracking is bounded (does not grow without limit per tag) by using a fixed-size bucket list and/or pruning policy.",
-        "Time-window tracking updates are applied to canonical tags consistently with the existing canonicalization/merge behavior."
+        "The header background is fully opaque in both light and dark mode (no alpha background classes like bg-*/xx).",
+        "The header no longer uses backdrop blur styling to create translucent effects.",
+        "Header remains sticky and continues to render navigation/search controls correctly across pages."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not add frontend UI changes in this step; only implement backend groundwork needed for later Tag Hub steps.",
-    "Use English for any user-facing text (errors/messages) added as part of these backend changes."
+    "Do not edit files under frontend/src/components/ui (shadcn components are read-only).",
+    "Do not modify immutable paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not implement ranking endpoints (getTopTags, getTrendingTags, getNewestTags) in this step.",
-    "Do not implement Tag Hub frontend UI or new routes in this step.",
-    "Do not enhance tag detail endpoints or add subcategory phrase extraction in this step.",
-    "Do not change existing tag suggestion behavior beyond what is necessary to keep canonical tag tracking consistent."
+    "No changes to backend tag stats APIs or data models.",
+    "No redesign of the Tag Hub page (/tags) beyond the requested removals.",
+    "No changes to search behavior or routing."
   ],
   "imageRequirements": {
     "required": [],

@@ -11,9 +11,10 @@ import Char "mo:base/Char";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
+
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -128,8 +129,9 @@ actor Ribbit {
     #error; // Some error occurred
   };
 
-  // Tag stats type
+  // Updated tag stats type with IDs
   type TagStats = {
+    id : Text;
     postsTotal : Nat;
     repliesTotal : Nat;
     firstUsedAt : Int;
@@ -431,6 +433,46 @@ actor Ribbit {
 
           // Remove non-canonical tag from usage count
           tagUsageCount := textMap.delete(tagUsageCount, nonCanonical);
+
+          // Consolidate TagStats under canonical tag
+          let canonicalStats = switch (textMap.get(tagStats, canonical)) {
+            case (null) {
+              let defaultStats : TagStats = {
+                id = canonical;
+                postsTotal = 0;
+                repliesTotal = 0;
+                firstUsedAt = 0;
+                lastActivityAt = 0;
+              };
+              defaultStats;
+            };
+            case (?stats) { stats };
+          };
+
+          let nonCanonicalStats = switch (textMap.get(tagStats, nonCanonical)) {
+            case (null) {
+              let defaultStats : TagStats = {
+                id = nonCanonical;
+                postsTotal = 0;
+                repliesTotal = 0;
+                firstUsedAt = 0;
+                lastActivityAt = 0;
+              };
+              defaultStats;
+            };
+            case (?stats) { stats };
+          };
+
+          let consolidatedStats = {
+            canonicalStats with
+            postsTotal = canonicalStats.postsTotal + nonCanonicalStats.postsTotal;
+            repliesTotal = canonicalStats.repliesTotal + nonCanonicalStats.repliesTotal;
+            firstUsedAt = Int.min(canonicalStats.firstUsedAt, nonCanonicalStats.firstUsedAt);
+            lastActivityAt = Int.max(canonicalStats.lastActivityAt, nonCanonicalStats.lastActivityAt);
+          };
+
+          tagStats := textMap.put(tagStats, canonical, consolidatedStats);
+          tagStats := textMap.delete(tagStats, nonCanonical);
         };
       };
     };
@@ -1000,6 +1042,45 @@ actor Ribbit {
             };
           };
         };
+
+        // Maintain TagStats for canonicalized tag
+        let canonicalTag = getCanonicalTag(norm);
+
+        // Retrieve existing or default TagStats
+        let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+          case (null) {
+            let defaultStats : TagStats = {
+              id = canonicalTag;
+              postsTotal = 0;
+              repliesTotal = 0;
+              firstUsedAt = Time.now();
+              lastActivityAt = Time.now();
+            };
+            defaultStats;
+          };
+          case (?stats) { stats };
+        };
+
+        // Update stats for canonical tag
+        let updatedStats = {
+          currentStats with
+          postsTotal = currentStats.postsTotal + 1;
+          lastActivityAt = Time.now();
+        };
+
+        // If it's the first sighting, set firstUsedAt
+        let finalStats = if (currentStats.postsTotal == 0) {
+          {
+            updatedStats with
+            firstUsedAt = Time.now();
+          };
+        } else {
+          updatedStats;
+        };
+
+        // Store updated stats for the canonical tag
+        tagStats := textMap.put(tagStats, canonicalTag, finalStats);
+
         ?norm;
       };
     };
@@ -1256,6 +1337,44 @@ actor Ribbit {
 
     // Track user view of ribbit for generating dynamic activity feed
     trackViewRibbitActivity(ribbitId, username);
+
+    // If the target post has a canonical tag, update reply count and last activity for that tag
+    switch (textMap.get(posts, postId)) {
+      case (?post) {
+        switch (post.tag) {
+          case (?tag) {
+            let canonicalTag = getCanonicalTag(tag);
+
+            // Retrieve existing or default TagStats
+            let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+              case (null) {
+                let defaultStats : TagStats = {
+                  id = canonicalTag;
+                  postsTotal = 0;
+                  repliesTotal = 0;
+                  firstUsedAt = Time.now();
+                  lastActivityAt = Time.now();
+                };
+                defaultStats;
+              };
+              case (?stats) { stats };
+            };
+
+            // Update reply count and last activity
+            let updatedStats = {
+              currentStats with
+              repliesTotal = currentStats.repliesTotal + 1;
+              lastActivityAt = Time.now();
+            };
+
+            // Store updated stats for the canonical tag
+            tagStats := textMap.put(tagStats, canonicalTag, updatedStats);
+          };
+          case (null) { /* No tag for this post */ };
+        };
+      };
+      case (null) { /* Post not found */ };
+    };
 
     ribbitId;
   };
@@ -1615,6 +1734,44 @@ actor Ribbit {
     count;
   };
 
+  // New query function to get tag rank based on usage - using a while loop for compatibility
+  public query func getTagRank(tag : Text) : async {
+    tag : Text;
+    rank : ?Nat;
+    canonicalTag : Text;
+  } {
+    let canonicalTag = getCanonicalTag(tag);
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
+      },
+    );
+
+    var position = 1;
+    var found = false;
+
+    // Using a while loop instead of Array.iter for compatibility
+    var i = 0;
+    while (i < sorted.size()) {
+      let (currentTag, _) = sorted[i];
+      if (currentTag == canonicalTag) {
+        found := true;
+        i := sorted.size(); // Exit the loop
+      } else {
+        position += 1;
+        i += 1;
+      };
+    };
+
+    {
+      tag = canonicalTag;
+      rank = if (found) { ?position } else { null };
+      canonicalTag;
+    };
+  };
+
   // Username-based Avatar Functions
   // Avatar operations maintain anonymity - NO authorization checks per spec
   public shared func saveAvatarByUsername(username : Text, avatar : Storage.ExternalBlob) : async () {
@@ -1727,6 +1884,74 @@ actor Ribbit {
       func(i : Nat) : Activity { sortedActivities[i] },
     );
     limitedActivities;
+  };
+
+  // Tag Ranking Query Endpoints
+
+  public query func getTopTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  public query func getTrendingTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let radius = 25_000_000_000_000; // 25K billion nanoseconds = 25K seconds = 6.9 hours
+    let now = Time.now();
+
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        let aScore = computeTrendingScore(a, now, radius);
+        let bScore = computeTrendingScore(b, now, radius);
+        if (aScore > bScore) { #less } else if (aScore < bScore) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  public query func getNewestTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.firstUsedAt > b.firstUsedAt) { #less } else if (a.firstUsedAt < b.firstUsedAt) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  // Helper function to compute trending score with custom decay using windowing
+  func computeTrendingScore(stats : TagStats, now : Int, radius : Int) : Int {
+    let activityAge = now - stats.lastActivityAt;
+    let window = activityAge / radius;
+    let remaining = activityAge - (window * radius);
+
+    let adjustedAge = if (remaining < 0) { -remaining } else { remaining };
+    let baseScore = stats.postsTotal + stats.repliesTotal;
+
+    // Apply additional boost for fresh content within the current window instead of 0 when new
+    let recalculateScore = switch (window) {
+      case (0) { baseScore * 10 }; // Fresh content within current window gets big boost
+      case (1) { baseScore * 3 }; // Still quite recent - lesser boost
+      case (2) { baseScore * 2 }; // Very recent - moderate boost
+      case (3) { baseScore * 1 }; // Slightly less recent - minimal boost
+      case (_) { baseScore }; // No adjustment for older content
+    };
+    recalculateScore / (adjustedAge / radius + 1);
+  };
+
+  public query func getTagStatsForTag(tag : Text) : async ?TagStats {
+    let canonicalTag = getCanonicalTag(tag);
+    textMap.get(tagStats, canonicalTag);
   };
 };
 

@@ -60,6 +60,13 @@ export const Post = IDL.Record({
   'timestamp' : IDL.Int,
   'image' : IDL.Opt(ExternalBlob),
 });
+export const TagStats = IDL.Record({
+  'id' : IDL.Text,
+  'firstUsedAt' : IDL.Int,
+  'repliesTotal' : IDL.Nat,
+  'postsTotal' : IDL.Nat,
+  'lastActivityAt' : IDL.Int,
+});
 export const Pond = IDL.Record({
   'title' : IDL.Text,
   'associatedTags' : IDL.Vec(IDL.Text),
@@ -172,6 +179,11 @@ export const idlService = IDL.Service({
   'getJoinedPonds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getLikeCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getLiliesByTag' : IDL.Func([IDL.Text, IDL.Text], [IDL.Vec(Post)], ['query']),
+  'getNewestTags' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+      ['query'],
+    ),
   'getPond' : IDL.Func([IDL.Text], [IDL.Opt(Pond)], ['query']),
   'getPondAboutInfo' : IDL.Func(
       [IDL.Text],
@@ -215,17 +227,39 @@ export const idlService = IDL.Service({
   'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
   'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+  'getTagRank' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Record({
+          'tag' : IDL.Text,
+          'rank' : IDL.Opt(IDL.Nat),
+          'canonicalTag' : IDL.Text,
+        }),
+      ],
+      ['query'],
+    ),
   'getTagRedirects' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
       ['query'],
     ),
+  'getTagStatsForTag' : IDL.Func([IDL.Text], [IDL.Opt(TagStats)], ['query']),
   'getTagSuggestions' : IDL.Func(
       [IDL.Text, IDL.Nat],
       [IDL.Vec(IDL.Text)],
       ['query'],
     ),
   'getThreadedRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+  'getTopTags' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+      ['query'],
+    ),
+  'getTrendingTags' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+      ['query'],
+    ),
   'getUserAvatarByUsername' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(ExternalBlob)],
@@ -320,6 +354,13 @@ export const idlFactory = ({ IDL }) => {
     'viewCount' : IDL.Nat,
     'timestamp' : IDL.Int,
     'image' : IDL.Opt(ExternalBlob),
+  });
+  const TagStats = IDL.Record({
+    'id' : IDL.Text,
+    'firstUsedAt' : IDL.Int,
+    'repliesTotal' : IDL.Nat,
+    'postsTotal' : IDL.Nat,
+    'lastActivityAt' : IDL.Int,
   });
   const Pond = IDL.Record({
     'title' : IDL.Text,
@@ -437,6 +478,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Post)],
         ['query'],
       ),
+    'getNewestTags' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+        ['query'],
+      ),
     'getPond' : IDL.Func([IDL.Text], [IDL.Opt(Pond)], ['query']),
     'getPondAboutInfo' : IDL.Func(
         [IDL.Text],
@@ -484,17 +530,39 @@ export const idlFactory = ({ IDL }) => {
     'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
     'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+    'getTagRank' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Record({
+            'tag' : IDL.Text,
+            'rank' : IDL.Opt(IDL.Nat),
+            'canonicalTag' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
     'getTagRedirects' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
         ['query'],
       ),
+    'getTagStatsForTag' : IDL.Func([IDL.Text], [IDL.Opt(TagStats)], ['query']),
     'getTagSuggestions' : IDL.Func(
         [IDL.Text, IDL.Nat],
         [IDL.Vec(IDL.Text)],
         ['query'],
       ),
     'getThreadedRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+    'getTopTags' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+        ['query'],
+      ),
+    'getTrendingTags' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
+        ['query'],
+      ),
     'getUserAvatarByUsername' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(ExternalBlob)],

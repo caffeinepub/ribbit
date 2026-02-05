@@ -106,4 +106,13 @@
         min-width: 1.25rem;
         min-height: 1.25rem;
     }
+
+    /* Tag icon circle background with light gray fill and no border */
+    .tag-icon-circle-bg {
+        background-color: oklch(0.94 0.01 140);
+    }
+
+    .dark .tag-icon-circle-bg {
+        background-color: oklch(0.28 0.02 140);
+    }
 }

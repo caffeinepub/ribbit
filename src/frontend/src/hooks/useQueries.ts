@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Pond, Post, Ribbit, UserProfile, Activity } from '@/backend';
+import type { Pond, Post, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
 import { ExternalBlob, ViewIncrementResult } from '@/backend';
 import type { Principal } from '@icp-sdk/core/principal';
 
@@ -228,6 +228,9 @@ export function useCreateLily() {
       queryClient.invalidateQueries({ queryKey: ['lilies'] });
       queryClient.invalidateQueries({ queryKey: ['tagSuggestions'] });
       queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
+      queryClient.invalidateQueries({ queryKey: ['topTags'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
+      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
     },
   });
 }
@@ -400,6 +403,72 @@ export function useGetLiliesByTag(tag: string, sortBy: string) {
   });
 }
 
+// Tag Ranking Queries
+export function useGetTopTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['topTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTopTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTrendingTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['trendingTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTrendingTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetNewestTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['newestTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getNewestTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTagStats(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<TagStats | null>({
+    queryKey: ['tagStats', tag],
+    queryFn: async () => {
+      if (!actor || !tag) return null;
+      return actor.getTagStatsForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagRank(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string } | null>({
+    queryKey: ['tagRank', tag],
+    queryFn: async () => {
+      if (!actor || !tag) return null;
+      return actor.getTagRank(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
 // Tag Merging (Admin only)
 export function useIsAdmin() {
   const { actor, isFetching } = useActor();
@@ -428,6 +497,10 @@ export function useMergeSimilarTags() {
       queryClient.invalidateQueries({ queryKey: ['tagSuggestions'] });
       queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
       queryClient.invalidateQueries({ queryKey: ['liliesByTag'] });
+      queryClient.invalidateQueries({ queryKey: ['topTags'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
+      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
     },
   });
 }
@@ -523,6 +596,7 @@ export function useCreateRibbit() {
       queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
       queryClient.invalidateQueries({ queryKey: ['ribbitCount', variables.postId] });
       queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
+      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
     },
   });
 }

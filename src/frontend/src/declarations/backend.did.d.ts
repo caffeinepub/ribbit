@@ -60,6 +60,13 @@ export interface Ribbit {
   'parentId' : [] | [string],
   'postId' : string,
 }
+export interface TagStats {
+  'id' : string,
+  'firstUsedAt' : bigint,
+  'repliesTotal' : bigint,
+  'postsTotal' : bigint,
+  'lastActivityAt' : bigint,
+}
 export interface UserProfile {
   'name' : string,
   'joinedPonds' : Array<string>,
@@ -135,6 +142,7 @@ export interface _SERVICE {
   'getJoinedPonds' : ActorMethod<[], Array<string>>,
   'getLikeCountForPost' : ActorMethod<[string], bigint>,
   'getLiliesByTag' : ActorMethod<[string, string], Array<Post>>,
+  'getNewestTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
   'getPond' : ActorMethod<[string], [] | [Pond]>,
   'getPondAboutInfo' : ActorMethod<
     [string],
@@ -167,9 +175,16 @@ export interface _SERVICE {
   'getRibbit' : ActorMethod<[string], [] | [Ribbit]>,
   'getRibbitCountForPost' : ActorMethod<[string], bigint>,
   'getRibbitLikeCount' : ActorMethod<[string], bigint>,
+  'getTagRank' : ActorMethod<
+    [string],
+    { 'tag' : string, 'rank' : [] | [bigint], 'canonicalTag' : string }
+  >,
   'getTagRedirects' : ActorMethod<[], Array<[string, string]>>,
+  'getTagStatsForTag' : ActorMethod<[string], [] | [TagStats]>,
   'getTagSuggestions' : ActorMethod<[string, bigint], Array<string>>,
   'getThreadedRibbits' : ActorMethod<[string], Array<Ribbit>>,
+  'getTopTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
+  'getTrendingTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
   'getUserAvatarByUsername' : ActorMethod<[string], [] | [ExternalBlob]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getViewCountForPost' : ActorMethod<[string], bigint>,

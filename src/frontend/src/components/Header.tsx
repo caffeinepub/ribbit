@@ -48,7 +48,7 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
       <div className="flex h-16 items-center justify-between gap-4 px-4 lg:container">
         <div className="flex items-center gap-2">
           {/* Mobile hamburger menu - only visible on mobile */}
@@ -87,6 +87,10 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <Link to="/ponds">All Ponds</Link>
           </Button>
 
+          <Button variant="ghost" asChild className="hidden md:inline-flex rounded-full">
+            <Link to="/tags">Tags</Link>
+          </Button>
+
           <Button
             variant="ghost"
             size="icon"
@@ -114,6 +118,9 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
                 <Link to="/ponds">All Ponds</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link to="/tags">Tags</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/saved">Saved Lilies</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -130,9 +137,10 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <Link to="/create-lily">Create Lily</Link>
           </Button>
 
+          {/* Avatar link - visible on both mobile and desktop */}
           <Link 
             to="/settings" 
-            className="hidden md:inline-flex rounded-full p-0 transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:ring-offset-background"
+            className="rounded-full p-0 transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:ring-offset-background"
           >
             <span className="sr-only">Settings</span>
             <Avatar className="h-8 w-8 bg-primary/10">
