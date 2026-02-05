@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Make specified search input and buttons render with a fully-rounded (9999px) pill-shaped border radius across responsive layouts and themes.
+**Goal:** Extend the backend tag system to persist per-tag usage stats and bounded time-window activity tracking as groundwork for future Tag Hub ranking features.
 
 **Planned changes:**
-- Update the Header search input to use a fully-rounded border radius while preserving hover/focus styling in light and dark themes.
-- Update all button-style controls in `frontend/src/components/Header.tsx` to use a fully-rounded border radius without affecting alignment or spacing on mobile/desktop.
-- Update the “Start a Pond” button on `frontend/src/pages/AllPondsPage.tsx` to use a fully-rounded border radius while keeping existing padding/typography/interaction styles.
-- Update the “Save Changes”, “Save Froggy Phrase”, and “Choose Avatar” buttons on `frontend/src/pages/UserSettingsPage.tsx` to use a fully-rounded border radius while keeping disabled/loading states (if present) intact.
+- Extend the backend tag data model to store per-canonical-tag stats: postsTotal, repliesTotal, firstUsedAt, and lastActivityAt (respecting existing tag merge/canonicalization behavior).
+- Update backend write paths so createPost (when tag is non-null) increments the canonical tag’s postsTotal and updates firstUsedAt/lastActivityAt, and createRibbit (when parent post has a non-null tag) increments repliesTotal and updates lastActivityAt.
+- Add bounded per-tag time-window/bucketed activity tracking updated on createPost/createRibbit for tagged content, suitable for later Trending/Newest computations without scanning all posts/ribbits.
 
-**User-visible outcome:** The Header search input and the specified buttons appear pill-shaped and consistent across pages, themes, and responsive layouts.
+**User-visible outcome:** No frontend/UI changes; backend now automatically tracks canonical tag usage totals and recent activity history for use in later Tag Hub features.

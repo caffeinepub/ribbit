@@ -1,88 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Apply fully-rounded (9999px) border radius to specified UI inputs and buttons",
+  "title": "Tag Hub Step 1: Backend tag stats + activity window groundwork",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update the Header search input to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so the input appears pill-shaped in all responsive layouts.",
-      "target": "frontend",
+      "id": "REQ-5",
+      "text": "Extend the backend tag data model to persist per-tag usage stats, including: total post count, total reply (ribbit) count, first-used timestamp, and last-activity timestamp. Stats must be stored per canonical tag (respecting the existing tagMergeRegistry canonicalization behavior).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "can you make the border radius 9999px for the search input"
+          "Extend the backend tag system so every post automatically updates tag stats: total posts, total replies, recent activity, and first‑use timestamps."
         ]
       },
       "acceptanceCriteria": [
-        "On all pages where the Header is shown, the search input renders with a pill-shaped/fully-rounded border radius.",
-        "The updated border radius applies consistently in both light and dark themes.",
-        "The search input focus/hover styles still render correctly (no clipping or visual artifacts at the corners)."
+        "Backend stores a per-tag stats record keyed by canonical tag text.",
+        "Stats include at least: postsTotal, repliesTotal, firstUsedAt, lastActivityAt.",
+        "When a tag is referenced via a merged/non-canonical tag, the canonical tag’s stats are updated (not the non-canonical key)."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Update all buttons in the Header to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so they appear pill-shaped across desktop and mobile header layouts.",
-      "target": "frontend",
+      "id": "REQ-6",
+      "text": "Update backend write paths so tag stats are automatically updated on content creation: creating a Lily (post) must increment the canonical tag’s post count and update first-used/last-activity timestamps; creating a Ribbit (reply) must increment the canonical tag’s reply count and update last-activity timestamp based on the parent post’s tag.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "the buttons in the header"
+          "Extend the backend tag system so every post automatically updates tag stats: total posts, total replies, recent activity, and first‑use timestamps."
         ]
       },
       "acceptanceCriteria": [
-        "All clickable button-style controls in `frontend/src/components/Header.tsx` render with a fully-rounded/pill border radius.",
-        "No Header button regresses in spacing/alignment (icons and text remain centered).",
-        "Mobile header and desktop header both reflect the fully-rounded styling."
+        "On createPost with a non-null tag, the tag’s postsTotal increases by 1 and lastActivityAt is set to the post timestamp.",
+        "On the first ever use of a tag, firstUsedAt is set (and remains unchanged on subsequent uses).",
+        "On createRibbit, if the associated post has a non-null tag, that tag’s repliesTotal increases by 1 and lastActivityAt is updated to the ribbit timestamp.",
+        "If a post has no tag, createRibbit does not update any tag stats."
       ]
     },
     {
-      "id": "REQ-3",
-      "text": "Update the 'Start a Pond' button on the All Ponds page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`).",
-      "target": "frontend",
+      "id": "REQ-7",
+      "text": "Add lightweight time-window tracking for per-tag activity suitable for later Trending/Newest ranking computations. The backend must record enough per-tag time-bucketed activity so later endpoints can identify spikes (trending) and recently created/first-used tags (newest) without scanning all posts/ribbits.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "the 'Start a Pond' button in the all ponds page"
+          "Add lightweight time‑window tracking so we can detect spikes (for Trending) and detect newly‑created tags (for Newest)."
         ]
       },
       "acceptanceCriteria": [
-        "On `frontend/src/pages/AllPondsPage.tsx`, the 'Start a Pond' button displays as fully-rounded/pill-shaped.",
-        "The button remains visually consistent with other primary actions (no loss of padding, font size, or hover/focus behavior)."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Update the following buttons on the User Settings page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`): 'Save Changes', 'Save Froggy Phrase', and 'Choose Avatar'.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the save changes, save froggy phrase and choose avatar button in the user  settings page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On `frontend/src/pages/UserSettingsPage.tsx`, each of the three specified buttons renders with a fully-rounded/pill-shaped border radius.",
-        "Button disabled/loading states (if present) still look correct with the new border radius.",
-        "No other settings controls unintentionally change shape unless they are one of the specified buttons."
+        "Backend stores per-tag time-window/bucket activity data that is updated during createPost and createRibbit when a tag exists.",
+        "The time-window tracking is bounded (does not grow without limit per tag) by using a fixed-size bucket list and/or pruning policy.",
+        "Time-window tracking updates are applied to canonical tags consistently with the existing canonicalization/merge behavior."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under `frontend/src/components/ui` (compose existing UI components instead).",
-    "Do not modify `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx`."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not add frontend UI changes in this step; only implement backend groundwork needed for later Tag Hub steps.",
+    "Use English for any user-facing text (errors/messages) added as part of these backend changes."
   ],
   "nonGoals": [
-    "Do not change any backend Motoko code or canister interfaces.",
-    "Do not redesign the overall layout, typography, or color system beyond the requested border-radius updates.",
-    "Do not change button labels, routing behavior, or feature logic related to ponds or user settings."
+    "Do not implement ranking endpoints (getTopTags, getTrendingTags, getNewestTags) in this step.",
+    "Do not implement Tag Hub frontend UI or new routes in this step.",
+    "Do not enhance tag detail endpoints or add subcategory phrase extraction in this step.",
+    "Do not change existing tag suggestion behavior beyond what is necessary to keep canonical tag tracking consistent."
   ],
   "imageRequirements": {
     "required": [],

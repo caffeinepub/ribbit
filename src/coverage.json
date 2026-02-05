@@ -1,69 +1,48 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T01:17:05.057Z",
+  "generatedAt": "2026-02-05T02:02:12.994Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Update the Header search input to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so the input appears pill-shaped in all responsive layouts.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Header.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Header.tsx"
-        ]
+        "id": "REQ-5",
+        "summary": "Extend the backend tag data model to persist per-tag usage stats, including: total post count, total reply (ribbit) count, first-used timestamp, and last-activity timestamp. Stats must be stored per canonical tag (respecting the existing tagMergeRegistry canonicalization behavior).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-2",
-        "summary": "Update all buttons in the Header to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`) so they appear pill-shaped across desktop and mobile header layouts.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Header.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Header.tsx"
-        ]
+        "id": "REQ-6",
+        "summary": "Update backend write paths so tag stats are automatically updated on content creation: creating a Lily (post) must increment the canonical tag’s post count and update first-used/last-activity timestamps; creating a Ribbit (reply) must increment the canonical tag’s reply count and update last-activity timestamp based on the parent post’s tag.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-3",
-        "summary": "Update the 'Start a Pond' button on the All Ponds page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/AllPondsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AllPondsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Update the following buttons on the User Settings page to use a fully-rounded border radius equivalent to 9999px (e.g., Tailwind `rounded-full`): 'Save Changes', 'Save Froggy Phrase', and 'Choose Avatar'.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
-        ]
+        "id": "REQ-7",
+        "summary": "Add lightweight time-window tracking for per-tag activity suitable for later Trending/Newest ranking computations. The backend must record enough per-tag time-bucketed activity so later endpoints can identify spikes (trending) and recently created/first-used tags (newest) without scanning all posts/ribbits.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/pages/AllPondsPage.tsx",
-    "frontend/src/pages/UserSettingsPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

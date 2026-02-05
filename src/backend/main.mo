@@ -6,14 +6,14 @@ import Iter "mo:base/Iter";
 import Int "mo:base/Int";
 import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
+import Nat "mo:base/Nat";
+import Char "mo:base/Char";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
-import Nat "mo:base/Nat";
-import Char "mo:base/Char";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -50,6 +50,9 @@ actor Ribbit {
   var postActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var ribbitActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var likeActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
+
+  // Tag stats tracking
+  var tagStats : OrderedMap.Map<Text, TagStats> = textMap.empty();
 
   // Activity tracking data type
   type Activity = {
@@ -123,6 +126,14 @@ actor Ribbit {
     #success; // View count incremented successfully
     #notFound; // Lily (post) not found
     #error; // Some error occurred
+  };
+
+  // Tag stats type
+  type TagStats = {
+    postsTotal : Nat;
+    repliesTotal : Nat;
+    firstUsedAt : Int;
+    lastActivityAt : Int;
   };
 
   // Function to increment view count for a Lily (post)
@@ -989,7 +1000,6 @@ actor Ribbit {
             };
           };
         };
-
         ?norm;
       };
     };
@@ -1719,3 +1729,4 @@ actor Ribbit {
     limitedActivities;
   };
 };
+
