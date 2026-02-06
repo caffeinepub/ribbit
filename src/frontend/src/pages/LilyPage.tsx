@@ -132,7 +132,7 @@ export default function LilyPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="lg:container py-8">
-          <div className="max-w-4xl lg:mx-auto space-y-4 lg:px-0">
+          <div className="max-w-4xl lg:mx-auto space-y-4 px-4 lg:px-0">
             <Skeleton className="h-64 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
@@ -145,7 +145,7 @@ export default function LilyPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="lg:container py-8">
-          <div className="max-w-4xl lg:mx-auto text-center lg:px-0">
+          <div className="max-w-4xl lg:mx-auto text-center px-4 lg:px-0">
             <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>Lily not found</p>
           </div>
         </div>
@@ -159,8 +159,8 @@ export default function LilyPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
-        <div className="max-w-4xl lg:mx-auto lg:px-0">
-          <div className="overflow-hidden mb-4 p-6">
+        <div className="max-w-4xl lg:mx-auto px-4 lg:px-0">
+          <div className="overflow-hidden mb-4">
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
                 <AvatarFallback className="text-lg">🐸</AvatarFallback>
@@ -317,7 +317,7 @@ export default function LilyPage() {
             </div>
           )}
 
-          <div className="mb-4 px-4 lg:px-0">
+          <div className="mb-4">
             <h2 className="text-xl font-semibold mb-4">Ribbits ({formatNumber(ribbitCount)})</h2>
             <div className="p-4 border border-border lg:rounded-lg">
               <Textarea
@@ -335,7 +335,7 @@ export default function LilyPage() {
             </div>
           </div>
 
-          <div className="space-y-4 px-4 lg:px-0">
+          <div className="space-y-4">
             {ribbitsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-24 w-full" />

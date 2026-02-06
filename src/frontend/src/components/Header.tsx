@@ -95,8 +95,9 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
-      <div className="flex h-16 items-center justify-between gap-4 px-4 lg:container">
-        <div className="flex items-center gap-2">
+      <div className="relative flex h-16 items-center justify-between gap-4 px-4 lg:container">
+        {/* Left section: Hamburger + Desktop Logo */}
+        <div className="flex items-center gap-2 md:flex-1">
           {/* Mobile hamburger menu - only visible on mobile */}
           <Button
             variant="ghost"
@@ -108,12 +109,19 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <span className="sr-only">Menu</span>
           </Button>
 
-          <Link to="/" className="flex items-center gap-2">
-            {/* Frog logo - visible on mobile/tablet, hidden on desktop (md+) */}
-            <img src="/assets/frog-face_1f438.png" alt="ribbit" className="h-8 w-8 md:hidden" />
+          {/* Desktop Logo - hidden on mobile */}
+          <Link to="/" className="hidden md:flex items-center gap-2">
             <span className="text-2xl font-bold text-primary" style={{ fontSize: '1.55rem', fontWeight: 700, letterSpacing: '-0.025rem' }}>ribbit</span>
           </Link>
         </div>
+
+        {/* Center section: Mobile Logo (absolutely positioned for true centering) */}
+        <Link 
+          to="/" 
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden"
+        >
+          <img src="/assets/frog-face_1f438.png" alt="ribbit" className="h-8 w-8" />
+        </Link>
 
         {/* Desktop Search */}
         <form onSubmit={handleDesktopSubmit} className="hidden flex-1 max-w-md md:flex" style={{ marginBlockEnd: 0 }}>
@@ -154,7 +162,8 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
           </div>
         </form>
 
-        <nav className="flex items-center gap-2">
+        {/* Right section: Actions */}
+        <nav className="flex items-center gap-2 md:flex-1 md:justify-end">
           <Button
             variant="ghost"
             size="icon"
