@@ -14,6 +14,7 @@ import { ExternalBlob } from '@/backend';
 import { Upload, AlertCircle, Hash } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from 'react-use';
+import { getTagValidationError } from '@/lib/tagValidation';
 
 type LilyType = 'text' | 'image' | 'link';
 
@@ -28,6 +29,7 @@ export default function CreateLilyPage() {
   const [pond, setPond] = useState(search.pond || '');
   const [link, setLink] = useState('');
   const [tag, setTag] = useState('');
+  const [tagError, setTagError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -59,6 +61,12 @@ export default function CreateLilyPage() {
 
   const selectedPondNotJoined = Boolean(pond && !isPondJoined(pond));
 
+  // Validate tag on change
+  useEffect(() => {
+    const error = getTagValidationError(tag);
+    setTagError(error);
+  }, [tag]);
+
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -80,12 +88,12 @@ export default function CreateLilyPage() {
 
   // Show suggestions when tag input changes and has value
   useEffect(() => {
-    if (tag.trim() && tagSuggestions.length > 0) {
+    if (tag.trim() && tagSuggestions.length > 0 && !tagError) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
     }
-  }, [tag, tagSuggestions]);
+  }, [tag, tagSuggestions, tagError]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -115,6 +123,12 @@ export default function CreateLilyPage() {
 
     if (!isPondJoined(pond)) {
       toast.error('You must be a member of this pond to post a Lily.');
+      return;
+    }
+
+    // Validate tag before submission
+    if (tag.trim() && tagError) {
+      toast.error(tagError);
       return;
     }
 
@@ -194,7 +208,7 @@ export default function CreateLilyPage() {
                     value={tag}
                     onChange={(e) => setTag(e.target.value)}
                     onFocus={() => {
-                      if (tag.trim() && tagSuggestions.length > 0) {
+                      if (tag.trim() && tagSuggestions.length > 0 && !tagError) {
                         setShowSuggestions(true);
                       }
                     }}
@@ -203,9 +217,16 @@ export default function CreateLilyPage() {
                     style={{ fontSize: '1rem' }}
                   />
                 </div>
-                <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                  Add a tag to categorize your lily (max 25 characters)
-                </p>
+                {tagError ? (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{tagError}</AlertDescription>
+                  </Alert>
+                ) : (
+                  <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                    Add a tag to categorize your lily (max 25 characters, letters and numbers only)
+                  </p>
+                )}
 
                 {/* Tag Suggestions Dropdown */}
                 {showSuggestions && tagSuggestions.length > 0 && (
@@ -370,7 +391,7 @@ export default function CreateLilyPage() {
               <div className="flex gap-4">
                 <Button 
                   type="submit" 
-                  disabled={isPending || selectedPondNotJoined} 
+                  disabled={isPending || selectedPondNotJoined || !!tagError} 
                   className="flex-1"
                 >
                   {isPending ? 'Creating...' : 'Create Lily'}

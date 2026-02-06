@@ -61,7 +61,7 @@ export default function TagPage() {
                   </div>
                 </div>
 
-                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-4">
+                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                   <div className="border-b border-border bg-background">
                     <div className="flex">
                       <button

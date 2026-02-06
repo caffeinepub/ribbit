@@ -1,52 +1,39 @@
 {
   "kind": "build_request",
-  "title": "Step 1: Enforce alphanumeric-only validation for pond creation names",
+  "title": "Remove bottom margin from tabs on Home, Pond, Tag, and TagHub pages",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Enforce an alphanumeric-only rule for pond creation names so that new ponds can only be created with names consisting of letters (A–Z, a–z) and/or numbers (0–9), rejecting any input that includes spaces, hyphens, underscores, or any punctuation/symbol characters.",
-      "target": "both",
+      "text": "Remove the bottom margin spacing applied to the tabs area on the HomePage, PondPage, TagPage, and TagHubPage so that there is no extra vertical gap below the tab bar before the main card/list content.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4",
+          "msg-6"
         ],
         "quotes": [
-          "for pond creation, dont allow hyphens,  spaces, underscores or punctuation, only letters and/or numbers.",
-          "Want me to try Step 1 with that exact wording?",
-          "yes"
+          "remove the margin-bottom from the tabs in the homepage, the pondpage, the tag page, and the tags (taghub) page"
         ]
       },
       "acceptanceCriteria": [
-        "In the Create Pond UI (frontend/src/pages/CreatePondPage.tsx), entering a pond name containing any non-alphanumeric character (e.g., \"funny frogs\", \"funny-frogs\", \"funny_frogs\", \"funny!\", \"frog#1\") prevents submission and shows a clear validation message in English.",
-        "In the Create Pond UI, entering a pond name containing only letters and/or numbers (e.g., \"FunnyFrogs\", \"Frogs123\") allows submission to proceed.",
-        "On the backend (backend/main.mo), the createPond update method rejects (traps) when the provided pond name contains any non-alphanumeric character, ensuring validation cannot be bypassed by calling the canister directly.",
-        "The frontend no longer derives or submits a hyphenated slug (e.g., using spaces-to-hyphens conversion) for the pond name parameter; it must submit the validated alphanumeric-only pond name (optionally lowercased, but still strictly alphanumeric).",
-        "No canister state migration is required; existing ponds are unaffected, and only new pond creation is restricted."
+        "HomePage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
+        "PondPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
+        "TagPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-4` from the Tabs `className`).",
+        "TagHubPage: the tabs header wrapper no longer adds bottom margin below the tab buttons (e.g., remove `mb-4` from the `border-b ...` wrapper inside Tabs) so the content card starts immediately below the tab bar.",
+        "No other pages/components have their tab spacing changed."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT."
+    "Do not modify files under frontend/src/components/ui (read-only UI component sources)."
   ],
   "nonGoals": [
-    "Do not implement tag validation in this step (tags will be handled in a later step).",
-    "Do not change pond editing flows (e.g., editPondSettings) unless they directly create/rename a pond identifier.",
-    "Do not alter existing pond names already stored on the backend."
+    "Changing global Tabs styling across the entire app.",
+    "Changing tab behavior, labels, or routing/sorting logic."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

@@ -43,7 +43,7 @@ export default function HomePage() {
           <main className="lg:col-span-6">
             <div style={{ maxWidth: '44rem' }}>
               <div className="py-4 px-4 lg:px-0 lg:py-0">
-                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
+                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                   <div className="border-b border-border bg-background">
                     <div className="flex">
                       <button

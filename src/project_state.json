@@ -3,14 +3,12 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [
-    "Automated build/implementation step intermittently fails to apply validation changes when requests are not extremely explicit; user experienced repeated build failures while attempting pond name + tag validation updates."
-  ],
+  "known_issues": [],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-enforce-an-alphanumeric-only-rule-for-pond-creation-names-so-that-new-ponds-can-only-be-created-with-names-consisting-of-letters-a-z-a-z-and-or-numbers-0-9-rejecting-any-input-that-includes-spaces-hyphens-underscores-or-any-punctuation-symbol-characters",
-      "title": "Enforce an alphanumeric-only rule for pond creation names so that new ponds can only be created with names consisting of letters (A–Z, a–z) and/or numbers (0–9), rejecting any input that includes spaces, hyphens, underscores, or any punctuation/symbol characters.",
+      "id": "feature-remove-the-bottom-margin-spacing-applied-to-the-tabs-area-on-the-homepage-pondpage-tagpage-and-taghubpage-so-that-there-is-no-extra-vertical-gap-below-the-tab-bar-before-the-main-card-list-content",
+      "title": "Remove the bottom margin spacing applied to the tabs area on the HomePage, PondPage, TagPage, and TagHubPage so that there is no extra vertical gap below the tab bar before the main card/list content.",
       "reqIds": [
         "REQ-1"
       ],
@@ -20,18 +18,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Enforce alphanumeric-only validation for pond creation names (reject hyphens, spaces, underscores, punctuation; allow only letters and/or numbers)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Apply the same alphanumeric-only validation rule to tags (reject non-letters/numbers)",
+      "summary": "Remove margin-bottom from the Tabs component on the homepage, pond page, tag page, and tags (taghub) page.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Step 1: Enforce alphanumeric-only validation for pond creation names",
+  "projectName": "Remove bottom margin from tabs on Home, Pond, Tag, and TagHub pages",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

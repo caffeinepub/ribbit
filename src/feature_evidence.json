@@ -2,11 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-enforce-an-alphanumeric-only-rule-for-pond-creation-names-so-that-new-ponds-can-only-be-created-with-names-consisting-of-letters-a-z-a-z-and-or-numbers-0-9-rejecting-any-input-that-includes-spaces-hyphens-underscores-or-any-punctuation-symbol-characters",
-      "featureTitle": "Enforce an alphanumeric-only rule for pond creation names so that new ponds can only be created with names consisting of letters (A–Z, a–z) and/or numbers (0–9), rejecting any input that includes spaces, hyphens, underscores, or any punctuation/symbol characters.",
+      "featureId": "feature-remove-the-bottom-margin-spacing-applied-to-the-tabs-area-on-the-homepage-pondpage-tagpage-and-taghubpage-so-that-there-is-no-extra-vertical-gap-below-the-tab-bar-before-the-main-card-list-content",
+      "featureTitle": "Remove the bottom margin spacing applied to the tabs area on the HomePage, PondPage, TagPage, and TagHubPage so that there is no extra vertical gap below the tab bar before the main card/list content.",
       "files": [
-        "frontend/src/lib/pondNameValidation.ts",
-        "frontend/src/pages/CreatePondPage.tsx"
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/PondPage.tsx",
+        "frontend/src/pages/TagHubPage.tsx",
+        "frontend/src/pages/TagPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",

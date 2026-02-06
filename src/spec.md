@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Enforce alphanumeric-only validation for new pond names during pond creation.
+**Goal:** Remove extra vertical spacing beneath the tabs area on the Home, Pond, Tag, and TagHub pages.
 
 **Planned changes:**
-- Update the Create Pond UI (frontend/src/pages/CreatePondPage.tsx) to validate pond names as strictly letters and/or numbers, block submission on any non-alphanumeric character, and show a clear English validation message.
-- Remove any frontend behavior that derives/submits a hyphenated slug or other transformed variant; submit only the validated alphanumeric-only pond name.
-- Add backend validation in backend/main.mo so createPond rejects (traps) if the pond name contains any non-alphanumeric character, preventing bypass via direct canister calls.
+- HomePage: remove bottom-margin utility classes from the Tabs container so content starts directly below the tab bar.
+- PondPage: remove bottom-margin utility classes from the Tabs container so content starts directly below the tab bar.
+- TagPage: remove bottom-margin utility classes from the Tabs container so content starts directly below the tab bar.
+- TagHubPage: remove bottom-margin utility classes from the tabs header wrapper so the content card starts immediately below the tab buttons.
 
-**User-visible outcome:** When creating a pond, users can only submit names made of letters and numbers; names containing spaces, hyphens, underscores, or punctuation are rejected with a clear validation message.
+**User-visible outcome:** On Home, Pond, Tag, and TagHub pages, the main content appears directly under the tab bar with no extra gap; other pages’ tab spacing remains unchanged.

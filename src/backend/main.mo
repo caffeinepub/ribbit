@@ -11,9 +11,9 @@ import Char "mo:base/Char";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -1768,16 +1768,30 @@ actor Ribbit {
   };
 
   // Username-based Avatar Functions
-  // Avatar operations maintain anonymity - NO authorization checks per spec
-  public shared func saveAvatarByUsername(username : Text, avatar : Storage.ExternalBlob) : async () {
-    // No authorization check per spec: "No authorization checks for avatar upload and retrieval to maintain anonymity"
-    // Both anonymous and authenticated users can save avatars by username without any role checks
+  // FIXED: Avatar operations now require proper authorization
+  public shared ({ caller }) func saveAvatarByUsername(username : Text, avatar : Storage.ExternalBlob) : async () {
+    ensureUserRole(caller);
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can save avatars");
+    };
+
+    // Verify ownership: caller must own the username OR be an admin
+    switch (textMap.get(usernameOwnership, username)) {
+      case (null) {
+        Debug.trap("Username not registered");
+      };
+      case (?owner) {
+        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+          Debug.trap("Unauthorized: Can only save avatar for your own username");
+        };
+      };
+    };
+
     usernameAvatars := textMap.put(usernameAvatars, username, avatar);
   };
 
   public query func getUserAvatarByUsername(username : Text) : async ?Storage.ExternalBlob {
-    // Public query - no authorization check per spec
-    // Avatar retrieval maintains complete anonymity
+    // Public query - no authorization check for retrieval
     textMap.get(usernameAvatars, username);
   };
 
@@ -1949,4 +1963,3 @@ actor Ribbit {
     textMap.get(tagStats, canonicalTag);
   };
 };
-

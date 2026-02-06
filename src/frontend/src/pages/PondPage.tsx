@@ -183,7 +183,7 @@ export default function PondPage() {
 
               {/* Desktop: No tabs, just sorting */}
               <div className="py-4 px-4 lg:px-0 lg:py-0">
-                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
+                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                   <TabsList>
                     <TabsTrigger value="new">New</TabsTrigger>
                   </TabsList>

@@ -109,8 +109,8 @@ export default function TagHubPage() {
                   </p>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="mb-0">
-                  <div className="border-b border-border bg-background mb-4">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+                  <div className="border-b border-border bg-background">
                     <div className="flex">
                       <button
                         onClick={() => setActiveTab('trending')}
