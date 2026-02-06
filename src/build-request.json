@@ -1,37 +1,10 @@
 {
   "kind": "build_request",
-  "title": "Remove bottom margin from tabs on Home, Pond, Tag, and TagHub pages",
+  "title": "Untitled request",
   "priority": "normal",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "text": "Remove the bottom margin spacing applied to the tabs area on the HomePage, PondPage, TagPage, and TagHubPage so that there is no extra vertical gap below the tab bar before the main card/list content.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4",
-          "msg-6"
-        ],
-        "quotes": [
-          "remove the margin-bottom from the tabs in the homepage, the pondpage, the tag page, and the tags (taghub) page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "HomePage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
-        "PondPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
-        "TagPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-4` from the Tabs `className`).",
-        "TagHubPage: the tabs header wrapper no longer adds bottom margin below the tab buttons (e.g., remove `mb-4` from the `border-b ...` wrapper inside Tabs) so the content card starts immediately below the tab bar.",
-        "No other pages/components have their tab spacing changed."
-      ]
-    }
-  ],
-  "constraints": [
-    "Do not modify files under frontend/src/components/ui (read-only UI component sources)."
-  ],
-  "nonGoals": [
-    "Changing global Tabs styling across the entire app.",
-    "Changing tab behavior, labels, or routing/sorting logic."
-  ],
+  "requirements": [],
+  "constraints": [],
+  "nonGoals": [],
   "imageRequirements": {
     "required": [],
     "edits": []

@@ -11,10 +11,11 @@ import { useCreateLily, useGetAllPonds, useGetJoinedPonds, useGetTagSuggestions 
 import { getUsername } from '@/lib/user';
 import { toast } from 'sonner';
 import { ExternalBlob } from '@/backend';
-import { Upload, AlertCircle, Hash } from 'lucide-react';
+import { Upload, Hash } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from 'react-use';
 import { getTagValidationError } from '@/lib/tagValidation';
+import { AlertCircle } from 'lucide-react';
 
 type LilyType = 'text' | 'image' | 'link';
 
@@ -58,8 +59,6 @@ export default function CreateLilyPage() {
   const isPondJoined = (pondName: string) => {
     return joinedPonds?.includes(pondName) || false;
   };
-
-  const selectedPondNotJoined = Boolean(pond && !isPondJoined(pond));
 
   // Validate tag on change
   useEffect(() => {
@@ -118,11 +117,6 @@ export default function CreateLilyPage() {
 
     if (!title.trim() || !pond) {
       toast.error('Title and pond are required');
-      return;
-    }
-
-    if (!isPondJoined(pond)) {
-      toast.error('You must be a member of this pond to post a Lily.');
       return;
     }
 
@@ -187,11 +181,11 @@ export default function CreateLilyPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedPondNotJoined && (
-                  <Alert variant="destructive" className="mt-2">
+                {pond && !isPondJoined(pond) && (
+                  <Alert className="mt-2">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      You must be a member of this pond to post a Lily. Please join the pond first.
+                      You are posting to a pond you haven't joined yet.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -391,7 +385,7 @@ export default function CreateLilyPage() {
               <div className="flex gap-4">
                 <Button 
                   type="submit" 
-                  disabled={isPending || selectedPondNotJoined || !!tagError} 
+                  disabled={isPending || !!tagError} 
                   className="flex-1"
                 >
                   {isPending ? 'Creating...' : 'Create Lily'}

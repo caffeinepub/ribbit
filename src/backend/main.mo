@@ -140,9 +140,12 @@ actor Ribbit {
   // Function to increment view count for a Lily (post)
   // Requires user permission to prevent abuse
   public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    ensureUserRole(caller);
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Debug.trap("Unauthorized: Only users can increment view counts");
+    // Anonymous users (guests) can increment view counts
+    if (not Principal.isAnonymous(caller)) {
+      ensureUserRole(caller);
+      if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+        Debug.trap("Unauthorized: Only users can increment view counts");
+      };
     };
 
     switch (textMap.get(posts, postId)) {
@@ -203,9 +206,9 @@ actor Ribbit {
   // It handles both fresh users and users after canister resets/upgrades
   // NOTE: This function modifies state and should ONLY be called from update functions, not queries
   func ensureUserRole(caller : Principal) {
-    // Anonymous principals cannot perform state-modifying operations
+    // Allow anonymous principals to perform actions
     if (Principal.isAnonymous(caller)) {
-      Debug.trap("Unauthorized: Anonymous users cannot perform this action");
+      return;
     };
 
     let currentRole = AccessControl.getUserRole(accessControlState, caller);
@@ -255,15 +258,6 @@ actor Ribbit {
         };
       };
     };
-  };
-
-  // Helper function to check if caller has user-level permissions
-  // For query functions only - does not trap on anonymous
-  func hasUserPermissionQuery(caller : Principal) : Bool {
-    if (Principal.isAnonymous(caller)) {
-      return true; // Anonymous users can query
-    };
-    AccessControl.hasPermission(accessControlState, caller, #user);
   };
 
   // Helper function to check if caller is a member of a pond
@@ -504,8 +498,6 @@ actor Ribbit {
   };
 
   public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
-    // Query function - returns current role without state modification
-    // Anonymous users are treated as guests but have user-level permissions per spec
     AccessControl.getUserRole(accessControlState, caller);
   };
 
@@ -531,24 +523,19 @@ actor Ribbit {
   };
 
   public query ({ caller }) func isCallerAdmin() : async Bool {
-    // Query function - returns current admin status without state modification
     AccessControl.isAdmin(accessControlState, caller);
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    // Query function - cannot modify state
-    // Both anonymous and authenticated users can access profiles
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can access profiles");
     };
     principalMap.get(userProfiles, caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    // Query function - cannot modify state
-    // Both anonymous and authenticated users can view profiles
-    if (not hasUserPermissionQuery(caller)) {
-      Debug.trap("Unauthorized: Only users can view profiles");
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Debug.trap("Unauthorized: Can only view your own profile");
     };
     principalMap.get(userProfiles, user);
   };
@@ -646,9 +633,7 @@ actor Ribbit {
 
   // Username Change Cooldown Functions - Require user permission
   public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
-    // Query function - cannot modify state
-    // Both anonymous and authenticated users can check
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       return false;
     };
 
@@ -758,9 +743,9 @@ actor Ribbit {
       bannerImage = ?bannerImage;
       createdAt = Time.now();
       memberCount = 1; // Creator is the first member
-      members = [caller]; // Add creator as member
+      members = [caller];
       moderators = [caller];
-      admin = caller; // Creator is automatically the admin
+      admin = caller;
       rules = [];
       visibility = #publicVisibility;
       associatedTags = [];
@@ -870,9 +855,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func isPondAdmin(pondName : Text) : async Bool {
-    // Query function - cannot modify state
-    // Both anonymous and authenticated users can check admin status
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       return false;
     };
     isAdminOfPond(caller, pondName);
@@ -1013,7 +996,6 @@ actor Ribbit {
         Debug.trap("Pond not found");
       };
       case (?pondData) {
-        // Check if user is a member of the pond
         if (not isMemberOfPond(caller, pond)) {
           Debug.trap("You must be a member of this pond to post a Lily.");
         };
@@ -1233,7 +1215,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedPost(postId : Text) : async Bool {
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       return false;
     };
 
@@ -1266,7 +1248,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedRibbit(ribbitId : Text) : async Bool {
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       return false;
     };
 
@@ -1329,7 +1311,7 @@ actor Ribbit {
     Array.map<(Text, Nat), Text>(limitedTags, func((tag, _) : (Text, Nat)) : Text { tag });
   };
 
-  // Ribbit Functions - Require user permission
+  // Ribbit Functions - Require user permission only
   public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
     ensureUserRole(caller);
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -1619,9 +1601,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func getJoinedPonds() : async [Text] {
-    // Query function - cannot modify state
-    // Both anonymous and authenticated users can check their joined ponds
-    if (not hasUserPermissionQuery(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can get joined ponds");
     };
 
@@ -1767,31 +1747,8 @@ actor Ribbit {
     };
   };
 
-  // Username-based Avatar Functions
-  // FIXED: Avatar operations now require proper authorization
-  public shared ({ caller }) func saveAvatarByUsername(username : Text, avatar : Storage.ExternalBlob) : async () {
-    ensureUserRole(caller);
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Debug.trap("Unauthorized: Only users can save avatars");
-    };
-
-    // Verify ownership: caller must own the username OR be an admin
-    switch (textMap.get(usernameOwnership, username)) {
-      case (null) {
-        Debug.trap("Username not registered");
-      };
-      case (?owner) {
-        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Debug.trap("Unauthorized: Can only save avatar for your own username");
-        };
-      };
-    };
-
-    usernameAvatars := textMap.put(usernameAvatars, username, avatar);
-  };
-
+  // New: Unrestricted read access for retrieving avatars!
   public query func getUserAvatarByUsername(username : Text) : async ?Storage.ExternalBlob {
-    // Public query - no authorization check for retrieval
     textMap.get(usernameAvatars, username);
   };
 
@@ -1902,7 +1859,7 @@ actor Ribbit {
     let sorted = Array.sort<(Text, TagStats)>(
       entries,
       func((_, a), (_, b)) {
-        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + a.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
       },
     );
     let take = Nat.min(limit, sorted.size());

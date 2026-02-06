@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { getUsername, setUsername, getPreviousUsername, getFroggyPhrase, setFroggyPhrase, restoreFromFroggyPhrase, clearFroggyPhrase } from '@/lib/user';
-import { useCheckUsernameAvailability, useRegisterUsername, useReleaseUsername, useCanChangeUsername, useRecordUsernameChange, useGetJoinedPonds, useGetAllPonds, useIsAdmin, useMergeSimilarTags, useGetTagRedirects, useLeavePond, useGetCallerUserProfile, useSaveCallerUserProfile, useGetUserAvatarByUsername, useSaveAvatarByUsername } from '@/hooks/useQueries';
+import { useCheckUsernameAvailability, useRegisterUsername, useReleaseUsername, useCanChangeUsername, useRecordUsernameChange, useGetJoinedPonds, useGetAllPonds, useIsAdmin, useMergeSimilarTags, useGetTagRedirects, useLeavePond, useGetCallerUserProfile, useSaveCallerUserProfile, useGetUserAvatarByUsername } from '@/hooks/useQueries';
 import { toast } from 'sonner';
 import { Loader2, Copy, Check, AlertCircle, ArrowRight, LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -42,7 +42,6 @@ export default function UserSettingsPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { data: currentAvatar } = useGetUserAvatarByUsername(currentUsername);
-  const saveAvatar = useSaveAvatarByUsername();
   
   // Froggy Phrase state
   const [froggyPhrase, setFroggyPhraseInput] = useState('');
@@ -170,8 +169,15 @@ export default function UserSettingsPage() {
         setUploadProgress(percentage);
       });
 
-      await saveAvatar.mutateAsync({
-        username: currentUsername,
+      // Save avatar through user profile
+      const currentProfile = userProfile || {
+        name: currentUsername,
+        joinedPonds: [],
+        avatar: undefined,
+      };
+
+      await saveProfile.mutateAsync({
+        ...currentProfile,
         avatar: avatarBlob,
       });
 
@@ -455,7 +461,7 @@ export default function UserSettingsPage() {
                     {currentAvatar && !avatarPreview ? 'Current avatar' : avatarPreview ? 'Preview' : 'No avatar uploaded'}
                   </p>
 
-                  {saveAvatar.isPending && uploadProgress > 0 && (
+                  {saveProfile.isPending && uploadProgress > 0 && (
                     <div className="w-full max-w-xs">
                       <Progress value={uploadProgress} className="h-2" />
                       <p className="text-center text-muted-foreground mt-1" style={{ fontSize: '0.875rem' }}>
@@ -482,10 +488,10 @@ export default function UserSettingsPage() {
                   {avatarFile && (
                     <Button 
                       onClick={handleSaveAvatar}
-                      disabled={saveAvatar.isPending}
+                      disabled={saveProfile.isPending}
                       className="bg-primary hover:bg-primary/90 rounded-full"
                     >
-                      {saveAvatar.isPending ? (
+                      {saveProfile.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Saving...
@@ -826,7 +832,7 @@ export default function UserSettingsPage() {
                   {currentAvatar && !avatarPreview ? 'Current avatar' : avatarPreview ? 'Preview' : 'No avatar uploaded'}
                 </p>
 
-                {saveAvatar.isPending && uploadProgress > 0 && (
+                {saveProfile.isPending && uploadProgress > 0 && (
                   <div className="w-full max-w-xs">
                     <Progress value={uploadProgress} className="h-2" />
                     <p className="text-center text-muted-foreground mt-1" style={{ fontSize: '0.875rem' }}>
@@ -853,10 +859,10 @@ export default function UserSettingsPage() {
                 {avatarFile && (
                   <Button 
                     onClick={handleSaveAvatar}
-                    disabled={saveAvatar.isPending}
+                    disabled={saveProfile.isPending}
                     className="bg-primary hover:bg-primary/90 rounded-full"
                   >
-                    {saveAvatar.isPending ? (
+                    {saveProfile.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Saving...

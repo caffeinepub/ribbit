@@ -208,7 +208,6 @@ export interface _SERVICE {
   'removeMemberFromPond' : ActorMethod<[string, Principal], undefined>,
   'removeModerator' : ActorMethod<[string, Principal], undefined>,
   'removePondRule' : ActorMethod<[string, string], undefined>,
-  'saveAvatarByUsername' : ActorMethod<[string, ExternalBlob], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchPonds' : ActorMethod<[string], Array<Pond>>,
   'searchPosts' : ActorMethod<[string], Array<Post>>,

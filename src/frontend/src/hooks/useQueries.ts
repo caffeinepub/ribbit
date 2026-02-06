@@ -708,8 +708,10 @@ export function useSaveCallerUserProfile() {
       await actor.saveCallerUserProfile(profile);
       return profile;
     },
-    onSuccess: () => {
+    onSuccess: (profile) => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      // Invalidate avatar cache for this username
+      queryClient.invalidateQueries({ queryKey: ['userAvatar', profile.name] });
     },
   });
 }
@@ -794,21 +796,6 @@ export function useGetUserAvatarByUsername(username: string) {
       return actor.getUserAvatarByUsername(username);
     },
     enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-export function useSaveAvatarByUsername() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ username, avatar }: { username: string; avatar: ExternalBlob }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.saveAvatarByUsername(username, avatar);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['userAvatar', variables.username] });
-    },
   });
 }
 

@@ -1,29 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-remove-the-bottom-margin-spacing-applied-to-the-tabs-area-on-the-homepage-pondpage-tagpage-and-taghubpage-so-that-there-is-no-extra-vertical-gap-below-the-tab-bar-before-the-main-card-list-content",
-      "title": "Remove the bottom margin spacing applied to the tabs area on the HomePage, PondPage, TagPage, and TagHubPage so that there is no extra vertical gap below the tab bar before the main card/list content.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    }
+  "summary": "App should support full anonymous usage (no required authentication) for core actions like joining/leaving ponds, changing usernames, and saving avatars; logins may be added later but are not required now.",
+  "architectural_notes": [
+    "For now, treat all users as anonymous; authentication/login is deferred and not required for core actions (pond membership changes, username changes, avatar saving)."
   ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove margin-bottom from the Tabs component on the homepage, pond page, tag page, and tags (taghub) page.",
+      "summary": "Remove authentication requirements so anonymous users can join/leave ponds, change username, and save avatars",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Remove bottom margin from tabs on Home, Pond, Tag, and TagHub pages",
+  "projectName": "Untitled request",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

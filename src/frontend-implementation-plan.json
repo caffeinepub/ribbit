@@ -1,40 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove bottom margin below tab bars on Home, Pond, Tag, and TagHub pages",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "summary": "Remove page-specific bottom margin spacing below tab bars on HomePage, PondPage, TagPage, and TagHubPage without affecting tab spacing elsewhere.",
-      "acceptanceCriteria": [
-        "HomePage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
-        "PondPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-0 lg:mb-4` from the Tabs `className`).",
-        "TagPage: the Tabs container no longer applies bottom-margin utility classes (e.g., remove `mb-4` from the Tabs `className`).",
-        "TagHubPage: the tabs header wrapper no longer adds bottom margin below the tab buttons (e.g., remove `mb-4` from the `border-b ...` wrapper inside Tabs) so the content card starts immediately below the tab bar.",
-        "No other pages/components have their tab spacing changed."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Remove the bottom-margin utility classes from the HomePage Tabs container so the main content card sits directly under the tab bar."
-        },
-        {
-          "path": "frontend/src/pages/PondPage.tsx",
-          "operation": "modify",
-          "description": "Remove the bottom-margin utility classes from the PondPage Tabs container so the pond feed card sits directly under the tab bar."
-        },
-        {
-          "path": "frontend/src/pages/TagPage.tsx",
-          "operation": "modify",
-          "description": "Remove the bottom-margin utility class from the TagPage Tabs container so the tag results card sits directly under the tab bar."
-        },
-        {
-          "path": "frontend/src/pages/TagHubPage.tsx",
-          "operation": "modify",
-          "description": "Remove the bottom-margin utility class from the TagHubPage tab header wrapper (the `border-b ...` wrapper inside Tabs) to eliminate the gap before the tag list card, without changing tab spacing in other pages."
-        }
-      ]
-    }
-  ]
+  "title": "Untitled request",
+  "requirements": []
 }

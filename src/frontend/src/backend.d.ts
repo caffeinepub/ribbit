@@ -172,7 +172,6 @@ export interface backendInterface {
     removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
     removePondRule(pondName: string, rule: string): Promise<void>;
-    saveAvatarByUsername(username: string, avatar: ExternalBlob): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchPonds(searchTerm: string): Promise<Array<Pond>>;
     searchPosts(searchTerm: string): Promise<Array<Post>>;

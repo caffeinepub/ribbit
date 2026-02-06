@@ -264,7 +264,6 @@ export interface backendInterface {
     removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
     removePondRule(pondName: string, rule: string): Promise<void>;
-    saveAvatarByUsername(username: string, avatar: ExternalBlob): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchPonds(searchTerm: string): Promise<Array<Pond>>;
     searchPosts(searchTerm: string): Promise<Array<Post>>;
@@ -1255,20 +1254,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.removePondRule(arg0, arg1);
-            return result;
-        }
-    }
-    async saveAvatarByUsername(arg0: string, arg1: ExternalBlob): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.saveAvatarByUsername(arg0, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg1));
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.saveAvatarByUsername(arg0, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
