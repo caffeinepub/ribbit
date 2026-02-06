@@ -3,12 +3,14 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
+  "known_issues": [
+    "Lily page layout is inconsistent: pond avatar is flush left while title/description, image, and action buttons are indented."
+  ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-lilypage-layout-so-the-lily-title-description-text-image-block-and-engagement-action-buttons-row-are-all-flush-to-the-left-with-no-extra-left-gap-indentation",
-      "title": "Update the LilyPage layout so the lily title, description text, image block, and engagement/action buttons row are all flush to the left with no extra left gap/indentation.",
+      "id": "feature-update-the-lily-page-layout-frontend-src-pages-lilypage-tsx-so-the-pond-avatar-metadata-title-description-image-link-block-and-engagement-action-buttons-are-all-left-aligned-in-a-single-column-with-no-extra-left-indentation-between-these-sections",
+      "title": "Update the Lily page layout (frontend/src/pages/LilyPage.tsx) so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons are all left-aligned in a single column with no extra left indentation between these sections.",
       "reqIds": [
         "REQ-1"
       ],
@@ -18,12 +20,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "On the lily page, align the title, description, image, and action buttons flush left to remove the gap",
+      "summary": "Left-align all elements on the lily page in a single column (remove indentation so pond avatar, title/description, image, and action buttons align flush left)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "LilyPage: Align title/description/image/action buttons flush left",
+  "projectName": "Left-align LilyPage content in a single column (remove indentation)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

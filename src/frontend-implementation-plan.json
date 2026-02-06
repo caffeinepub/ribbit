@@ -1,22 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "LilyPage: Flush-left alignment for title/description/image/actions",
+  "title": "LilyPage: convert avatar/content to single left-aligned column",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Adjust LilyPage container/padding so the title, description, image block, and engagement/action buttons align flush-left with no extra left indentation, while preserving avatar/metadata layout and responsiveness.",
+      "summary": "Update LilyPage layout so avatar, metadata/title/description, image/link block, and engagement buttons align to the same left edge in a single column (remove side-by-side indentation).",
       "acceptanceCriteria": [
-        "On the LilyPage, the left edges of the title, description, image, and engagement/action row align consistently (no additional left indentation relative to each other).",
-        "The change removes the visible left gap the user referenced without breaking the avatar/metadata display.",
-        "Layout remains responsive (mobile and desktop) and does not introduce horizontal overflow or clipped content.",
-        "No changes to backend behavior, data fetching, or mutations are required for this UI-only alignment update."
+        "On the Lily page, the left edge of the pond avatar aligns with the left edge of the title/description text, image/link block, and engagement/action row (i.e., no additional horizontal offset caused by a side-by-side avatar/content layout).",
+        "The page remains a single readable column within the existing max width container (no unintended horizontal scrolling on mobile or desktop).",
+        "All existing Lily page functionality remains intact (view count increment, like/unlike, share, bookmark, ribbit creation, lightbox modal)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Remove/replace the extra horizontal padding/indentation on the lily content wrapper (currently adding a larger left inset than surrounding sections) so the title, description, image block, and engagement/action row share the same flush-left start. Keep the avatar + metadata row intact, and ensure mobile/desktop responsive padding remains consistent with the rest of the page (e.g., matching the px-4 / lg:px-0 pattern used below)."
+          "description": "Refactor the top-of-page layout wrapper from a side-by-side flex row (avatar + content) into a single-column stack (e.g., flex-col) so the avatar block and all subsequent sections share the same left edge; ensure spacing is handled via vertical gaps/margins rather than left padding/indentation, and keep all existing event handlers and conditional rendering intact (view increment, like/share/bookmark actions, ribbit creation, and lightbox modal)."
         }
       ]
     }

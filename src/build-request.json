@@ -1,40 +1,35 @@
 {
   "kind": "build_request",
-  "title": "LilyPage: Align title/description/image/action buttons flush left",
+  "title": "Left-align LilyPage content in a single column (remove indentation)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the LilyPage layout so the lily title, description text, image block, and engagement/action buttons row are all flush to the left with no extra left gap/indentation.",
+      "text": "Update the Lily page layout (frontend/src/pages/LilyPage.tsx) so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons are all left-aligned in a single column with no extra left indentation between these sections.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-8",
-          "msg-9"
+          "user-1"
         ],
         "quotes": [
-          "In the lily page, can you make the title description image action buttons flush to the left so there isn’t a gap.",
-          "1. Yes",
-          "Yes"
+          "Be left aligned in a single column"
         ]
       },
       "acceptanceCriteria": [
-        "On the LilyPage, the left edges of the title, description, image, and engagement/action row align consistently (no additional left indentation relative to each other).",
-        "The change removes the visible left gap the user referenced without breaking the avatar/metadata display.",
-        "Layout remains responsive (mobile and desktop) and does not introduce horizontal overflow or clipped content.",
-        "No changes to backend behavior, data fetching, or mutations are required for this UI-only alignment update."
+        "On the Lily page, the left edge of the pond avatar aligns with the left edge of the title/description text, image/link block, and engagement/action row (i.e., no additional horizontal offset caused by a side-by-side avatar/content layout).",
+        "The page remains a single readable column within the existing max width container (no unintended horizontal scrolling on mobile or desktop).",
+        "All existing Lily page functionality remains intact (view count increment, like/unlike, share, bookmark, ribbit creation, lightbox modal)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (compose existing shadcn components instead).",
-    "Do not modify immutable paths listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
-    "Keep the backend single-actor architecture unchanged; no backend changes are needed for this request."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/*",
+    "Backend must remain single-actor (no new backend canisters/services)."
   ],
   "nonGoals": [
-    "Redesigning the LilyPage beyond alignment (e.g., changing typography, adding new features, altering engagement functionality).",
-    "Changing the mobile header/logo behavior (separate pending request)."
+    "No backend data model or API changes.",
+    "No redesign of other pages/components beyond the Lily page alignment fix.",
+    "No new features added to the Lily page (only layout/alignment correction)."
   ],
   "imageRequirements": {
     "required": [],

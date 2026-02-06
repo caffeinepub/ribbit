@@ -1,10 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Remove the extra left gap on the LilyPage by aligning the lily title, description, image block, and engagement/action buttons flush left.
+**Goal:** Left-align all Lily page content into a single column with no extra indentation between sections.
 
 **Planned changes:**
-- Adjust LilyPage layout/styles so the left edges of the title, description text, image block, and engagement/action buttons row align consistently with no extra left indentation.
-- Ensure the alignment update preserves the avatar/metadata area layout and remains responsive on mobile and desktop without causing horizontal overflow.
+- Update `frontend/src/pages/LilyPage.tsx` layout so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons share the same left edge in a single-column flow (remove side-by-side/avatar-offset alignment).
+- Ensure the page stays within the existing max-width container without introducing horizontal scrolling across mobile and desktop.
+- Preserve all existing Lily page behavior (view count increment, like/unlike, share, bookmark, ribbit creation, lightbox modal).
 
-**User-visible outcome:** On the LilyPage, the title, description, image, and action/engagement buttons line up flush to the left with the visible left gap removed.
+**User-visible outcome:** On the Lily page, all content sections align cleanly on the left in one readable column, with no unwanted horizontal offsets, while all current interactions continue working as before.

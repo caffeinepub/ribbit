@@ -161,137 +161,141 @@ export default function LilyPage() {
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto px-4 lg:px-0">
           <div className="overflow-hidden mb-4">
-            <div className="flex items-start gap-4 mb-4">
+            {/* Single column layout - all elements left-aligned */}
+            <div className="flex flex-col gap-4 mb-4">
+              {/* Avatar */}
               <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
                 <AvatarFallback className="text-lg">🐸</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2" style={{ fontSize: '0.875rem' }}>
-                  <Link 
-                    to="/pond/$name" 
-                    params={{ name: lily.pond }} 
-                    className="hover:text-primary font-normal"
-                  >
-                    pond/{lily.pond}
-                  </Link>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="font-medium text-foreground">{lily.username}</span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
-                </div>
-                <h1 className="text-2xl font-bold mb-3 leading-tight">
-                  {lily.title}
-                  {lily.tag && (
-                    <>
-                      {' '}
-                      <Link 
-                        to="/tag/$tag" 
-                        params={{ tag: lily.tag }}
-                        className="text-accent hover:underline text-2xl"
-                      >
-                        #{lily.tag}
-                      </Link>
-                    </>
-                  )}
-                </h1>
-                
-                {/* Description directly below title with 1rem font size */}
-                {lily.content && (
-                  <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed mb-4" style={{ fontSize: '1rem' }}>{lily.content}</p>
-                )}
 
-                {/* Image block */}
-                {lily.image && (
-                  <div className="mb-4">
-                    {shouldShowBlurredBackdrop ? (
-                      <div 
-                        className="relative w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                        onClick={() => setLightboxOpen(true)}
-                      >
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${lily.image.getDirectURL()})`,
-                            filter: 'blur(30px)',
-                            transform: 'scale(1.1)',
-                          }}
-                        />
-                        <div className="relative flex items-center justify-center w-full h-full">
-                          <img
-                            src={lily.image.getDirectURL()}
-                            alt={lily.title}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        className="w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                        onClick={() => setLightboxOpen(true)}
-                      >
+              {/* Metadata row */}
+              <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
+                <Link 
+                  to="/pond/$name" 
+                  params={{ name: lily.pond }} 
+                  className="hover:text-primary font-normal"
+                >
+                  pond/{lily.pond}
+                </Link>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-medium text-foreground">{lily.username}</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-2xl font-bold leading-tight">
+                {lily.title}
+                {lily.tag && (
+                  <>
+                    {' '}
+                    <Link 
+                      to="/tag/$tag" 
+                      params={{ tag: lily.tag }}
+                      className="text-accent hover:underline text-2xl"
+                    >
+                      #{lily.tag}
+                    </Link>
+                  </>
+                )}
+              </h1>
+              
+              {/* Description */}
+              {lily.content && (
+                <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed" style={{ fontSize: '1rem' }}>{lily.content}</p>
+              )}
+
+              {/* Image block */}
+              {lily.image && (
+                <div>
+                  {shouldShowBlurredBackdrop ? (
+                    <div 
+                      className="relative w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => setLightboxOpen(true)}
+                    >
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${lily.image.getDirectURL()})`,
+                          filter: 'blur(30px)',
+                          transform: 'scale(1.1)',
+                        }}
+                      />
+                      <div className="relative flex items-center justify-center w-full h-full">
                         <img
                           src={lily.image.getDirectURL()}
                           alt={lily.title}
-                          className="w-full h-full object-cover"
+                          className="max-h-full max-w-full object-contain"
                         />
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Link block */}
-                {lily.link && (
-                  <div className="mb-4">
-                    <a
-                      href={lily.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => setLightboxOpen(true)}
                     >
-                      <ExternalLink className="action-icon" />
-                      {lily.link}
-                    </a>
-                  </div>
-                )}
-
-                {/* Engagement row - now inside flex-1 min-w-0 container as last child */}
-                <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                  <button
-                    onClick={handleLikeClick}
-                    disabled={isLiking || isUnliking}
-                    className={`flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors ${
-                      hasLiked ? 'text-primary' : ''
-                    }`}
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className={`action-icon transition-all`}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill={hasLiked ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    <span>{formatNumber(likeCount)}</span>
-                  </button>
-                  <div className="flex items-center gap-1.5">
-                    <MessageCircle className="action-icon" />
-                    <span>{formatNumber(ribbitCount)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Eye className="action-icon" />
-                    <span>{formatNumber(viewCount)}</span>
-                  </div>
-                  <button
-                    onClick={handleShareClick}
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                  >
-                    <Send className="action-icon" />
-                  </button>
-                  <BookmarkButton lilyId={lily.id} />
+                      <img
+                        src={lily.image.getDirectURL()}
+                        alt={lily.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Link block */}
+              {lily.link && (
+                <div>
+                  <a
+                    href={lily.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                  >
+                    <ExternalLink className="action-icon" />
+                    {lily.link}
+                  </a>
+                </div>
+              )}
+
+              {/* Engagement row */}
+              <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                <button
+                  onClick={handleLikeClick}
+                  disabled={isLiking || isUnliking}
+                  className={`flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors ${
+                    hasLiked ? 'text-primary' : ''
+                  }`}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`action-icon transition-all`}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={hasLiked ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  <span>{formatNumber(likeCount)}</span>
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <MessageCircle className="action-icon" />
+                  <span>{formatNumber(ribbitCount)}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Eye className="action-icon" />
+                  <span>{formatNumber(viewCount)}</span>
+                </div>
+                <button
+                  onClick={handleShareClick}
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Send className="action-icon" />
+                </button>
+                <BookmarkButton lilyId={lily.id} />
               </div>
             </div>
           </div>
