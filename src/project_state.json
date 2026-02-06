@@ -1,22 +1,85 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App should support full anonymous usage (no required authentication) for core actions like joining/leaving ponds, changing usernames, and saving avatars; logins may be added later but are not required now.",
-  "architectural_notes": [
-    "For now, treat all users as anonymous; authentication/login is deferred and not required for core actions (pond membership changes, username changes, avatar saving)."
-  ],
+  "summary": "UI layout and spacing fixes across mobile search form, homepage, tag hub/tag page, and pond page.",
+  "architectural_notes": [],
   "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-in-the-mobile-search-ui-set-the-search-form-to-use-margin-block-end-auto-so-the-form-aligns-correctly-on-mobile",
+      "title": "In the mobile search UI, set the search form to use `margin-block-end: auto` so the form aligns correctly on mobile.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-home-page-remove-padding-from-the-wrapper-div-currently-using-classname-py-4-px-4-lg-px-0-lg-py-0-so-it-no-longer-applies-padding",
+      "title": "On the Home page, remove padding from the wrapper div currently using `className=\"py-4 px-4 lg:px-0 lg:py-0\"` so it no longer applies padding.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-tag-page-remove-the-mb-4-margin-bottom-from-the-tabs-root-container-described-as-class-flex-flex-col-gap-2-mb-4-e-g-by-overriding-the-tabs-root-class-style-in-tagpage-tsx-without-editing-shadcn-ui-source-files",
+      "title": "On the Tag page, remove the `mb-4` margin-bottom from the Tabs root container described as `class=\"flex flex-col gap-2 mb-4\"` (e.g., by overriding the Tabs root class/style in `TagPage.tsx` without editing shadcn/ui source files).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-pond-page-remove-the-always-rendered-mobile-only-padding-wrapper-div-with-classname-py-4-px-4-lg-hidden-that-creates-empty-vertical-space-if-that-wrapper-is-currently-used-for-the-join-button-area-refactor-so-the-wrapper-only-renders-when-the-join-button-section-is-actually-shown-i-e-when-the-user-is-not-a-member",
+      "title": "On the Pond page, remove the always-rendered mobile-only padding wrapper `div` with `className=\"py-4 px-4 lg:hidden\"` that creates empty vertical space; if that wrapper is currently used for the Join button area, refactor so the wrapper only renders when the Join button section is actually shown (i.e., when the user is not a member).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove authentication requirements so anonymous users can join/leave ponds, change username, and save avatars",
+      "summary": "Mobile: set search form to use `margin-block-end: auto`",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Homepage: remove padding from `<div class=\"py-4 px-4 lg:px-0 lg:py-0\">`",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Tags page (tag hub): remove `mb-4` from `<div class=\"border-b border-border bg-background mb-4\">`",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Tag page: remove `mb-4` from tabs container `<div ... class=\"flex flex-col gap-2 mb-4\">`",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Pond page: remove `<div class=\"py-4 px-4 lg:hidden\"></div>`",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "On the Tags page (Tag Hub), remove the `mb-4` margin-bottom from the tabs header divider container (the div described as `class=\"border-b border-border bg-background mb-4\"`) so there is no bottom margin applied by that element.",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Untitled request",
+  "projectName": "Fix mobile search form and remove extra spacing wrappers across Home/Tags/Tag/Pond pages",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

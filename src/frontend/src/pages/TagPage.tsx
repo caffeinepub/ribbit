@@ -61,12 +61,12 @@ export default function TagPage() {
                   </div>
                 </div>
 
-                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0">
                   <div className="border-b border-border bg-background">
                     <div className="flex">
                       <button
                         onClick={() => setSortBy('newest')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           sortBy === 'newest'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
@@ -76,7 +76,7 @@ export default function TagPage() {
                       </button>
                       <button
                         onClick={() => setSortBy('most_viewed')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           sortBy === 'most_viewed'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
@@ -86,7 +86,7 @@ export default function TagPage() {
                       </button>
                       <button
                         onClick={() => setSortBy('most_replied')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           sortBy === 'most_replied'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'

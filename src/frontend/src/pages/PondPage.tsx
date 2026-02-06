@@ -162,24 +162,18 @@ export default function PondPage() {
           <main className="lg:col-span-6">
             <div style={{ maxWidth: '44rem' }}>
               {/* Join button - only show on mobile if not a member */}
-              <div className="py-4 px-4 lg:hidden">
-                {!isMember && (
-                  <div className="mb-4">
-                    {isLoadingJoined ? (
-                      <Skeleton className="h-9 w-24" />
-                    ) : (
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={handleJoinPond}
-                        disabled={isProcessing}
-                      >
-                        {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
+              {!isMember && !isLoadingJoined && (
+                <div className="py-4 px-4 lg:hidden">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={handleJoinPond}
+                    disabled={isProcessing}
+                  >
+                    {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
+                  </Button>
+                </div>
+              )}
 
               {/* Desktop: No tabs, just sorting */}
               <div className="py-4 px-4 lg:px-0 lg:py-0">

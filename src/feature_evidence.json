@@ -1,4 +1,85 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-in-the-mobile-search-ui-set-the-search-form-to-use-margin-block-end-auto-so-the-form-aligns-correctly-on-mobile",
+      "featureTitle": "In the mobile search UI, set the search form to use `margin-block-end: auto` so the form aligns correctly on mobile.",
+      "files": [
+        "frontend/src/components/search/MobileSearchModal.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-the-home-page-remove-padding-from-the-wrapper-div-currently-using-classname-py-4-px-4-lg-px-0-lg-py-0-so-it-no-longer-applies-padding",
+      "featureTitle": "On the Home page, remove padding from the wrapper div currently using `className=\"py-4 px-4 lg:px-0 lg:py-0\"` so it no longer applies padding.",
+      "files": [
+        "frontend/src/pages/HomePage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-the-tag-page-remove-the-mb-4-margin-bottom-from-the-tabs-root-container-described-as-class-flex-flex-col-gap-2-mb-4-e-g-by-overriding-the-tabs-root-class-style-in-tagpage-tsx-without-editing-shadcn-ui-source-files",
+      "featureTitle": "On the Tag page, remove the `mb-4` margin-bottom from the Tabs root container described as `class=\"flex flex-col gap-2 mb-4\"` (e.g., by overriding the Tabs root class/style in `TagPage.tsx` without editing shadcn/ui source files).",
+      "files": [
+        "frontend/src/pages/TagPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-the-pond-page-remove-the-always-rendered-mobile-only-padding-wrapper-div-with-classname-py-4-px-4-lg-hidden-that-creates-empty-vertical-space-if-that-wrapper-is-currently-used-for-the-join-button-area-refactor-so-the-wrapper-only-renders-when-the-join-button-section-is-actually-shown-i-e-when-the-user-is-not-a-member",
+      "featureTitle": "On the Pond page, remove the always-rendered mobile-only padding wrapper `div` with `className=\"py-4 px-4 lg:hidden\"` that creates empty vertical space; if that wrapper is currently used for the Join button area, refactor so the wrapper only renders when the Join button section is actually shown (i.e., when the user is not a member).",
+      "files": [
+        "frontend/src/pages/PondPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

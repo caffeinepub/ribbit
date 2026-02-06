@@ -129,13 +129,27 @@
         outline: none;
     }
 
-    /* Header desktop search input font sizing - scoped to md+ only */
+    /* Header desktop search input font sizing and height - scoped to md+ only */
     @media (min-width: 768px) {
         .header-desktop-search-input {
             font-size: 0.875rem;
+            height: 2.5rem;
+            min-height: 2.5rem;
         }
 
         .header-desktop-search-input::placeholder {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Mobile search input styling - scoped to <768px only */
+    @media (max-width: 767px) {
+        .mobile-search-input {
+            font-size: 0.875rem;
+            margin-block-end: auto;
+        }
+
+        .mobile-search-input::placeholder {
             font-size: 0.875rem;
         }
     }

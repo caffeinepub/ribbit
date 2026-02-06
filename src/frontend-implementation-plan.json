@@ -1,6 +1,82 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Untitled request",
-  "requirements": []
+  "title": "Fix mobile search form alignment and remove extra spacing wrappers across Home/Tags/Tag/Pond pages",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Apply `margin-block-end: auto` to the mobile search modal form to fix vertical alignment on mobile.",
+      "acceptanceCriteria": [
+        "On mobile, the search form in the mobile search modal has `margin-block-end: auto` applied (via inline style or equivalent CSS).",
+        "No layout regressions in the mobile search header (input remains vertically centered and full-width)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/search/MobileSearchModal.tsx",
+          "operation": "modify",
+          "description": "Add `marginBlockEnd: 'auto'` (or equivalent) styling to the search <form> in the mobile search modal header so it aligns correctly on mobile, without changing shadcn/ui source files."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Remove padding from the Home page wrapper div around the tabs header area.",
+      "acceptanceCriteria": [
+        "Home page no longer applies `py-4` and `px-4` padding from that wrapper around the tabs header area.",
+        "Desktop layout remains aligned within the `lg:container` grid."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Update the wrapper div currently using `className=\"py-4 px-4 lg:px-0 lg:py-0\"` to remove the padding classes (or remove the wrapper if safe), ensuring the tabs header area no longer receives that padding and desktop alignment within `lg:container` remains intact."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Remove bottom margin from the Tags (Tag Hub) tabs header divider container.",
+      "acceptanceCriteria": [
+        "The Tags (Tag Hub) header divider container does not include `mb-4`.",
+        "No unwanted vertical gap appears below the tabs header on the Tags page."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/TagHubPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the tabs header divider container on the Tags (Tag Hub) page does not apply `mb-4` (e.g., remove `mb-4` from the `border-b border-border bg-background` container if present) so there is no extra vertical gap below the tabs header."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Remove the `mb-4` spacing effect from the Tag page Tabs root container by overriding at the page level.",
+      "acceptanceCriteria": [
+        "The Tag page Tabs root container has no `margin-bottom: 1rem` effect (no `mb-4` visible in computed styles).",
+        "No changes are made inside `frontend/src/components/ui/*` (compose/override from the page level instead)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/TagPage.tsx",
+          "operation": "modify",
+          "description": "Override the shadcn/ui Tabs root spacing from within TagPage (e.g., pass a `className` that cancels `mb-4` such as `mb-0`) so the Tabs root container no longer has the `mb-4` margin effect, without editing any files under `frontend/src/components/ui/*`."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Remove the always-rendered mobile padding spacer on the Pond page and render mobile Join CTA spacing only when needed (non-members).",
+      "acceptanceCriteria": [
+        "When the user is already a pond member, there is no empty padded spacer area at the top of the pond feed on mobile.",
+        "The Join Pond CTA still appears on mobile for non-members, with appropriate spacing, but without an always-present empty wrapper."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/PondPage.tsx",
+          "operation": "modify",
+          "description": "Refactor the mobile-only join CTA wrapper currently rendered as `div className=\"py-4 px-4 lg:hidden\"` so it only renders when the Join Pond section should be shown (i.e., when membership is known and the user is not a member), eliminating the empty padded space for members on mobile."
+        }
+      ]
+    }
+  ]
 }

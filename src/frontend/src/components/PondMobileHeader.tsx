@@ -60,7 +60,7 @@ export default function PondMobileHeader({ pond, currentTab }: PondMobileHeaderP
         <div className="flex">
           <button
             onClick={() => navigate({ to: '/pond/$name', params: { name: pond.name } })}
-            className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
+            className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
               currentTab === 'feed'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
@@ -70,7 +70,7 @@ export default function PondMobileHeader({ pond, currentTab }: PondMobileHeaderP
           </button>
           <button
             onClick={() => navigate({ to: '/pond/$name/about', params: { name: pond.name } })}
-            className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
+            className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
               currentTab === 'about'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'

@@ -5,7 +5,7 @@ import LeftSidebar from '@/components/LeftSidebar';
 import TagHubRightSidebar from '@/components/TagHubRightSidebar';
 import { useGetTopTags, useGetTrendingTags, useGetNewestTags } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Hash, TrendingUp, Sparkles, Tag, ChevronRight } from 'lucide-react';
+import { Hash, Tag, ChevronRight } from 'lucide-react';
 import type { TagStats } from '@/backend';
 
 function TagItem({ tag, stats, rank }: { tag: string; stats: TagStats; rank: number }) {
@@ -16,16 +16,16 @@ function TagItem({ tag, stats, rank }: { tag: string; stats: TagStats; rank: num
       className="block px-4 py-3 hover:bg-gray-100 active:bg-gray-200 transition-colors border-b border-border last:border-b-0"
     >
       <div className="flex items-center gap-3">
-        {/* Rank Number - smaller than TagPage */}
+        {/* Rank Number - 1.125rem font size */}
         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 flex-shrink-0">
-          <span className="text-sm font-bold text-primary">
+          <span className="font-bold text-primary" style={{ fontSize: '1.125rem' }}>
             {rank}
           </span>
         </div>
         
-        {/* Tag Icon Avatar - circular background with light green tint */}
-        <div className="flex items-center justify-center w-8 h-8 rounded-full tag-icon-circle-bg flex-shrink-0">
-          <Tag className="w-4 h-4 text-primary" />
+        {/* Tag Icon Avatar - 1.25rem x 1.25rem */}
+        <div className="flex items-center justify-center rounded-full tag-icon-circle-bg flex-shrink-0" style={{ width: '1.25rem', height: '1.25rem' }}>
+          <Tag style={{ width: '1.25rem', height: '1.25rem' }} className="text-primary" />
         </div>
         
         {/* Tag Name and Stats - smaller typography */}
@@ -38,9 +38,9 @@ function TagItem({ tag, stats, rank }: { tag: string; stats: TagStats; rank: num
           </div>
         </div>
         
-        {/* Chevron Right Icon */}
+        {/* Chevron Right Icon - 1.25rem x 1.25rem */}
         <div className="flex-shrink-0">
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          <ChevronRight style={{ width: '1.25rem', height: '1.25rem' }} className="text-muted-foreground" />
         </div>
       </div>
     </Link>
@@ -114,36 +114,33 @@ export default function TagHubPage() {
                     <div className="flex">
                       <button
                         onClick={() => setActiveTab('trending')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           activeTab === 'trending'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                         }`}
                       >
-                        <TrendingUp className="h-4 w-4" />
-                        <span className="hidden sm:inline">Trending</span>
+                        Trending
                       </button>
                       <button
                         onClick={() => setActiveTab('top')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           activeTab === 'top'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                         }`}
                       >
-                        <Hash className="h-4 w-4" />
-                        <span className="hidden sm:inline">Top</span>
+                        Top
                       </button>
                       <button
                         onClick={() => setActiveTab('newest')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                        className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
                           activeTab === 'newest'
                             ? 'border-primary text-primary'
                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                         }`}
                       >
-                        <Sparkles className="h-4 w-4" />
-                        <span className="hidden sm:inline">Newest</span>
+                        Newest
                       </button>
                     </div>
                   </div>

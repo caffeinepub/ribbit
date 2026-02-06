@@ -50,17 +50,16 @@ export default function MobileSearchModal({
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
           </Button>
-          <form onSubmit={handleSubmit} className="flex-1">
+          <form onSubmit={handleSubmit} className="flex-1" style={{ marginBlockEnd: 'auto' }}>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search ponds and lilies..."
-                className="pl-10 rounded-full"
+                className="pl-10 rounded-full mobile-search-input"
                 value={query}
                 onChange={(e) => onQueryChange(e.target.value)}
                 autoFocus
-                style={{ fontSize: '1rem' }}
               />
             </div>
           </form>

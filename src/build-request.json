@@ -1,10 +1,101 @@
 {
   "kind": "build_request",
-  "title": "Untitled request",
+  "title": "Fix mobile search form and remove extra spacing wrappers across Home/Tags/Tag/Pond pages",
   "priority": "normal",
-  "requirements": [],
-  "constraints": [],
-  "nonGoals": [],
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "In the mobile search UI, set the search form to use `margin-block-end: auto` so the form aligns correctly on mobile.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "you still havent made the margin-block-end: auto in mobile version for the search form."
+        ]
+      },
+      "acceptanceCriteria": [
+        "On mobile, the search form in the mobile search modal has `margin-block-end: auto` applied (via inline style or equivalent CSS).",
+        "No layout regressions in the mobile search header (input remains vertically centered and full-width)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "On the Home page, remove padding from the wrapper div currently using `className=\"py-4 px-4 lg:px-0 lg:py-0\"` so it no longer applies padding.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "remove the padding from this div in the homepage: <div class=\"py-4 px-4 lg:px-0 lg:py-0\">"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Home page no longer applies `py-4` and `px-4` padding from that wrapper around the tabs header area.",
+        "Desktop layout remains aligned within the `lg:container` grid."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "On the Tags page (Tag Hub), remove the `mb-4` margin-bottom from the tabs header divider container (the div described as `class=\"border-b border-border bg-background mb-4\"`) so there is no bottom margin applied by that element.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "remove the margin-bottom from this div in the tags page (tag hub): <div class=\"border-b border-border bg-background mb-4\">"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Tags (Tag Hub) header divider container does not include `mb-4`.",
+        "No unwanted vertical gap appears below the tabs header on the Tags page."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "On the Tag page, remove the `mb-4` margin-bottom from the Tabs root container described as `class=\"flex flex-col gap-2 mb-4\"` (e.g., by overriding the Tabs root class/style in `TagPage.tsx` without editing shadcn/ui source files).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "remove this margin-bottom from this div in the tag page: <div dir=\"ltr\" data-orientation=\"horizontal\" data-slot=\"tabs\" class=\"flex flex-col gap-2 mb-4\">"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Tag page Tabs root container has no `margin-bottom: 1rem` effect (no `mb-4` visible in computed styles).",
+        "No changes are made inside `frontend/src/components/ui/*` (compose/override from the page level instead)."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "On the Pond page, remove the always-rendered mobile-only padding wrapper `div` with `className=\"py-4 px-4 lg:hidden\"` that creates empty vertical space; if that wrapper is currently used for the Join button area, refactor so the wrapper only renders when the Join button section is actually shown (i.e., when the user is not a member).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "remove this div in the pond page: <div class=\"py-4 px-4 lg:hidden\"></div>"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When the user is already a pond member, there is no empty padded spacer area at the top of the pond feed on mobile.",
+        "The Join Pond CTA still appears on mobile for non-members, with appropriate spacing, but without an always-present empty wrapper."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit files under `frontend/src/components/ui/*` (immutable shadcn/ui sources); apply spacing overrides from page/components that consume them instead."
+  ],
+  "nonGoals": [
+    "No backend (Motoko) changes.",
+    "No new features or redesign beyond the specified spacing/layout adjustments."
+  ],
   "imageRequirements": {
     "required": [],
     "edits": []

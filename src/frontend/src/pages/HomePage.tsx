@@ -42,34 +42,32 @@ export default function HomePage() {
           {/* Main Feed - max-width 44rem */}
           <main className="lg:col-span-6">
             <div style={{ maxWidth: '44rem' }}>
-              <div className="py-4 px-4 lg:px-0 lg:py-0">
-                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                  <div className="border-b border-border bg-background">
-                    <div className="flex">
-                      <button
-                        onClick={() => setSortBy('trending')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
-                          sortBy === 'trending'
-                            ? 'border-primary text-primary'
-                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                        }`}
-                      >
-                        Trending
-                      </button>
-                      <button
-                        onClick={() => setSortBy('new')}
-                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors ${
-                          sortBy === 'new'
-                            ? 'border-primary text-primary'
-                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                        }`}
-                      >
-                        New
-                      </button>
-                    </div>
+              <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <div className="border-b border-border bg-background">
+                  <div className="flex">
+                    <button
+                      onClick={() => setSortBy('trending')}
+                      className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
+                        sortBy === 'trending'
+                          ? 'border-primary text-primary'
+                          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      }`}
+                    >
+                      Trending
+                    </button>
+                    <button
+                      onClick={() => setSortBy('new')}
+                      className={`flex-1 pb-3 pt-3 px-0 md:px-4 border-b-2 font-medium transition-colors ${
+                        sortBy === 'new'
+                          ? 'border-primary text-primary'
+                          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      }`}
+                    >
+                      New
+                    </button>
                   </div>
-                </Tabs>
-              </div>
+                </div>
+              </Tabs>
 
               <div className="bg-card lg:rounded-lg overflow-hidden">
                 {isLoading ? (
