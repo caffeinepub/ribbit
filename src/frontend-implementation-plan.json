@@ -1,21 +1,22 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "LilyPage: convert avatar/content to single left-aligned column",
+  "title": "Adjust desktop header logo typography for “ribbit”",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Update LilyPage layout so avatar, metadata/title/description, image/link block, and engagement buttons align to the same left edge in a single column (remove side-by-side indentation).",
+      "id": "REQ-3",
+      "summary": "Update the desktop header logo text “ribbit” inline typography to the specified letter-spacing and font size while keeping the current font family and weight unchanged.",
       "acceptanceCriteria": [
-        "On the Lily page, the left edge of the pond avatar aligns with the left edge of the title/description text, image/link block, and engagement/action row (i.e., no additional horizontal offset caused by a side-by-side avatar/content layout).",
-        "The page remains a single readable column within the existing max width container (no unintended horizontal scrolling on mobile or desktop).",
-        "All existing Lily page functionality remains intact (view count increment, like/unlike, share, bookmark, ribbit creation, lightbox modal)."
+        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style letterSpacing set to '-0.035rem'.",
+        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style fontSize set to '1.7rem'.",
+        "The logo continues to use fontFamily '\"Tilt Warp\", cursive, sans-serif' and fontWeight 400.",
+        "No other header layout/behavior changes are introduced."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LilyPage.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Refactor the top-of-page layout wrapper from a side-by-side flex row (avatar + content) into a single-column stack (e.g., flex-col) so the avatar block and all subsequent sections share the same left edge; ensure spacing is handled via vertical gaps/margins rather than left padding/indentation, and keep all existing event handlers and conditional rendering intact (view increment, like/share/bookmark actions, ribbit creation, and lightbox modal)."
+          "description": "In the desktop logo <span> that renders the text “ribbit”, update the inline style values: set letterSpacing to '-0.035rem' and fontSize to '1.7rem', leaving fontFamily '\"Tilt Warp\", cursive, sans-serif' and fontWeight 400 unchanged. Do not change any other header styling, layout, navigation, search, or dropdown behavior."
         }
       ]
     }

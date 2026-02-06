@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T09:50:01.466Z",
+  "generatedAt": "2026-02-06T19:31:54.767Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,14 +11,14 @@
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Update the Lily page layout (frontend/src/pages/LilyPage.tsx) so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons are all left-aligned in a single column with no extra left indentation between these sections.",
+        "id": "REQ-3",
+        "summary": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/components/Header.tsx"
         ]
       }
     ]
@@ -28,7 +28,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/components/Header.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

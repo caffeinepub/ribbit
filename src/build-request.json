@@ -1,35 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Left-align LilyPage content in a single column (remove indentation)",
+  "title": "Adjust header “ribbit” logo letter-spacing and font size",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update the Lily page layout (frontend/src/pages/LilyPage.tsx) so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons are all left-aligned in a single column with no extra left indentation between these sections.",
+      "id": "REQ-3",
+      "text": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "user-1"
+          "msg-4",
+          "msg-6"
         ],
         "quotes": [
-          "Be left aligned in a single column"
+          "change the letter spacing for the ribbit logo to -0.035rem  and the font-size to 1.7rem",
+          "go ahead"
         ]
       },
       "acceptanceCriteria": [
-        "On the Lily page, the left edge of the pond avatar aligns with the left edge of the title/description text, image/link block, and engagement/action row (i.e., no additional horizontal offset caused by a side-by-side avatar/content layout).",
-        "The page remains a single readable column within the existing max width container (no unintended horizontal scrolling on mobile or desktop).",
-        "All existing Lily page functionality remains intact (view count increment, like/unlike, share, bookmark, ribbit creation, lightbox modal)."
+        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style letterSpacing set to '-0.035rem'.",
+        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style fontSize set to '1.7rem'.",
+        "The logo continues to use fontFamily '\"Tilt Warp\", cursive, sans-serif' and fontWeight 400.",
+        "No other header layout/behavior changes are introduced."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/*",
-    "Backend must remain single-actor (no new backend canisters/services)."
+    "Frontend immutable paths listed in SYSTEM_CONTEXT must not be edited.",
+    "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "No backend data model or API changes.",
-    "No redesign of other pages/components beyond the Lily page alignment fix.",
-    "No new features added to the Lily page (only layout/alignment correction)."
+    "Do not change the mobile logo image or its sizing/positioning.",
+    "Do not modify the Google Font loading setup in frontend/index.html.",
+    "Do not alter any other header styling, navigation, search behavior, or dropdown behavior beyond the specified typography changes."
   ],
   "imageRequirements": {
     "required": [],

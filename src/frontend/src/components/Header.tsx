@@ -111,7 +111,17 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
 
           {/* Desktop Logo - hidden on mobile */}
           <Link to="/" className="hidden md:flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary" style={{ fontSize: '1.55rem', fontWeight: 700, letterSpacing: '-0.025rem' }}>ribbit</span>
+            <span 
+              className="text-primary" 
+              style={{ 
+                fontFamily: '"Tilt Warp", cursive, sans-serif',
+                fontSize: '1.7rem', 
+                fontWeight: 400, 
+                letterSpacing: '-0.035rem' 
+              }}
+            >
+              ribbit
+            </span>
           </Link>
         </div>
 

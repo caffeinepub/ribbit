@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lily-page-layout-frontend-src-pages-lilypage-tsx-so-the-pond-avatar-metadata-title-description-image-link-block-and-engagement-action-buttons-are-all-left-aligned-in-a-single-column-with-no-extra-left-indentation-between-these-sections",
-      "featureTitle": "Update the Lily page layout (frontend/src/pages/LilyPage.tsx) so the pond avatar, metadata/title/description, image/link block, and engagement/action buttons are all left-aligned in a single column with no extra left indentation between these sections.",
+      "featureId": "feature-update-the-desktop-header-logo-text-ribbit-typography-in-frontend-src-components-header-tsx-to-use-letter-spacing-0-035rem-and-font-size-1-7rem-keeping-the-existing-tilt-warp-font-family-and-font-weight-400-unchanged",
+      "featureTitle": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
       "files": [
-        "frontend/src/pages/LilyPage.tsx"
+        "frontend/src/components/Header.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -17,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-3"
       ],
       "confidence": "high"
     }
