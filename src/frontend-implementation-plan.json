@@ -1,37 +1,28 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Simplify Tag page stats and make the global header fully opaque",
+  "title": "Alphanumeric-only validation for Create Pond name (frontend)",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Remove “Total Activity” and “Last Activity” fields from the Tag detail page stats block while preserving the rest of the page content and layout.",
+      "id": "REQ-1",
+      "summary": "Add strict alphanumeric-only pond name validation in Create Pond UI and stop generating/submitting a hyphenated slug; submit only the validated (optionally lowercased) alphanumeric pond name.",
       "acceptanceCriteria": [
-        "On /tag/:tag, the tag stats block no longer shows “Total Activity” or “Last Activity”.",
-        "No empty/placeholder layout gaps remain where those fields were previously rendered.",
-        "The tag page continues to load and render the tag name, lily count, sort tabs, and lily list as before."
+        "In the Create Pond UI (frontend/src/pages/CreatePondPage.tsx), entering a pond name containing any non-alphanumeric character (e.g., \"funny frogs\", \"funny-frogs\", \"funny_frogs\", \"funny!\", \"frog#1\") prevents submission and shows a clear validation message in English.",
+        "In the Create Pond UI, entering a pond name containing only letters and/or numbers (e.g., \"FunnyFrogs\", \"Frogs123\") allows submission to proceed.",
+        "On the backend (backend/main.mo), the createPond update method rejects (traps) when the provided pond name contains any non-alphanumeric character, ensuring validation cannot be bypassed by calling the canister directly.",
+        "The frontend no longer derives or submits a hyphenated slug (e.g., using spaces-to-hyphens conversion) for the pond name parameter; it must submit the validated alphanumeric-only pond name (optionally lowercased, but still strictly alphanumeric).",
+        "No canister state migration is required; existing ponds are unaffected, and only new pond creation is restricted."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/TagPage.tsx",
-          "operation": "modify",
-          "description": "Remove rendering of the Tag Stats UI section that displays “Total Activity” and “Last Activity” (including labels/icons/values), and clean up any now-unused imports/hooks (e.g., date formatting and icons) so the page continues to render tag name, lily count, sort tabs, and lily list without layout gaps."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Make the global header fully opaque by removing translucent background and backdrop-blur styling while keeping sticky behavior and controls intact.",
-      "acceptanceCriteria": [
-        "The header background is fully opaque in both light and dark mode (no alpha background classes like bg-*/xx).",
-        "The header no longer uses backdrop blur styling to create translucent effects.",
-        "Header remains sticky and continues to render navigation/search controls correctly across pages."
-      ],
-      "file_operations": [
+          "path": "frontend/src/lib/pondNameValidation.ts",
+          "operation": "create",
+          "description": "Add a small shared validation utility for pond creation names (e.g., function(s) to check strict A–Z/a–z/0–9 only, and optionally normalize to lowercase) so CreatePondPage can consistently validate and normalize before submission."
+        },
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/pages/CreatePondPage.tsx",
           "operation": "modify",
-          "description": "Update the header container classes to remove translucent background styling (e.g., bg-*/xx) and remove backdrop-blur/supports-[backdrop-filter] translucency, replacing with an opaque background class so the header remains sticky and functions/controls remain unchanged."
+          "description": "Implement alphanumeric-only pond name validation (reject spaces, hyphens, underscores, punctuation/symbols) with a clear English inline error message and blocked form submission; remove the current spaces-to-hyphens slug derivation and ensure the submitted name and post-create navigation param use the validated alphanumeric-only name (optionally lowercased). Also update helper text that currently claims the URL will be hyphenated."
         }
       ]
     }

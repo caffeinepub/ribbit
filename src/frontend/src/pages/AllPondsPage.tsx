@@ -45,12 +45,12 @@ export default function AllPondsPage() {
                         {pond.profileImage && (
                           <img
                             src={pond.profileImage.getDirectURL()}
-                            alt={pond.title}
+                            alt={pond.name}
                             className="w-20 h-20 rounded-full object-cover border-2 border-primary/20 flex-shrink-0"
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold line-clamp-2">{pond.title}</h3>
+                          <h3 className="text-xl font-bold line-clamp-2">{pond.name}</h3>
                         </div>
                       </div>
                       {isMember && !isLoadingJoined && (

@@ -11,10 +11,9 @@ import Char "mo:base/Char";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
-
-
-
+(with migration = Migration.run)
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -71,9 +70,9 @@ actor Ribbit {
     #like;
     #viewRibbit;
   };
+
   type Pond = {
     name : Text;
-    title : Text;
     description : Text;
     image : ?Storage.ExternalBlob;
     profileImage : ?Storage.ExternalBlob;
@@ -139,11 +138,13 @@ actor Ribbit {
   };
 
   // Function to increment view count for a Lily (post)
-  // Public access - any user including guests can increment view counts
-  // This is consistent with public read access to posts
+  // Requires user permission to prevent abuse
   public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    // No authorization check - viewing posts is a public action
-    // Caller is captured for audit trail and potential abuse prevention
+    ensureUserRole(caller);
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can increment view counts");
+    };
+
     switch (textMap.get(posts, postId)) {
       case (null) { #notFound };
       case (?post) {
@@ -202,9 +203,9 @@ actor Ribbit {
   // It handles both fresh users and users after canister resets/upgrades
   // NOTE: This function modifies state and should ONLY be called from update functions, not queries
   func ensureUserRole(caller : Principal) {
-    // Skip anonymous principals - they remain as guests but are treated as users per spec
+    // Anonymous principals cannot perform state-modifying operations
     if (Principal.isAnonymous(caller)) {
-      return;
+      Debug.trap("Unauthorized: Anonymous users cannot perform this action");
     };
 
     let currentRole = AccessControl.getUserRole(accessControlState, caller);
@@ -257,10 +258,10 @@ actor Ribbit {
   };
 
   // Helper function to check if caller has user-level permissions
-  // Anonymous users are treated as having user-level permissions per spec
-  func hasUserPermission(caller : Principal) : Bool {
+  // For query functions only - does not trap on anonymous
+  func hasUserPermissionQuery(caller : Principal) : Bool {
     if (Principal.isAnonymous(caller)) {
-      return true; // Anonymous users have user-level permissions per spec
+      return true; // Anonymous users can query
     };
     AccessControl.hasPermission(accessControlState, caller, #user);
   };
@@ -537,7 +538,7 @@ actor Ribbit {
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     // Query function - cannot modify state
     // Both anonymous and authenticated users can access profiles
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       Debug.trap("Unauthorized: Only users can access profiles");
     };
     principalMap.get(userProfiles, caller);
@@ -546,7 +547,7 @@ actor Ribbit {
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     // Query function - cannot modify state
     // Both anonymous and authenticated users can view profiles
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       Debug.trap("Unauthorized: Only users can view profiles");
     };
     principalMap.get(userProfiles, user);
@@ -554,7 +555,7 @@ actor Ribbit {
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can save profiles");
     };
 
@@ -579,7 +580,7 @@ actor Ribbit {
 
   public shared ({ caller }) func registerUsername(username : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can register usernames");
     };
 
@@ -620,7 +621,7 @@ actor Ribbit {
 
   public shared ({ caller }) func releaseUsername(username : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can release usernames");
     };
 
@@ -647,7 +648,7 @@ actor Ribbit {
   public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
     // Query function - cannot modify state
     // Both anonymous and authenticated users can check
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       return false;
     };
 
@@ -681,7 +682,7 @@ actor Ribbit {
 
   public shared ({ caller }) func recordUsernameChange(username : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can record username changes");
     };
 
@@ -714,12 +715,29 @@ actor Ribbit {
     };
   };
 
+  func isAlphanumeric(text : Text) : Bool {
+    // Convert Text to iterable and check each character
+    let chars = Text.toIter(text);
+    var result = true;
+    for (c in chars) {
+      let n = Char.toNat32(c);
+      if (not ((n >= 48 and n <= 57) or (n >= 65 and n <= 90) or (n >= 97 and n <= 122))) {
+        result := false;
+      };
+    };
+    result;
+  };
+
   // Pond Functions - Require user permission
   // Updated to include banner image parameter
-  public shared ({ caller }) func createPond(name : Text, title : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
+  public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can create ponds");
+    };
+
+    if (not isAlphanumeric(name)) {
+      Debug.trap("Pond name must contain only letters and numbers. ");
     };
 
     if (textMap.contains(ponds, name)) {
@@ -734,7 +752,6 @@ actor Ribbit {
 
     let pond : Pond = {
       name;
-      title;
       description;
       image = ?image;
       profileImage = ?profileImage;
@@ -794,7 +811,6 @@ actor Ribbit {
       case (?pond) {
         let updatedPond = {
           pond with
-          title = switch (title) { case (null) { pond.title }; case (?t) { t } };
           description = switch (description) { case (null) { pond.description }; case (?d) { d } };
           visibility = switch (visibility) { case (null) { pond.visibility }; case (?v) { v } };
         };
@@ -856,7 +872,7 @@ actor Ribbit {
   public query ({ caller }) func isPondAdmin(pondName : Text) : async Bool {
     // Query function - cannot modify state
     // Both anonymous and authenticated users can check admin status
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       return false;
     };
     isAdminOfPond(caller, pondName);
@@ -987,7 +1003,7 @@ actor Ribbit {
   // Post Functions - Require user permission AND pond membership
   public shared ({ caller }) func createPost(title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can create posts");
     };
 
@@ -1074,9 +1090,7 @@ actor Ribbit {
             updatedStats with
             firstUsedAt = Time.now();
           };
-        } else {
-          updatedStats;
-        };
+        } else { updatedStats };
 
         // Store updated stats for the canonical tag
         tagStats := textMap.put(tagStats, canonicalTag, finalStats);
@@ -1118,7 +1132,7 @@ actor Ribbit {
   // Like Functions (Posts)
   public shared ({ caller }) func likePost(postId : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can like posts");
     };
 
@@ -1145,7 +1159,7 @@ actor Ribbit {
 
   public shared ({ caller }) func unlikePost(postId : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can unlike posts");
     };
 
@@ -1167,7 +1181,7 @@ actor Ribbit {
   // Like Functions (Ribbits)
   public shared ({ caller }) func likeRibbit(ribbitId : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can like ribbits");
     };
 
@@ -1191,7 +1205,7 @@ actor Ribbit {
 
   public shared ({ caller }) func unlikeRibbit(ribbitId : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can unlike ribbits");
     };
 
@@ -1219,7 +1233,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedPost(postId : Text) : async Bool {
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       return false;
     };
 
@@ -1252,7 +1266,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedRibbit(ribbitId : Text) : async Bool {
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       return false;
     };
 
@@ -1318,7 +1332,7 @@ actor Ribbit {
   // Ribbit Functions - Require user permission
   public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can create ribbits");
     };
 
@@ -1523,7 +1537,7 @@ actor Ribbit {
     let filtered = Array.filter<Pond>(
       Iter.toArray(textMap.vals(ponds)),
       func(p : Pond) : Bool {
-        Text.contains(p.name, #text searchTerm) or Text.contains(p.title, #text searchTerm) or Text.contains(p.description, #text searchTerm);
+        Text.contains(p.name, #text searchTerm) or Text.contains(p.description, #text searchTerm);
       },
     );
     filtered;
@@ -1542,7 +1556,7 @@ actor Ribbit {
   // Pond Membership Functions - Require user permission
   public shared ({ caller }) func joinPond(pondName : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can join ponds");
     };
 
@@ -1561,32 +1575,13 @@ actor Ribbit {
           memberCount = pond.memberCount + 1;
         };
         ponds := textMap.put(ponds, pondName, updatedPond);
-
-        // Update user's joined ponds
-        switch (principalMap.get(userProfiles, caller)) {
-          case (null) {
-            let newProfile : UserProfile = {
-              name = "Frog_" # Nat.toText(Int.abs(Time.now()) % 10000);
-              joinedPonds = [pondName];
-              avatar = null;
-            };
-            userProfiles := principalMap.put(userProfiles, caller, newProfile);
-          };
-          case (?profile) {
-            let updatedProfile = {
-              profile with
-              joinedPonds = Array.append(profile.joinedPonds, [pondName]);
-            };
-            userProfiles := principalMap.put(userProfiles, caller, updatedProfile);
-          };
-        };
       };
     };
   };
 
   public shared ({ caller }) func leavePond(pondName : Text) : async () {
     ensureUserRole(caller);
-    if (not hasUserPermission(caller)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Debug.trap("Unauthorized: Only users can leave ponds");
     };
 
@@ -1626,7 +1621,7 @@ actor Ribbit {
   public query ({ caller }) func getJoinedPonds() : async [Text] {
     // Query function - cannot modify state
     // Both anonymous and authenticated users can check their joined ponds
-    if (not hasUserPermission(caller)) {
+    if (not hasUserPermissionQuery(caller)) {
       Debug.trap("Unauthorized: Only users can get joined ponds");
     };
 
@@ -1657,7 +1652,7 @@ actor Ribbit {
       case (?pond) {
         ?{
           name = pond.name;
-          title = pond.title;
+          title = pond.name; // Use name as title since title was removed
           description = pond.description;
           profileImage = pond.profileImage;
           bannerImage = pond.bannerImage;
@@ -1745,7 +1740,7 @@ actor Ribbit {
     let sorted = Array.sort<(Text, TagStats)>(
       entries,
       func((_, a), (_, b)) {
-        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + b.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
       },
     );
 

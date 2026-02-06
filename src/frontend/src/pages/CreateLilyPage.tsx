@@ -165,7 +165,7 @@ export default function CreateLilyPage() {
                   <SelectContent>
                     {ponds?.map((p) => (
                       <SelectItem key={p.name} value={p.name}>
-                        {p.title}
+                        {p.name}
                         {isPondJoined(p.name) && (
                           <span className="ml-2 text-primary" style={{ fontSize: '0.875rem' }}>✓ Joined</span>
                         )}

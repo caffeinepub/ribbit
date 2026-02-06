@@ -68,7 +68,6 @@ export const TagStats = IDL.Record({
   'lastActivityAt' : IDL.Int,
 });
 export const Pond = IDL.Record({
-  'title' : IDL.Text,
   'associatedTags' : IDL.Vec(IDL.Text),
   'members' : IDL.Vec(IDL.Principal),
   'admin' : IDL.Principal,
@@ -131,15 +130,7 @@ export const idlService = IDL.Service({
   'canChangeUsername' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'clearPostLikes' : IDL.Func([IDL.Text], [], []),
   'createPond' : IDL.Func(
-      [
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        ExternalBlob,
-        ExternalBlob,
-        ExternalBlob,
-        IDL.Text,
-      ],
+      [IDL.Text, IDL.Text, ExternalBlob, ExternalBlob, ExternalBlob, IDL.Text],
       [],
       [],
     ),
@@ -363,7 +354,6 @@ export const idlFactory = ({ IDL }) => {
     'lastActivityAt' : IDL.Int,
   });
   const Pond = IDL.Record({
-    'title' : IDL.Text,
     'associatedTags' : IDL.Vec(IDL.Text),
     'members' : IDL.Vec(IDL.Principal),
     'admin' : IDL.Principal,
@@ -427,7 +417,6 @@ export const idlFactory = ({ IDL }) => {
     'clearPostLikes' : IDL.Func([IDL.Text], [], []),
     'createPond' : IDL.Func(
         [
-          IDL.Text,
           IDL.Text,
           IDL.Text,
           ExternalBlob,

@@ -66,16 +66,14 @@ export function useCreatePond() {
 
   return useMutation({
     mutationFn: async ({ 
-      name, 
-      title, 
+      name,
       description, 
       image, 
       profileImage,
       bannerImage,
       froggyPhrase 
     }: { 
-      name: string; 
-      title: string; 
+      name: string;
       description: string; 
       image: ExternalBlob; 
       profileImage: ExternalBlob;
@@ -83,7 +81,7 @@ export function useCreatePond() {
       froggyPhrase: string;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      await actor.createPond(name, title, description, image, profileImage, bannerImage, froggyPhrase);
+      await actor.createPond(name, description, image, profileImage, bannerImage, froggyPhrase);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ponds'] });
@@ -386,6 +384,57 @@ export function useGetTagSuggestions(prefix: string, limit: number = 10) {
     },
     enabled: !!actor && !isFetching && !!prefix.trim(),
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+// Search History Functions
+export function useGetTrendingSearches(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['trendingSearches', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // TODO: Replace with actual backend call when available
+      // return actor.getTrendingSearches(BigInt(limit));
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+export function useGetSearchSuggestions(prefix: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['searchSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor || !prefix.trim()) return [];
+      // TODO: Replace with actual backend call when available
+      // return actor.getSearchSuggestions(prefix, BigInt(limit));
+      return [];
+    },
+    enabled: !!actor && !isFetching && !!prefix.trim(),
+    staleTime: 30 * 1000, // Cache for 30 seconds
+  });
+}
+
+export function useRecordSearchTerm() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (term: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      // TODO: Replace with actual backend call when available
+      // await actor.recordSearchTerm(term);
+      console.log('Recording search term:', term);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trendingSearches'] });
+      queryClient.invalidateQueries({ queryKey: ['searchSuggestions'] });
+    },
   });
 }
 

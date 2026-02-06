@@ -9,11 +9,12 @@ import { useCreatePond } from '@/hooks/useQueries';
 import { ExternalBlob } from '@/backend';
 import { toast } from 'sonner';
 import { Upload, X } from 'lucide-react';
+import { normalizePondName, getPondNameValidationError } from '@/lib/pondNameValidation';
 
 export default function CreatePondPage() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [title, setTitle] = useState('');
+  const [pondName, setPondName] = useState('');
+  const [pondNameError, setPondNameError] = useState<string>('');
   const [description, setDescription] = useState('');
   const [froggyPhrase, setFroggyPhrase] = useState('');
   const [froggyPhraseError, setFroggyPhraseError] = useState<string>('');
@@ -88,11 +89,32 @@ export default function CreatePondPage() {
     }
   };
 
+  const handlePondNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPondName(value);
+    
+    // Validate on change
+    if (value.trim()) {
+      const error = getPondNameValidationError(value);
+      setPondNameError(error || '');
+    } else {
+      setPondNameError('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !title.trim() || !description.trim()) {
+    if (!pondName.trim() || !description.trim()) {
       toast.error('All fields are required');
+      return;
+    }
+
+    // Validate pond name
+    const nameError = getPondNameValidationError(pondName);
+    if (nameError) {
+      setPondNameError(nameError);
+      toast.error(nameError);
       return;
     }
 
@@ -119,7 +141,13 @@ export default function CreatePondPage() {
       return;
     }
 
-    const pondName = name.toLowerCase().replace(/\s+/g, '-');
+    // Normalize pond name (lowercase alphanumeric only)
+    const normalizedName = normalizePondName(pondName);
+    if (!normalizedName) {
+      setPondNameError('Invalid pond name format');
+      toast.error('Invalid pond name format');
+      return;
+    }
 
     try {
       // Convert banner image file to bytes
@@ -134,8 +162,7 @@ export default function CreatePondPage() {
 
       createPond(
         { 
-          name: pondName, 
-          title, 
+          name: normalizedName,
           description, 
           image: bannerImageBlob, 
           profileImage: profileImageBlob,
@@ -145,12 +172,14 @@ export default function CreatePondPage() {
         {
           onSuccess: () => {
             toast.success('Pond created successfully! You are now the admin.');
-            navigate({ to: '/pond/$name', params: { name: pondName } });
+            navigate({ to: '/pond/$name', params: { name: normalizedName } });
           },
           onError: (error) => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to create pond';
             if (errorMessage.includes('Froggy Phrase')) {
               setFroggyPhraseError(errorMessage);
+            } else if (errorMessage.includes('name') || errorMessage.includes('alphanumeric')) {
+              setPondNameError(errorMessage);
             }
             toast.error(errorMessage);
           },
@@ -171,30 +200,21 @@ export default function CreatePondPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Pond Name</Label>
+                <Label htmlFor="pondName">Pond Name</Label>
                 <Input
-                  id="name"
-                  placeholder="e.g., funny-frogs"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="pondName"
+                  placeholder="e.g., FunnyFrogs or Frogs123"
+                  value={pondName}
+                  onChange={handlePondNameChange}
                   required
                   style={{ fontSize: '1rem' }}
                 />
                 <p className="text-sm text-muted-foreground">
-                  This will be used in the URL. Use lowercase letters, numbers, and hyphens.
+                  Letters and numbers only. This will be used as your pond's name and URL.
                 </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Pond Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Funny Frogs"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  style={{ fontSize: '1rem' }}
-                />
+                {pondNameError && (
+                  <p className="text-sm text-destructive">{pondNameError}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -322,7 +342,7 @@ export default function CreatePondPage() {
               </div>
 
               <div className="flex gap-4 pt-2">
-                <Button type="submit" disabled={isPending} className="flex-1">
+                <Button type="submit" disabled={isPending || !!pondNameError} className="flex-1">
                   {isPending ? 'Creating...' : 'Start Pond'}
                 </Button>
                 <Button

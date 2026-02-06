@@ -3,21 +3,19 @@ import { Search, Plus, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { useGetUserAvatarByUsername } from '@/hooks/useQueries';
+import { useGetUserAvatarByUsername, useRecordSearchTerm } from '@/hooks/useQueries';
 import { getUsername } from '@/lib/user';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useDebounce } from '@/hooks/useDebounce';
+import SearchDropdown from '@/components/search/SearchDropdown';
+import MobileSearchModal from '@/components/search/MobileSearchModal';
 
 interface HeaderProps {
   onMobileLeftSidebarToggle?: () => void;
@@ -27,24 +25,72 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const debouncedQuery = useDebounce(searchQuery, 300);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const username = getUsername();
   const { data: userAvatar } = useGetUserAvatarByUsername(username);
+  const recordSearchMutation = useRecordSearchTerm();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate({ to: '/', search: { q: searchQuery } });
-      setMobileSearchOpen(false);
+  // Handle click outside for desktop dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setDesktopDropdownOpen(false);
+      }
+    };
+
+    if (desktopDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
     }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [desktopDropdownOpen]);
+
+  const executeSearch = (term: string) => {
+    if (term.trim()) {
+      // Record the search term
+      recordSearchMutation.mutate(term.trim());
+      
+      // Navigate to search results
+      navigate({ to: '/', search: { q: term.trim() } });
+      
+      // Close UI
+      setMobileSearchOpen(false);
+      setDesktopDropdownOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const handleDesktopSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch(searchQuery);
+  };
+
+  const handleMobileSubmit = () => {
+    executeSearch(searchQuery);
+  };
+
+  const handleSelectTerm = (term: string) => {
+    setSearchQuery(term);
+    executeSearch(term);
+  };
+
+  const handleDesktopFocus = () => {
+    setDesktopDropdownOpen(true);
   };
 
   const handleMobileSearchOpen = () => {
     setMobileSearchOpen(true);
-    setTimeout(() => {
-      mobileSearchInputRef.current?.focus();
-    }, 100);
   };
 
   return (
@@ -63,34 +109,52 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
           </Button>
 
           <Link to="/" className="flex items-center gap-2">
-            <img src="/assets/frog-face_1f438.png" alt="ribbit" className="h-8 w-8" />
-            <span className="text-2xl font-bold text-primary" style={{ fontSize: '1.55rem', letterSpacing: '-0.025rem' }}>ribbit</span>
+            {/* Frog logo - visible on mobile/tablet, hidden on desktop (md+) */}
+            <img src="/assets/frog-face_1f438.png" alt="ribbit" className="h-8 w-8 md:hidden" />
+            <span className="text-2xl font-bold text-primary" style={{ fontSize: '1.55rem', fontWeight: 700, letterSpacing: '-0.025rem' }}>ribbit</span>
           </Link>
         </div>
 
-        <form onSubmit={handleSearch} className="hidden flex-1 max-w-md md:flex" style={{ marginBlockEnd: 0 }}>
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {/* Desktop Search */}
+        <form onSubmit={handleDesktopSubmit} className="hidden flex-1 max-w-md md:flex" style={{ marginBlockEnd: 0 }}>
+          <div className="relative w-full" ref={searchContainerRef}>
+            {/* Decorative frog badge inside search input - desktop only */}
+            <div 
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none flex items-center justify-center rounded-full"
+              style={{ 
+                width: '1.75rem', 
+                height: '1.75rem',
+                backgroundColor: 'oklch(0.67 0.17 130.09)'
+              }}
+              aria-hidden="true"
+            >
+              <img 
+                src="/assets/frog-face_1f438.png" 
+                alt="" 
+                className="w-5 h-5"
+              />
+            </div>
             <Input
+              ref={searchInputRef}
               type="search"
               placeholder="Search ponds and lilies..."
-              className="pl-10 rounded-full"
+              className="pl-12 rounded-full global-search-input header-desktop-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ fontSize: '1rem' }}
+              onFocus={handleDesktopFocus}
             />
+            {desktopDropdownOpen && (
+              <SearchDropdown
+                query={searchQuery}
+                debouncedQuery={debouncedQuery}
+                onSelect={handleSelectTerm}
+                onClose={() => setDesktopDropdownOpen(false)}
+              />
+            )}
           </div>
         </form>
 
         <nav className="flex items-center gap-2">
-          <Button variant="ghost" asChild className="hidden md:inline-flex rounded-full">
-            <Link to="/ponds">All Ponds</Link>
-          </Button>
-
-          <Button variant="ghost" asChild className="hidden md:inline-flex rounded-full">
-            <Link to="/tags">Tags</Link>
-          </Button>
-
           <Button
             variant="ghost"
             size="icon"
@@ -129,13 +193,23 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="outline" asChild className="hidden md:inline-flex hover-darken-light rounded-full">
-            <Link to="/start-pond">Start a Pond</Link>
-          </Button>
-
-          <Button asChild className="hidden md:inline-flex rounded-full">
-            <Link to="/create-lily">Create Lily</Link>
-          </Button>
+          {/* Desktop Create Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="hidden md:inline-flex rounded-full gap-2">
+                <Plus className="h-4 w-4" />
+                Create
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/create-lily">Create Lily</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/start-pond">Start a Pond</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Avatar link - visible on both mobile and desktop */}
           <Link 
@@ -154,30 +228,19 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
         </nav>
       </div>
 
-      <Dialog open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Search</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSearch} className="mt-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                ref={mobileSearchInputRef}
-                type="search"
-                placeholder="Search ponds and lilies..."
-                className="pl-10 rounded-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ fontSize: '1rem' }}
-              />
-            </div>
-            <Button type="submit" className="mt-4 w-full rounded-full">
-              Search
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Mobile Search Modal */}
+      <MobileSearchModal
+        isOpen={mobileSearchOpen}
+        query={searchQuery}
+        debouncedQuery={debouncedQuery}
+        onQueryChange={setSearchQuery}
+        onSelect={handleSelectTerm}
+        onSubmit={handleMobileSubmit}
+        onClose={() => {
+          setMobileSearchOpen(false);
+          setSearchQuery('');
+        }}
+      />
     </header>
   );
 }

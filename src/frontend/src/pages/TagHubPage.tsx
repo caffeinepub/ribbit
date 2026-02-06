@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import LeftSidebar from '@/components/LeftSidebar';
 import TagHubRightSidebar from '@/components/TagHubRightSidebar';
 import { useGetTopTags, useGetTrendingTags, useGetNewestTags } from '@/hooks/useQueries';
@@ -91,69 +91,96 @@ export default function TagHubPage() {
     <div className="min-h-screen bg-background">
       <div className="lg:container lg:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-6">
-          {/* Left Sidebar - Hidden on mobile */}
+          {/* Left Sidebar - Hidden on mobile, max-width 18rem */}
           <aside className="hidden lg:block lg:col-span-3">
-            <LeftSidebar />
+            <div style={{ maxWidth: '18rem' }}>
+              <LeftSidebar />
+            </div>
           </aside>
 
-          {/* Main Content */}
+          {/* Main Content - max-width 44rem */}
           <main className="lg:col-span-6">
-            <div className="py-4 px-4 lg:px-0 lg:py-0">
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Tags</h1>
-                <p className="text-muted-foreground">
-                  Explore popular topics and discover new conversations
-                </p>
-              </div>
-
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="mb-0">
-                <TabsList className="grid w-full grid-cols-3 mb-4">
-                  <TabsTrigger value="trending" className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="hidden sm:inline">Trending</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="top" className="flex items-center gap-2">
-                    <Hash className="h-4 w-4" />
-                    <span className="hidden sm:inline">Top</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="newest" className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="hidden sm:inline">Newest</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="bg-card lg:rounded-lg overflow-hidden">
-                  <TabsContent value="trending" className="mt-0">
-                    <TagList
-                      tags={trendingTags}
-                      isLoading={isLoadingTrending}
-                      emptyMessage="No trending tags yet. Start creating lilies with tags!"
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="top" className="mt-0">
-                    <TagList
-                      tags={topTags}
-                      isLoading={isLoadingTop}
-                      emptyMessage="No tags yet. Be the first to create a lily with a tag!"
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="newest" className="mt-0">
-                    <TagList
-                      tags={newestTags}
-                      isLoading={isLoadingNewest}
-                      emptyMessage="No new tags yet. Start creating lilies with tags!"
-                    />
-                  </TabsContent>
+            <div style={{ maxWidth: '44rem' }}>
+              <div className="py-4 px-4 lg:px-0 lg:py-0">
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold mb-2">Tags</h1>
+                  <p className="text-muted-foreground">
+                    Explore popular topics and discover new conversations
+                  </p>
                 </div>
-              </Tabs>
+
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="mb-0">
+                  <div className="border-b border-border bg-background mb-4">
+                    <div className="flex">
+                      <button
+                        onClick={() => setActiveTab('trending')}
+                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                          activeTab === 'trending'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                        }`}
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="hidden sm:inline">Trending</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('top')}
+                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                          activeTab === 'top'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                        }`}
+                      >
+                        <Hash className="h-4 w-4" />
+                        <span className="hidden sm:inline">Top</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('newest')}
+                        className={`flex-1 pb-3 pt-3 px-4 border-b-2 font-medium transition-colors flex items-center justify-center gap-2 ${
+                          activeTab === 'newest'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                        }`}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        <span className="hidden sm:inline">Newest</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-card lg:rounded-lg overflow-hidden">
+                    <TabsContent value="trending" className="mt-0">
+                      <TagList
+                        tags={trendingTags}
+                        isLoading={isLoadingTrending}
+                        emptyMessage="No trending tags yet. Start creating lilies with tags!"
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="top" className="mt-0">
+                      <TagList
+                        tags={topTags}
+                        isLoading={isLoadingTop}
+                        emptyMessage="No tags yet. Be the first to create a lily with a tag!"
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="newest" className="mt-0">
+                      <TagList
+                        tags={newestTags}
+                        isLoading={isLoadingNewest}
+                        emptyMessage="No new tags yet. Start creating lilies with tags!"
+                      />
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </div>
             </div>
           </main>
 
-          {/* Right Sidebar - Hidden on mobile, constrained to ~280px */}
+          {/* Right Sidebar - Hidden on mobile, max-width 18rem */}
           <aside className="hidden lg:block lg:col-span-3">
-            <div style={{ maxWidth: '280px' }}>
+            <div style={{ maxWidth: '18rem' }}>
               <TagHubRightSidebar />
             </div>
           </aside>

@@ -16,7 +16,7 @@ export default function PondMobileHeader({ pond, currentTab }: PondMobileHeaderP
         {pond.bannerImage ? (
           <img
             src={pond.bannerImage.getDirectURL()}
-            alt={`${pond.title} banner`}
+            alt={`${pond.name} banner`}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -32,7 +32,7 @@ export default function PondMobileHeader({ pond, currentTab }: PondMobileHeaderP
             {pond.profileImage && (
               <img
                 src={pond.profileImage.getDirectURL()}
-                alt={pond.title}
+                alt={pond.name}
                 className="w-16 h-16 rounded-full object-cover border-4 border-white/20 flex-shrink-0 shadow-lg"
                 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
               />
@@ -42,7 +42,7 @@ export default function PondMobileHeader({ pond, currentTab }: PondMobileHeaderP
                 className="text-2xl font-bold text-white mb-1"
                 style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
               >
-                {pond.title}
+                {pond.name}
               </h1>
               <p 
                 className="text-sm text-white/90 line-clamp-2"

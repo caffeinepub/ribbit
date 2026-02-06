@@ -83,7 +83,7 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
           {avatarUrl ? (
             <img
               src={avatarUrl}
-              alt={showUserAvatar ? lily.username : (pond?.title || '')}
+              alt={showUserAvatar ? lily.username : (pond?.name || '')}
               className="w-full h-full object-cover"
             />
           ) : (

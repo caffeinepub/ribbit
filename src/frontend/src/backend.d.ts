@@ -15,7 +15,6 @@ export class ExternalBlob {
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
 export interface Pond {
-    title: string;
     associatedTags: Array<string>;
     members: Array<Principal>;
     admin: Principal;
@@ -97,7 +96,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     canChangeUsername(username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
-    createPond(name: string, title: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
+    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;

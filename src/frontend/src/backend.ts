@@ -90,7 +90,6 @@ export class ExternalBlob {
     }
 }
 export interface Pond {
-    title: string;
     associatedTags: Array<string>;
     members: Array<Principal>;
     admin: Principal;
@@ -189,7 +188,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     canChangeUsername(username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
-    createPond(name: string, title: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
+    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;
@@ -429,17 +428,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createPond(arg0: string, arg1: string, arg2: string, arg3: ExternalBlob, arg4: ExternalBlob, arg5: ExternalBlob, arg6: string): Promise<void> {
+    async createPond(arg0: string, arg1: string, arg2: ExternalBlob, arg3: ExternalBlob, arg4: ExternalBlob, arg5: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createPond(arg0, arg1, arg2, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg5), arg6);
+                const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), arg5);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createPond(arg0, arg1, arg2, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg5), arg6);
+            const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), arg5);
             return result;
         }
     }
@@ -1511,7 +1510,6 @@ async function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promi
     };
 }
 async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    title: string;
     associatedTags: Array<string>;
     members: Array<Principal>;
     admin: Principal;
@@ -1527,7 +1525,6 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
     visibility: _Visibility;
     rules: Array<string>;
 }): Promise<{
-    title: string;
     associatedTags: Array<string>;
     members: Array<Principal>;
     admin: Principal;
@@ -1544,7 +1541,6 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
     rules: Array<string>;
 }> {
     return {
-        title: value.title,
         associatedTags: value.associatedTags,
         members: value.members,
         admin: value.admin,

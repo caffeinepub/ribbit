@@ -24,7 +24,6 @@ export type ActivityType = { 'like' : null } |
   { 'viewRibbit' : null };
 export type ExternalBlob = Uint8Array;
 export interface Pond {
-  'title' : string,
   'associatedTags' : Array<string>,
   'members' : Array<Principal>,
   'admin' : Principal,
@@ -113,7 +112,7 @@ export interface _SERVICE {
   'canChangeUsername' : ActorMethod<[string], boolean>,
   'clearPostLikes' : ActorMethod<[string], undefined>,
   'createPond' : ActorMethod<
-    [string, string, string, ExternalBlob, ExternalBlob, ExternalBlob, string],
+    [string, string, ExternalBlob, ExternalBlob, ExternalBlob, string],
     undefined
   >,
   'createPost' : ActorMethod<

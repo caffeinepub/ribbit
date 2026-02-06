@@ -46,15 +46,19 @@ export default function PondPage() {
       <div className="min-h-screen bg-background">
         <div className="lg:container lg:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-6">
-            <aside className="hidden lg:block lg:col-span-3" style={{ maxWidth: '15.625rem' }}>
-              <LeftSidebar />
+            <aside className="hidden lg:block lg:col-span-3">
+              <div style={{ maxWidth: '18rem' }}>
+                <LeftSidebar />
+              </div>
             </aside>
             <main className="lg:col-span-6">
-              <Skeleton className="h-32 w-full mb-4" />
-              <Skeleton className="h-48 w-full" />
+              <div style={{ maxWidth: '44rem' }}>
+                <Skeleton className="h-32 w-full mb-4" />
+                <Skeleton className="h-48 w-full" />
+              </div>
             </main>
             <aside className="hidden lg:block lg:col-span-3">
-              <div style={{ maxWidth: '280px' }}>
+              <div style={{ maxWidth: '18rem' }}>
                 <RightSidebar />
               </div>
             </aside>
@@ -69,18 +73,22 @@ export default function PondPage() {
       <div className="min-h-screen bg-background">
         <div className="lg:container lg:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-6">
-            <aside className="hidden lg:block lg:col-span-3" style={{ maxWidth: '15.625rem' }}>
-              <LeftSidebar />
+            <aside className="hidden lg:block lg:col-span-3">
+              <div style={{ maxWidth: '18rem' }}>
+                <LeftSidebar />
+              </div>
             </aside>
             <main className="lg:col-span-6 text-center px-4">
-              <h1 className="text-2xl font-bold mb-4">Pond not found</h1>
-              <p className="text-muted-foreground mb-4" style={{ fontSize: '1rem' }}>This pond doesn't exist yet.</p>
-              <Button asChild>
-                <Link to="/">Back to Home</Link>
-              </Button>
+              <div style={{ maxWidth: '44rem' }}>
+                <h1 className="text-2xl font-bold mb-4">Pond not found</h1>
+                <p className="text-muted-foreground mb-4" style={{ fontSize: '1rem' }}>This pond doesn't exist yet.</p>
+                <Button asChild>
+                  <Link to="/">Back to Home</Link>
+                </Button>
+              </div>
             </main>
             <aside className="hidden lg:block lg:col-span-3">
-              <div style={{ maxWidth: '280px' }}>
+              <div style={{ maxWidth: '18rem' }}>
                 <RightSidebar />
               </div>
             </aside>
@@ -100,7 +108,7 @@ export default function PondPage() {
         {pond.bannerImage ? (
           <img
             src={pond.bannerImage.getDirectURL()}
-            alt={`${pond.title} banner`}
+            alt={`${pond.name} banner`}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -117,7 +125,7 @@ export default function PondPage() {
               {pond.profileImage && (
                 <img
                   src={pond.profileImage.getDirectURL()}
-                  alt={pond.title}
+                  alt={pond.name}
                   className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover border-4 border-white/20 flex-shrink-0 shadow-lg"
                   style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
                 />
@@ -127,7 +135,7 @@ export default function PondPage() {
                   className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 md:mb-2"
                   style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
                 >
-                  {pond.title}
+                  {pond.name}
                 </h1>
                 <p 
                   className="text-sm md:text-base lg:text-lg text-white/90 line-clamp-2"
@@ -143,69 +151,73 @@ export default function PondPage() {
 
       <div className="lg:container lg:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-6">
-          {/* Left Sidebar - Hidden on mobile, max-width 15.625rem (250px) */}
-          <aside className="hidden lg:block lg:col-span-3" style={{ maxWidth: '15.625rem' }}>
-            <LeftSidebar />
+          {/* Left Sidebar - Hidden on mobile, max-width 18rem */}
+          <aside className="hidden lg:block lg:col-span-3">
+            <div style={{ maxWidth: '18rem' }}>
+              <LeftSidebar />
+            </div>
           </aside>
 
-          {/* Main Content */}
+          {/* Main Content - max-width 44rem */}
           <main className="lg:col-span-6">
-            {/* Join button - only show on mobile if not a member */}
-            <div className="py-4 px-4 lg:hidden">
-              {!isMember && (
-                <div className="mb-4">
-                  {isLoadingJoined ? (
-                    <Skeleton className="h-9 w-24" />
-                  ) : (
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={handleJoinPond}
-                      disabled={isProcessing}
-                    >
-                      {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
+            <div style={{ maxWidth: '44rem' }}>
+              {/* Join button - only show on mobile if not a member */}
+              <div className="py-4 px-4 lg:hidden">
+                {!isMember && (
+                  <div className="mb-4">
+                    {isLoadingJoined ? (
+                      <Skeleton className="h-9 w-24" />
+                    ) : (
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={handleJoinPond}
+                        disabled={isProcessing}
+                      >
+                        {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* Desktop: No tabs, just sorting */}
-            <div className="py-4 px-4 lg:px-0 lg:py-0">
-              <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
-                <TabsList>
-                  <TabsTrigger value="new">New</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+              {/* Desktop: No tabs, just sorting */}
+              <div className="py-4 px-4 lg:px-0 lg:py-0">
+                <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0 lg:mb-4">
+                  <TabsList>
+                    <TabsTrigger value="new">New</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
 
-            <div className="bg-card lg:rounded-lg overflow-hidden">
-              {isLoadingLilies ? (
-                <div className="divide-y divide-border">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-4">
-                      <Skeleton className="h-32 w-full" />
-                    </div>
-                  ))}
-                </div>
-              ) : sortedLilies.length === 0 ? (
-                <div className="text-center py-16 px-4">
-                  <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>No lilies in this pond yet. Be the first to create one!</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {sortedLilies.map((lily) => (
-                    <LilyCard key={lily.id} lily={lily} showUserAvatar={true} hideTags={true} />
-                  ))}
-                </div>
-              )}
+              <div className="bg-card lg:rounded-lg overflow-hidden">
+                {isLoadingLilies ? (
+                  <div className="divide-y divide-border">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="p-4">
+                        <Skeleton className="h-32 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : sortedLilies.length === 0 ? (
+                  <div className="text-center py-16 px-4">
+                    <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>No lilies in this pond yet. Be the first to create one!</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {sortedLilies.map((lily) => (
+                      <LilyCard key={lily.id} lily={lily} showUserAvatar={true} hideTags={true} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </main>
 
-          {/* Right Sidebar - Hidden on mobile, constrained to ~280px */}
+          {/* Right Sidebar - Hidden on mobile, max-width 18rem */}
           {/* Desktop: Show pond-specific About sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
-            <div style={{ maxWidth: '280px' }}>
+            <div style={{ maxWidth: '18rem' }}>
               <PondAboutSidebar pondName={name} />
             </div>
           </aside>

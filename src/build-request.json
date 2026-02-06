@@ -1,56 +1,52 @@
 {
   "kind": "build_request",
-  "title": "Simplify Tag page stats and make the global header fully opaque",
+  "title": "Step 1: Enforce alphanumeric-only validation for pond creation names",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-4",
-      "text": "Update the Tag detail page to remove the “Total Activity” and “Last Activity” fields from the UI (including their labels, icons, and values).",
-      "target": "frontend",
+      "id": "REQ-1",
+      "text": "Enforce an alphanumeric-only rule for pond creation names so that new ponds can only be created with names consisting of letters (A–Z, a–z) and/or numbers (0–9), rejecting any input that includes spaces, hyphens, underscores, or any punctuation/symbol characters.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-1"
         ],
         "quotes": [
-          "Remove total activity and last activity from the tag view page."
+          "for pond creation, dont allow hyphens,  spaces, underscores or punctuation, only letters and/or numbers.",
+          "Want me to try Step 1 with that exact wording?",
+          "yes"
         ]
       },
       "acceptanceCriteria": [
-        "On /tag/:tag, the tag stats block no longer shows “Total Activity” or “Last Activity”.",
-        "No empty/placeholder layout gaps remain where those fields were previously rendered.",
-        "The tag page continues to load and render the tag name, lily count, sort tabs, and lily list as before."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Remove transparency effects from the global top header so it renders fully opaque (no translucent background and no backdrop blur-based translucency).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-1"
-        ],
-        "quotes": [
-          "Also remove the transparency from the header"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The header background is fully opaque in both light and dark mode (no alpha background classes like bg-*/xx).",
-        "The header no longer uses backdrop blur styling to create translucent effects.",
-        "Header remains sticky and continues to render navigation/search controls correctly across pages."
+        "In the Create Pond UI (frontend/src/pages/CreatePondPage.tsx), entering a pond name containing any non-alphanumeric character (e.g., \"funny frogs\", \"funny-frogs\", \"funny_frogs\", \"funny!\", \"frog#1\") prevents submission and shows a clear validation message in English.",
+        "In the Create Pond UI, entering a pond name containing only letters and/or numbers (e.g., \"FunnyFrogs\", \"Frogs123\") allows submission to proceed.",
+        "On the backend (backend/main.mo), the createPond update method rejects (traps) when the provided pond name contains any non-alphanumeric character, ensuring validation cannot be bypassed by calling the canister directly.",
+        "The frontend no longer derives or submits a hyphenated slug (e.g., using spaces-to-hyphens conversion) for the pond name parameter; it must submit the validated alphanumeric-only pond name (optionally lowercased, but still strictly alphanumeric).",
+        "No canister state migration is required; existing ponds are unaffected, and only new pond creation is restricted."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn components are read-only).",
-    "Do not modify immutable paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "No changes to backend tag stats APIs or data models.",
-    "No redesign of the Tag Hub page (/tags) beyond the requested removals.",
-    "No changes to search behavior or routing."
+    "Do not implement tag validation in this step (tags will be handled in a later step).",
+    "Do not change pond editing flows (e.g., editPondSettings) unless they directly create/rename a pond identifier.",
+    "Do not alter existing pond names already stored on the backend."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

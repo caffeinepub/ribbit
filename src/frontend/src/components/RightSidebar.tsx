@@ -69,12 +69,12 @@ export default function RightSidebar() {
                   {pond.profileImage && (
                     <img
                       src={pond.profileImage.getDirectURL()}
-                      alt={pond.title}
+                      alt={pond.name}
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate text-sidebar-foreground">{pond.title}</p>
+                    <p className="text-sm font-medium truncate text-sidebar-foreground">{pond.name}</p>
                     <p className="text-xs text-sidebar-foreground/60">
                       {formatNumber(Number(pond.memberCount))} members
                     </p>
