@@ -12,6 +12,8 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 
+
+
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -138,10 +140,12 @@ actor Ribbit {
   // Function to increment view count for a Lily (post)
   // Requires user permission to prevent abuse
   public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    // Require authenticated users only - no anonymous view count increments to prevent abuse
-    ensureUserRole(caller);
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Debug.trap("Unauthorized: Only users can increment view counts");
+    // Anonymous users (guests) can increment view counts
+    if (not Principal.isAnonymous(caller)) {
+      ensureUserRole(caller);
+      if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+        Debug.trap("Unauthorized: Only users can increment view counts");
+      };
     };
 
     switch (textMap.get(posts, postId)) {
@@ -630,7 +634,7 @@ actor Ribbit {
   // Username Change Cooldown Functions - Require user permission
   public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Debug.trap("Unauthorized: Only users can check username change eligibility");
+      return false;
     };
 
     // Check if username is available (not taken by someone else)

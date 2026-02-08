@@ -1,34 +1,57 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T19:31:54.767Z",
+  "generatedAt": "2026-02-08T23:55:33.990Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-3",
-        "summary": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
+        "id": "REQ-1",
+        "summary": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/pages/LilyPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/pages/LilyPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/LilyPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/LilyPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/LilyPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/LilyPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Header.tsx",
+    "frontend/src/pages/LilyPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

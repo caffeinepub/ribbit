@@ -1,37 +1,30 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "App with ponds/lilies features and an identity/authorization model supporting anonymous usage via a temporary persistent client-side identity, with optional profile saving; recent updates introduced authorization/identity regressions and backend code loss (main.mo).",
-  "architectural_notes": [
-    "Identity model: assign every visitor a temporary persistent client-side identity (session/localStorage) for anonymous usage; optionally allow saving/upgrading to a connected identity/profile later."
-  ],
-  "known_issues": [
-    "Recent updates deleted/overwrote backend methods; user reverted to v186 due to missing methods.",
-    "Authorization regression: 'not authorized' errors when creating ponds/lilies/etc.",
-    "UI regression: usernames appear grayed out due to identity system treating users as anonymous/guest.",
-    "Backend regression: most of main.mo appears deleted; v173 has last known working main.mo."
-  ],
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-load-the-google-font-tilt-warp-https-fonts-google-com-specimen-tilt-warp-in-the-frontend-so-it-is-available-to-the-application-e-g-via-a-link-in-frontend-index-html-or-a-global-css-import",
-      "title": "Load the Google Font “Tilt Warp” (https://fonts.google.com/specimen/Tilt+Warp) in the frontend so it is available to the application (e.g., via a <link> in frontend/index.html or a global CSS import).",
+      "id": "feature-update-the-lily-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-avatar-is-on-the-left-and-the-text-to-its-right-is-two-lines-line-1-shows-the-pond-name-in-bold-followed-by-a-separator-dot-and-the-timestamp-line-2-shows-the-username-in-regular-not-bold-text",
+      "title": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-main-site-header-desktop-logo-text-ribbit-in-frontend-src-components-header-tsx-to-use-the-tilt-warp-font-family-while-keeping-the-current-visual-styling-except-set-font-weight-to-400-and-font-size-to-1-75rem",
-      "title": "Update the main site header desktop logo text “ribbit” in frontend/src/components/Header.tsx to use the Tilt Warp font-family while keeping the current visual styling, except set font-weight to 400 and font-size to 1.75rem.",
+      "id": "feature-change-the-avatar-shown-on-the-lily-page-frontend-src-pages-lilypage-tsx-to-display-the-pond-avatar-pond-profile-image-instead-of-the-user-avatar-with-a-fallback-e-g-when-the-pond-has-no-profile-image",
+      "title": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-desktop-header-logo-text-ribbit-typography-in-frontend-src-components-header-tsx-to-use-letter-spacing-0-035rem-and-font-size-1-7rem-keeping-the-existing-tilt-warp-font-family-and-font-weight-400-unchanged",
-      "title": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
+      "id": "feature-add-a-visible-border-to-separate-the-lily-content-block-from-the-ribbits-block-on-the-lily-page-frontend-src-pages-lilypage-tsx",
+      "title": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
       "reqIds": [
         "REQ-3"
       ],
@@ -41,24 +34,24 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Support anonymous full-site usage with a temporary persistent identity (session/localStorage) and optional profile saving when user chooses to connect",
+      "summary": "Lily page: update header layout to show pond name (bold) to the right of avatar, followed by separator and timestamp; show username on next line (not bold)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Update main site header logo text “ribbit” to use Google Font Tilt Warp, keeping existing styling but setting font-weight: 400 and font-size: 1.75rem",
+      "summary": "Lily page: add a border to visually separate the lily block and the ribbit block",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Adjust the header “ribbit” logo typography: set letter-spacing to -0.035rem and font-size to 1.7rem",
+      "summary": "Lily page: use the pond avatar (not the user avatar) for the avatar shown",
       "reqIds": [],
-      "status": "in_progress"
+      "status": "pending"
     }
   ],
-  "projectName": "Untitled request",
+  "projectName": "Adjust LilyPage header metadata layout, use pond avatar, and add border between lily and ribbits",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

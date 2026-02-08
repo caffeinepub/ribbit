@@ -1,38 +1,70 @@
 {
   "kind": "build_request",
-  "title": "Adjust header “ribbit” logo letter-spacing and font size",
+  "title": "Adjust LilyPage header metadata layout, use pond avatar, and add border between lily and ribbits",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-3",
-      "text": "Update the desktop header logo text “ribbit” typography in frontend/src/components/Header.tsx to use letter-spacing: -0.035rem and font-size: 1.7rem (keeping the existing Tilt Warp font-family and font-weight: 400 unchanged).",
+      "id": "REQ-1",
+      "text": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4",
           "msg-6"
         ],
         "quotes": [
-          "change the letter spacing for the ribbit logo to -0.035rem  and the font-size to 1.7rem",
-          "go ahead"
+          "in the lily page. can you put the pond name in bold to the right of the avatar followed by the separator and then the timestamp and on the next line below add the username (not in bold)."
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style letterSpacing set to '-0.035rem'.",
-        "In frontend/src/components/Header.tsx, the desktop logo span rendering the text “ribbit” uses inline style fontSize set to '1.7rem'.",
-        "The logo continues to use fontFamily '\"Tilt Warp\", cursive, sans-serif' and fontWeight 400.",
-        "No other header layout/behavior changes are introduced."
+        "On the Lily page, the metadata area to the right of the avatar renders two lines.",
+        "Line 1 displays the pond name in bold, then a \"•\" separator, then the relative timestamp.",
+        "Line 2 displays the lily author's username in non-bold text.",
+        "The existing pond link behavior (navigating to /pond/$name) is preserved for the pond name."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "also make the avatar in the same lily page the pond avatar (not the user avatar)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a pond profile image exists, the Lily page avatar renders that image.",
+        "When no pond profile image exists (or pond data is unavailable), the Lily page avatar falls back to the existing fallback UI.",
+        "No user avatar is used in the Lily page header avatar slot."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "also separate the lily block and the ribbit block with a border."
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a clear horizontal border between the end of the lily content/engagement section and the start of the Ribbits section.",
+        "The border uses existing Tailwind theme tokens/classes (e.g., border-border) and looks consistent in light/dark mode."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths listed in SYSTEM_CONTEXT must not be edited.",
-    "Keep all user-facing text in English."
+    "Do not edit files in frontend/src/components/ui (read-only).",
+    "Do not modify frontend immutable hook files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
   ],
   "nonGoals": [
-    "Do not change the mobile logo image or its sizing/positioning.",
-    "Do not modify the Google Font loading setup in frontend/index.html.",
-    "Do not alter any other header styling, navigation, search behavior, or dropdown behavior beyond the specified typography changes."
+    "Do not change ribbit item layout/styling beyond adding the lily-vs-ribbits section divider on LilyPage.",
+    "Do not change backend data models or add new backend endpoints solely for this UI change."
   ],
   "imageRequirements": {
     "required": [],

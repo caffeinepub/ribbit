@@ -1,6 +1,6 @@
 import { useParams, Link } from '@tanstack/react-router';
 import { useEffect, useState, useRef } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, ExternalLink, Eye, X, Send } from 'lucide-react';
@@ -15,7 +15,8 @@ import {
   useHasUserLikedPost,
   useLikePost,
   useUnlikePost,
-  useIncrementLilyViewCount
+  useIncrementLilyViewCount,
+  useGetPond
 } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import RibbitItem from '@/components/RibbitItem';
@@ -36,6 +37,7 @@ export default function LilyPage() {
   const viewIncrementAttemptedRef = useRef<string | null>(null);
 
   const { data: lily, isLoading: lilyLoading } = useGetLily(id);
+  const { data: pond } = useGetPond(lily?.pond || '');
   const { data: ribbits, isLoading: ribbitsLoading } = useGetRibbits(id);
   const { data: ribbitCount = 0 } = useGetRibbitCount(id);
   const { data: viewCount = 0 } = useGetViewCount(id);
@@ -163,24 +165,35 @@ export default function LilyPage() {
           <div className="overflow-hidden mb-4">
             {/* Single column layout - all elements left-aligned */}
             <div className="flex flex-col gap-4 mb-4">
-              {/* Avatar */}
-              <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
-                <AvatarFallback className="text-lg">🐸</AvatarFallback>
-              </Avatar>
+              {/* Header: Avatar and metadata */}
+              <div className="flex items-start gap-3">
+                {/* Pond Avatar */}
+                <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
+                  {pond?.profileImage ? (
+                    <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
+                  ) : null}
+                  <AvatarFallback className="text-lg">🐸</AvatarFallback>
+                </Avatar>
 
-              {/* Metadata row */}
-              <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
-                <Link 
-                  to="/pond/$name" 
-                  params={{ name: lily.pond }} 
-                  className="hover:text-primary font-normal"
-                >
-                  pond/{lily.pond}
-                </Link>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-medium text-foreground">{lily.username}</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+                {/* Metadata: Two lines */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                  {/* Line 1: Pond name (bold) • timestamp */}
+                  <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
+                    <Link 
+                      to="/pond/$name" 
+                      params={{ name: lily.pond }} 
+                      className="hover:text-primary font-bold"
+                    >
+                      pond/{lily.pond}
+                    </Link>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+                  </div>
+                  {/* Line 2: Username (not bold) */}
+                  <div style={{ fontSize: '0.875rem' }}>
+                    <span className="text-foreground">{lily.username}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Title */}
@@ -320,6 +333,9 @@ export default function LilyPage() {
               />
             </div>
           )}
+
+          {/* Border divider between lily and ribbits */}
+          <div className="border-t border-border my-6"></div>
 
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-4">Ribbits ({formatNumber(ribbitCount)})</h2>
