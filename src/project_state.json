@@ -2,19 +2,39 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [
-    "Authorization currently gates core actions (create ponds/lilies, save avatars, etc.) behind a #user role; anonymous principals are not treated as users, conflicting with the intended fully-anonymous access model."
-  ],
-  "known_issues": [
-    "Anonymous visitors cannot create ponds/lilies or save custom avatars due to backend permission checks requiring a #user role; site is intended to allow full access anonymously."
-  ],
-  "isFixRequest": true,
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-frontend-remove-or-relax-any-ui-side-gating-that-blocks-anonymous-visitors-from-initiating-pond-creation-lily-creation-or-avatar-saving-based-on-a-user-role-check-so-the-ui-matches-the-new-backend-behavior-anonymous-users-have-full-access",
-      "title": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
+      "id": "feature-implement-a-shared-client-side-image-compression-utility-and-apply-it-to-all-image-uploads-before-converting-to-externalblob-bytes",
+      "title": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-compress-images-uploaded-when-creating-a-lily-createlilypage-so-the-uploaded-externalblob-is-built-from-the-compressed-bytes-and-ensure-the-preview-reflects-what-will-be-uploaded",
+      "title": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-compress-pond-banner-and-profile-images-during-pond-creation-createpondpage-so-both-uploaded-externalblobs-use-compressed-bytes-and-ensure-previews-reflect-the-compressed-images",
+      "title": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-compress-avatar-images-in-user-settings-before-uploading-so-the-avatar-externalblob-is-built-from-compressed-bytes-while-keeping-the-existing-upload-progress-behavior-intact",
+      "title": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -22,22 +42,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
-      "reqIds": [
-        "REQ-2"
-      ],
+      "summary": "Add compression to all image uploads",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Allow anonymous visitors to create ponds, create lilies, and save avatars by removing #user role gating",
+  "projectName": "Add client-side compression for all image uploads",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,41 +1,72 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove frontend role gating so anonymous visitors can create ponds, create lilies, and save avatars",
+  "title": "Client-side compression for all image uploads",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Remove/relax any UI-side “user role” gating so anonymous visitors can access pond creation, lily creation, and avatar saving flows.",
+      "id": "REQ-1",
+      "summary": "Add a shared client-side image compression utility and standardize image-to-bytes conversion for uploads.",
       "acceptanceCriteria": [
-        "While not logged in, the Create Pond and Create Lily entry points remain available and their forms submit without the UI blocking due to role/permission assumptions.",
-        "While not logged in, the User Settings avatar upload flow is available and does not show a role-based restriction message before attempting the save.",
-        "Any error messaging shown for these actions reflects real validation issues (e.g., pond name validation) rather than role/permission restrictions for anonymous users."
+        "A reusable utility exists (e.g., in frontend/src/lib/) that takes an image File and returns a compressed File or Uint8Array suitable for upload.",
+        "The utility resizes images to a reasonable maximum dimension (to prevent huge uploads) and applies lossy compression (quality setting) for JPEG/WebP outputs.",
+        "Non-image files are rejected and produce a clear error.",
+        "Animated GIFs (if supported by the browser input) are not recompressed (to avoid stripping animation) and are uploaded as-is.",
+        "Compression failures fall back to uploading the original file bytes with a user-facing error toast indicating compression could not be applied."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Adjust any role/profile-related React Query hooks to be anonymous-safe (no UI-side role gating; avoid surfacing “Only users can …” style authorization messages as a precondition). Where appropriate, catch authorization-style failures and return safe UI values (e.g., null/empty) so anonymous users can proceed and pages render. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
-          "operation": "modify",
-          "description": "Ensure avatar selection and saving are always available for anonymous visitors: remove any role-based restriction messaging/disablement, and rely on actual validation (file present/type/size) plus mutation outcomes. Keep avatar upload using the blob-storage ExternalBlob flow (getDirectURL for display; fromBytes/withUploadProgress for upload) and ensure errors shown are not role/permission-based. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/CreatePondPage.tsx",
-          "operation": "modify",
-          "description": "Audit and remove any UI-side checks that prevent anonymous users from submitting pond creation (e.g., role checks, login-required guards). If any authorization-related errors are currently surfaced, update messaging to be generic and validation-focused rather than role/permission-focused. Verify the component's usage instructions before implementing."
-        },
+          "path": "frontend/src/lib/imageCompression.ts",
+          "operation": "create",
+          "description": "Create a shared utility for client-side image validation + compression + resizing. It should (1) reject non-image files with a clear English error, (2) detect GIFs and skip recompression for animated GIF safety, (3) resize to a reasonable max dimension and apply lossy compression (quality) for JPEG/WebP outputs, and (4) return data usable to build an ExternalBlob via ExternalBlob.fromBytes(Uint8Array). Include helpers to produce preview URLs for the exact file that will be uploaded and to fall back to original bytes on compression failure. Use the blob-storage component’s ExternalBlob upload flow downstream (ExternalBlob.fromBytes), but keep this file UI-agnostic. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Compress CreateLilyPage image uploads before building ExternalBlob bytes and preview the compressed image.",
+      "acceptanceCriteria": [
+        "In frontend/src/pages/CreateLilyPage.tsx, when lilyType === 'image', the selected image is compressed prior to ExternalBlob.fromBytes(...).",
+        "The on-screen preview for an image Lily uses the compressed image (not the original), so users preview exactly what will be uploaded.",
+        "Submitting a non-image file (if forced via devtools) does not crash and shows an English error message."
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/pages/CreateLilyPage.tsx",
           "operation": "modify",
-          "description": "Audit and remove any UI-side checks that prevent anonymous users from submitting lily creation (e.g., role checks, login-required guards). Ensure any displayed errors are validation-related (required fields, tag validation) rather than role/permission assumptions. Verify the component's usage instructions before implementing."
-        },
+          "description": "Integrate the shared image compression utility into the image selection and submit flow: when lilyType is 'image' and a file is selected, validate it is an image, compress/resize it, and store the compressed File (or upload bytes) as the source of truth. Update the preview to render from the compressed result so it matches what will be uploaded. On compression failure, show an English toast error and fall back to using the original file bytes for upload; ensure non-image files (even if forced) are rejected gracefully with an English error and without crashing. Build the upload blob using the blob-storage component’s ExternalBlob.fromBytes(compressedOrFallbackBytes). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Compress CreatePondPage banner and profile image uploads before building ExternalBlob bytes and preview the compressed images.",
+      "acceptanceCriteria": [
+        "In frontend/src/pages/CreatePondPage.tsx, both bannerImageFile and profileImageFile are compressed before arrayBuffer()/ExternalBlob.fromBytes(...).",
+        "Both previews (banner and profile) display the compressed versions that will be uploaded.",
+        "If compression fails for either image, the UI shows an English toast error and falls back to uploading the original bytes for that image."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/pages/CreatePondPage.tsx",
           "operation": "modify",
-          "description": "Confirm Create entry points (Start a Pond, Create Lily) remain visible/usable for anonymous visitors and are not conditionally hidden/disabled due to user role checks; remove any such gating if present. Verify the component's usage instructions before implementing."
+          "description": "Apply the shared compression utility to both profileImageFile and bannerImageFile on selection: validate image type, compress/resize, and set previews from the compressed results (matching what will be uploaded). On submit, ensure ExternalBlob.fromBytes(...) is built from compressed bytes for each image independently. If compression fails for either file, show an English toast error for that specific image and fall back to uploading that image’s original bytes while keeping the other image compressed if successful. Use the blob-storage component’s ExternalBlob.fromBytes for both compressed and fallback bytes. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Compress avatar uploads in UserSettingsPage before building ExternalBlob bytes while preserving upload progress behavior and preview accuracy.",
+      "acceptanceCriteria": [
+        "In frontend/src/pages/UserSettingsPage.tsx, the selected avatar is compressed before ExternalBlob.fromBytes(...).withUploadProgress(...).",
+        "Upload progress continues to display and updates as before.",
+        "The avatar preview reflects the compressed image that will be uploaded.",
+        "If compression fails, show an English toast error and upload the original avatar bytes instead."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/UserSettingsPage.tsx",
+          "operation": "modify",
+          "description": "Update avatar selection + save flow to use the shared compression utility: when an avatar file is chosen, validate it is an image, compress/resize it, and update avatarPreview to display the compressed image that will be uploaded. In handleSaveAvatar, build the ExternalBlob from the compressed (or fallback) bytes and then call .withUploadProgress(...) exactly as before so progress UI remains intact. If compression fails, show an English toast error and upload original bytes instead, updating the preview to match the fallback upload source. Use the blob-storage component’s ExternalBlob.fromBytes(...).withUploadProgress(...) pattern unchanged aside from the bytes source. Verify the component's usage instructions before implementing."
         }
       ]
     }

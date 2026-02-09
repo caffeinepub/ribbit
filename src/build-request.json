@@ -1,81 +1,93 @@
 {
   "kind": "build_request",
-  "title": "Allow anonymous visitors to create ponds, create lilies, and save avatars by removing #user role gating",
-  "priority": "high",
+  "title": "Add client-side compression for all image uploads",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
-      "target": "backend",
+      "text": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-4"
         ],
         "quotes": [
-          "why cant i create ponds, save custom avatars, or create lilies? it says only users can do it. but the site is supposed to be anonymous and all users should have full access.",
-          "just do it fix it"
+          "Add compression to all image uploads."
         ]
       },
       "acceptanceCriteria": [
-        "Using the app without Internet Identity login (anonymous principal), a user can successfully create a pond from the Create Pond page and is navigated to the new pond page.",
-        "Using the app without Internet Identity login (anonymous principal), a user can successfully create a lily/post from the Create Lily page and see it appear in feeds.",
-        "Using the app without Internet Identity login (anonymous principal), a user can join and leave a pond without backend authorization traps.",
-        "Using the app without Internet Identity login (anonymous principal), a user can like/unlike a lily and like/unlike a ribbit without backend authorization traps.",
-        "Using the app without Internet Identity login (anonymous principal), a user can create ribbits/replies without backend authorization traps.",
-        "No backend method invoked by these flows throws/traps with a message indicating \"Only users can do it\" for anonymous callers."
+        "A reusable utility exists (e.g., in frontend/src/lib/) that takes an image File and returns a compressed File or Uint8Array suitable for upload.",
+        "The utility resizes images to a reasonable maximum dimension (to prevent huge uploads) and applies lossy compression (quality setting) for JPEG/WebP outputs.",
+        "Non-image files are rejected and produce a clear error.",
+        "Animated GIFs (if supported by the browser input) are not recompressed (to avoid stripping animation) and are uploaded as-is.",
+        "Compression failures fall back to uploading the original file bytes with a user-facing error toast indicating compression could not be applied."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
-      "target": "backend",
+      "text": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-4"
         ],
         "quotes": [
-          "why cant i create ponds, save custom avatars, or create lilies? it says only users can do it. but the site is supposed to be anonymous and all users should have full access.",
-          "just do it fix it"
+          "Add compression to all image uploads."
         ]
       },
       "acceptanceCriteria": [
-        "Opening the User Settings page while anonymous does not crash due to `getCallerUserProfile` trapping; it returns a safe value (e.g., null) and the page renders.",
-        "Saving an avatar on the User Settings page while anonymous completes successfully and the saved avatar is shown on subsequent reloads (as supported by the backend’s current avatar storage approach).",
-        "No backend method used by User Settings traps with \"Unauthorized: Only users can access/save profiles\" for anonymous callers."
+        "In frontend/src/pages/CreateLilyPage.tsx, when lilyType === 'image', the selected image is compressed prior to ExternalBlob.fromBytes(...).",
+        "The on-screen preview for an image Lily uses the compressed image (not the original), so users preview exactly what will be uploaded.",
+        "Submitting a non-image file (if forced via devtools) does not crash and shows an English error message."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
+      "text": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-4"
         ],
         "quotes": [
-          "but the site is supposed to be anonymous and all users should have full access.",
-          "just do it fix it"
+          "Add compression to all image uploads."
         ]
       },
       "acceptanceCriteria": [
-        "While not logged in, the Create Pond and Create Lily entry points remain available and their forms submit without the UI blocking due to role/permission assumptions.",
-        "While not logged in, the User Settings avatar upload flow is available and does not show a role-based restriction message before attempting the save.",
-        "Any error messaging shown for these actions reflects real validation issues (e.g., pond name validation) rather than role/permission restrictions for anonymous users."
+        "In frontend/src/pages/CreatePondPage.tsx, both bannerImageFile and profileImageFile are compressed before arrayBuffer()/ExternalBlob.fromBytes(...).",
+        "Both previews (banner and profile) display the compressed versions that will be uploaded.",
+        "If compression fails for either image, the UI shows an English toast error and falls back to uploading the original bytes for that image."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add compression to all image uploads."
+        ]
+      },
+      "acceptanceCriteria": [
+        "In frontend/src/pages/UserSettingsPage.tsx, the selected avatar is compressed before ExternalBlob.fromBytes(...).withUploadProgress(...).",
+        "Upload progress continues to display and updates as before.",
+        "The avatar preview reflects the compressed image that will be uploaded.",
+        "If compression fails, show an English toast error and upload the original avatar bytes instead."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit frontend files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "Use English for any user-facing text."
+    "Do not edit any files under frontend/src/components/ui (compose them only).",
+    "Do not modify files listed in frontend.immutablePaths (e.g., frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/main.tsx).",
+    "Keep all changes within the existing React + TypeScript + Tailwind + React Query stack; do not add external backend services."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or non-Internet-Computer storage systems.",
-    "Introducing real-time features (WebSockets/push/chat)."
+    "Backend-side image compression or transcoding in Motoko.",
+    "Adding new image upload features or new upload destinations beyond existing flows.",
+    "Changing existing data models or canister storage schema for images."
   ],
   "imageRequirements": {
     "required": [],

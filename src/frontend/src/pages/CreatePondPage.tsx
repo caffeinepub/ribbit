@@ -10,6 +10,7 @@ import { ExternalBlob } from '@/backend';
 import { toast } from 'sonner';
 import { Upload, X } from 'lucide-react';
 import { normalizePondName, getPondNameValidationError } from '@/lib/pondNameValidation';
+import { compressImageFile, revokePreviewUrl } from '@/lib/imageCompression';
 
 export default function CreatePondPage() {
   const navigate = useNavigate();
@@ -19,96 +20,120 @@ export default function CreatePondPage() {
   const [froggyPhrase, setFroggyPhrase] = useState('');
   const [froggyPhraseError, setFroggyPhraseError] = useState<string>('');
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+  const [bannerCompressedBytes, setBannerCompressedBytes] = useState<Uint8Array<ArrayBuffer> | null>(null);
   const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
   const [bannerImageError, setBannerImageError] = useState<string>('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileCompressedBytes, setProfileCompressedBytes] = useState<Uint8Array<ArrayBuffer> | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [profileImageError, setProfileImageError] = useState<string>('');
 
   const { mutate: createPond, isPending } = useCreatePond();
 
-  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setBannerImageFile(file);
-      setBannerImageError('');
+    if (!file) return;
+
+    // Clean up previous preview
+    if (bannerImagePreview) {
+      revokePreviewUrl(bannerImagePreview);
+    }
+
+    try {
+      const result = await compressImageFile(file);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBannerImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setBannerImageFile(file);
+      setBannerCompressedBytes(result.bytes);
+      setBannerImagePreview(result.previewUrl);
+      setBannerImageError('');
+
+      if (result.wasCompressed) {
+        const savedPercent = Math.round((1 - result.compressedSize / result.originalSize) * 100);
+        if (savedPercent > 0) {
+          toast.success(`Banner compressed (saved ${savedPercent}%)`);
+        }
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process banner image';
+      toast.error(errorMessage);
+      setBannerImageError(errorMessage);
+      setBannerImageFile(null);
+      setBannerCompressedBytes(null);
+      setBannerImagePreview(null);
     }
   };
 
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setProfileImageFile(file);
-      setProfileImageError('');
+    if (!file) return;
+
+    // Clean up previous preview
+    if (profileImagePreview) {
+      revokePreviewUrl(profileImagePreview);
+    }
+
+    try {
+      const result = await compressImageFile(file);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setProfileImageFile(file);
+      setProfileCompressedBytes(result.bytes);
+      setProfileImagePreview(result.previewUrl);
+      setProfileImageError('');
+
+      if (result.wasCompressed) {
+        const savedPercent = Math.round((1 - result.compressedSize / result.originalSize) * 100);
+        if (savedPercent > 0) {
+          toast.success(`Profile image compressed (saved ${savedPercent}%)`);
+        }
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process profile image';
+      toast.error(errorMessage);
+      setProfileImageError(errorMessage);
+      setProfileImageFile(null);
+      setProfileCompressedBytes(null);
+      setProfileImagePreview(null);
     }
   };
 
   const handleRemoveBannerImage = () => {
+    if (bannerImagePreview) {
+      revokePreviewUrl(bannerImagePreview);
+    }
     setBannerImageFile(null);
+    setBannerCompressedBytes(null);
     setBannerImagePreview(null);
     setBannerImageError('');
   };
 
   const handleRemoveProfileImage = () => {
+    if (profileImagePreview) {
+      revokePreviewUrl(profileImagePreview);
+    }
     setProfileImageFile(null);
+    setProfileCompressedBytes(null);
     setProfileImagePreview(null);
     setProfileImageError('');
   };
 
-  const validateFroggyPhrase = (phrase: string): boolean => {
-    const words = phrase.trim().split(/\s+/).filter(word => word.length > 0);
-    if (words.length < 5) {
-      setFroggyPhraseError('Froggy Phrase must contain at least five words');
-      return false;
-    }
-    setFroggyPhraseError('');
-    return true;
+  const handlePondNameChange = (value: string) => {
+    setPondName(value);
+    const error = getPondNameValidationError(value);
+    setPondNameError(error || '');
   };
 
-  const handleFroggyPhraseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleFroggyPhraseChange = (value: string) => {
     setFroggyPhrase(value);
-    if (value.trim()) {
-      validateFroggyPhrase(value);
+    const words = value.trim().split(/\s+/);
+    if (value.trim() && words.length < 5) {
+      setFroggyPhraseError('Froggy Phrase must contain at least 5 words');
     } else {
       setFroggyPhraseError('');
     }
   };
 
-  const handlePondNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPondName(value);
-    
-    // Validate on change
-    if (value.trim()) {
-      const error = getPondNameValidationError(value);
-      setPondNameError(error || '');
-    } else {
-      setPondNameError('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!pondName.trim() || !description.trim()) {
-      toast.error('All fields are required');
-      return;
-    }
 
     // Validate pond name
     const nameError = getPondNameValidationError(pondName);
@@ -118,76 +143,63 @@ export default function CreatePondPage() {
       return;
     }
 
-    if (!froggyPhrase.trim()) {
-      setFroggyPhraseError('Froggy Phrase is required');
-      toast.error('Froggy Phrase is required');
+    // Validate Froggy Phrase
+    const words = froggyPhrase.trim().split(/\s+/);
+    if (words.length < 5) {
+      setFroggyPhraseError('Froggy Phrase must contain at least 5 words');
+      toast.error('Froggy Phrase must contain at least 5 words');
       return;
     }
 
-    if (!validateFroggyPhrase(froggyPhrase)) {
-      toast.error('Froggy Phrase must contain at least five words');
+    // Validate banner image
+    if (!bannerCompressedBytes) {
+      setBannerImageError('Banner image is required');
+      toast.error('Banner image is required');
       return;
     }
 
-    if (!bannerImageFile) {
-      setBannerImageError('Please upload a banner image for your pond.');
-      toast.error('Please upload a banner image for your pond.');
+    // Validate profile image
+    if (!profileCompressedBytes) {
+      setProfileImageError('Profile image is required');
+      toast.error('Profile image is required');
       return;
     }
 
-    if (!profileImageFile) {
-      setProfileImageError('Please upload a profile image for your pond.');
-      toast.error('Please upload a profile image for your pond.');
-      return;
-    }
-
-    // Normalize pond name (lowercase alphanumeric only)
+    // Normalize pond name to lowercase alphanumeric
     const normalizedName = normalizePondName(pondName);
+    
+    // Check if normalization failed
     if (!normalizedName) {
-      setPondNameError('Invalid pond name format');
-      toast.error('Invalid pond name format');
+      setPondNameError('Invalid pond name');
+      toast.error('Invalid pond name');
       return;
     }
 
-    try {
-      // Convert banner image file to bytes
-      const bannerArrayBuffer = await bannerImageFile.arrayBuffer();
-      const bannerBytes = new Uint8Array(bannerArrayBuffer);
-      const bannerImageBlob = ExternalBlob.fromBytes(bannerBytes);
+    // Create ExternalBlob instances from compressed bytes
+    const bannerBlob = ExternalBlob.fromBytes(bannerCompressedBytes);
+    const profileBlob = ExternalBlob.fromBytes(profileCompressedBytes);
+    const imageBlob = profileBlob; // Use profile image as the main image
 
-      // Convert profile image file to bytes
-      const profileArrayBuffer = await profileImageFile.arrayBuffer();
-      const profileBytes = new Uint8Array(profileArrayBuffer);
-      const profileImageBlob = ExternalBlob.fromBytes(profileBytes);
-
-      createPond(
-        { 
-          name: normalizedName,
-          description, 
-          image: bannerImageBlob, 
-          profileImage: profileImageBlob,
-          bannerImage: bannerImageBlob,
-          froggyPhrase: froggyPhrase.trim()
+    createPond(
+      {
+        name: normalizedName,
+        description,
+        image: imageBlob,
+        profileImage: profileBlob,
+        bannerImage: bannerBlob,
+        froggyPhrase,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Pond created successfully!');
+          navigate({ to: '/pond/$name', params: { name: normalizedName } });
         },
-        {
-          onSuccess: () => {
-            toast.success('Pond created successfully! You are now the admin.');
-            navigate({ to: '/pond/$name', params: { name: normalizedName } });
-          },
-          onError: (error) => {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to create pond';
-            if (errorMessage.includes('Froggy Phrase')) {
-              setFroggyPhraseError(errorMessage);
-            } else if (errorMessage.includes('name') || errorMessage.includes('alphanumeric')) {
-              setPondNameError(errorMessage);
-            }
-            toast.error(errorMessage);
-          },
-        }
-      );
-    } catch (error) {
-      toast.error('Failed to process images');
-    }
+        onError: (error) => {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to create pond';
+          toast.error(errorMessage);
+        },
+      }
+    );
   };
 
   return (
@@ -195,33 +207,33 @@ export default function CreatePondPage() {
       <div className="max-w-2xl lg:mx-auto px-4 lg:px-0">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Start a New Pond</CardTitle>
+            <CardTitle className="text-2xl">Start a Pond</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="pondName">Pond Name</Label>
                 <Input
                   id="pondName"
-                  placeholder="e.g., FunnyFrogs or Frogs123"
+                  placeholder="e.g., FrogLovers"
                   value={pondName}
-                  onChange={handlePondNameChange}
+                  onChange={(e) => handlePondNameChange(e.target.value)}
                   required
                   style={{ fontSize: '1rem' }}
                 />
-                <p className="text-sm text-muted-foreground">
-                  Letters and numbers only. This will be used as your pond's name and URL.
-                </p>
                 {pondNameError && (
-                  <p className="text-sm text-destructive">{pondNameError}</p>
+                  <p className="text-red-500 text-sm">{pondNameError}</p>
                 )}
+                <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                  Letters and numbers only. Will be converted to lowercase.
+                </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe what this pond is about..."
+                  placeholder="What's your pond about?"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
@@ -231,124 +243,130 @@ export default function CreatePondPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="froggyPhrase">Froggy Phrase *</Label>
+                <Label htmlFor="froggyPhrase">Froggy Phrase</Label>
                 <Input
                   id="froggyPhrase"
-                  type="text"
-                  placeholder="Enter at least 5 words to secure your pond admin access"
+                  placeholder="Enter at least 5 words"
                   value={froggyPhrase}
-                  onChange={handleFroggyPhraseChange}
+                  onChange={(e) => handleFroggyPhraseChange(e.target.value)}
                   required
                   style={{ fontSize: '1rem' }}
                 />
-                <p className="text-sm text-muted-foreground">
-                  Create a memorable phrase with at least 5 words. This grants you admin rights to manage your pond.
-                </p>
                 {froggyPhraseError && (
-                  <p className="text-sm text-destructive">{froggyPhraseError}</p>
+                  <p className="text-red-500 text-sm">{froggyPhraseError}</p>
+                )}
+                <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                  A secret phrase to verify pond ownership (minimum 5 words)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bannerImage">Banner Image (Required)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="bannerImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerImageChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('bannerImage')?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Choose Banner
+                  </Button>
+                  {bannerImageFile && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">{bannerImageFile.name}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveBannerImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {bannerImageError && (
+                  <p className="text-red-500 text-sm">{bannerImageError}</p>
+                )}
+                {bannerImagePreview && (
+                  <div className="mt-4 relative">
+                    <img
+                      src={bannerImagePreview}
+                      alt="Banner preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  </div>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="profileImage">Pond Profile Picture *</Label>
-                {!profileImagePreview ? (
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                    <input
-                      type="file"
-                      id="profileImage"
-                      accept="image/*"
-                      onChange={handleProfileImageChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="profileImage" className="cursor-pointer">
-                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                        <Upload className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Click to upload profile picture
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </label>
-                  </div>
-                ) : (
-                  <div className="relative flex justify-center">
-                    <div className="relative">
-                      <img
-                        src={profileImagePreview}
-                        alt="Profile preview"
-                        className="w-32 h-32 object-cover rounded-full border-4 border-primary/20"
-                      />
+                <Label htmlFor="profileImage">Profile Image (Required)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="profileImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfileImageChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('profileImage')?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Choose Profile Image
+                  </Button>
+                  {profileImageFile && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">{profileImageFile.name}</span>
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
+                        variant="ghost"
+                        size="sm"
                         onClick={handleRemoveProfileImage}
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 {profileImageError && (
-                  <p className="text-sm text-destructive">{profileImageError}</p>
+                  <p className="text-red-500 text-sm">{profileImageError}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bannerImage">Pond Banner Image *</Label>
-                {!bannerImagePreview ? (
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                    <input
-                      type="file"
-                      id="bannerImage"
-                      accept="image/*"
-                      onChange={handleBannerImageChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="bannerImage" className="cursor-pointer">
-                      <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Click to upload banner image
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </label>
-                  </div>
-                ) : (
-                  <div className="relative">
+                {profileImagePreview && (
+                  <div className="mt-4 flex justify-center">
                     <img
-                      src={bannerImagePreview}
-                      alt="Banner preview"
-                      className="w-full h-64 object-cover rounded-lg"
+                      src={profileImagePreview}
+                      alt="Profile preview"
+                      className="w-32 h-32 object-cover rounded-full"
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={handleRemoveBannerImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 )}
-                {bannerImageError && (
-                  <p className="text-sm text-destructive">{bannerImageError}</p>
-                )}
+                <p className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                  This will be displayed as a circular profile image
+                </p>
               </div>
 
-              <div className="flex gap-4 pt-2">
-                <Button type="submit" disabled={isPending || !!pondNameError} className="flex-1">
-                  {isPending ? 'Creating...' : 'Start Pond'}
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  disabled={isPending || !!pondNameError || !!froggyPhraseError || !!bannerImageError || !!profileImageError}
+                  className="flex-1"
+                >
+                  {isPending ? 'Creating...' : 'Create Pond'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate({ to: '/' })}
+                  onClick={() => navigate({ to: '/ponds' })}
                   disabled={isPending}
                 >
                   Cancel

@@ -274,8 +274,8 @@ export default function LilyPage() {
               )}
             </div>
 
-            {/* Action buttons row */}
-            <div className="flex items-center gap-4 py-3 border-y border-border">
+            {/* Action buttons row - no top padding, no border, 2rem bottom padding */}
+            <div className="flex items-center gap-4 pt-0 pb-8">
               <button
                 onClick={handleLikeClick}
                 disabled={isLiking || isUnliking}
@@ -310,33 +310,23 @@ export default function LilyPage() {
                 onClick={handleShareClick}
                 className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors ml-auto"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="action-icon"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
-                  />
-                </svg>
+                <Send className="action-icon" />
                 <span style={{ fontSize: '0.875rem' }}>Share</span>
               </button>
 
-              <BookmarkButton lilyId={lily.id} />
+              <BookmarkButton 
+                lilyId={lily.id}
+                inactiveColor="text-muted-foreground"
+                hoverColor="hover:text-accent"
+                activeColor="text-accent"
+              />
             </div>
           </div>
 
-          {/* Ribbits Section */}
+          {/* Ribbits Section - no heading, no border on form */}
           <div className="mt-6">
-            <h2 className="text-xl font-bold mb-4">Ribbits</h2>
-
-            {/* Ribbit creation form */}
-            <div className="mb-6 p-4 border border-border rounded-lg bg-card">
+            {/* Ribbit creation form - no border */}
+            <div className="mb-6 p-4 rounded-lg bg-card">
               <Textarea
                 placeholder="Write a ribbit..."
                 value={ribbitContent}

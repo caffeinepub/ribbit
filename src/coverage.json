@@ -1,56 +1,69 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T00:14:04.739Z",
+  "generatedAt": "2026-02-09T00:59:47.923Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 1,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/lib/imageCompression.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/lib/imageCompression.ts"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/CreateLilyPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/CreateLilyPage.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
+        "summary": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/UserSettingsPage.tsx",
-          "frontend/src/pages/CreatePondPage.tsx",
-          "frontend/src/pages/CreateLilyPage.tsx",
-          "frontend/src/components/Header.tsx"
+          "frontend/src/pages/CreatePondPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/CreatePondPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/UserSettingsPage.tsx"
+        ],
+        "matchedFiles": [
           "frontend/src/pages/UserSettingsPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/LeftSidebar.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/lib/imageCompression.ts",
+    "frontend/src/pages/CreateLilyPage.tsx",
+    "frontend/src/pages/CreatePondPage.tsx",
     "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

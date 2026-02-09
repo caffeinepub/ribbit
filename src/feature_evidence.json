@@ -2,11 +2,50 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-frontend-remove-or-relax-any-ui-side-gating-that-blocks-anonymous-visitors-from-initiating-pond-creation-lily-creation-or-avatar-saving-based-on-a-user-role-check-so-the-ui-matches-the-new-backend-behavior-anonymous-users-have-full-access",
-      "featureTitle": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
+      "featureId": "feature-implement-a-shared-client-side-image-compression-utility-and-apply-it-to-all-image-uploads-before-converting-to-externalblob-bytes",
+      "featureTitle": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/UserSettingsPage.tsx"
+        "frontend/src/lib/imageCompression.ts"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-compress-images-uploaded-when-creating-a-lily-createlilypage-so-the-uploaded-externalblob-is-built-from-the-compressed-bytes-and-ensure-the-preview-reflects-what-will-be-uploaded",
+      "featureTitle": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "files": [
+        "frontend/src/pages/CreateLilyPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-compress-pond-banner-and-profile-images-during-pond-creation-createpondpage-so-both-uploaded-externalblobs-use-compressed-bytes-and-ensure-previews-reflect-the-compressed-images",
+      "featureTitle": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
+      "files": [
+        "frontend/src/pages/CreatePondPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -19,6 +58,26 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-compress-avatar-images-in-user-settings-before-uploading-so-the-avatar-externalblob-is-built-from-compressed-bytes-while-keeping-the-existing-upload-progress-behavior-intact",
+      "featureTitle": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
+      "files": [
+        "frontend/src/pages/UserSettingsPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from 'react-use';
 import { getTagValidationError } from '@/lib/tagValidation';
 import { AlertCircle } from 'lucide-react';
+import { compressImageFile, revokePreviewUrl } from '@/lib/imageCompression';
 
 type LilyType = 'text' | 'image' | 'link';
 
@@ -32,6 +33,7 @@ export default function CreateLilyPage() {
   const [tag, setTag] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [compressedImageBytes, setCompressedImageBytes] = useState<Uint8Array<ArrayBuffer> | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [debouncedTag, setDebouncedTag] = useState('');
@@ -94,15 +96,47 @@ export default function CreateLilyPage() {
     }
   }, [tag, tagSuggestions, tagError]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        revokePreviewUrl(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Clean up previous preview
+    if (imagePreview) {
+      revokePreviewUrl(imagePreview);
+    }
+
+    try {
+      // Validate and compress the image
+      const result = await compressImageFile(file);
+      
       setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setCompressedImageBytes(result.bytes);
+      setImagePreview(result.previewUrl);
+
+      // Show compression feedback
+      if (result.wasCompressed) {
+        const savedPercent = Math.round((1 - result.compressedSize / result.originalSize) * 100);
+        if (savedPercent > 0) {
+          toast.success(`Image compressed (saved ${savedPercent}%)`);
+        }
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
+      toast.error(errorMessage);
+      
+      // Reset image state on error
+      setImageFile(null);
+      setCompressedImageBytes(null);
+      setImagePreview(null);
     }
   };
 
@@ -127,9 +161,12 @@ export default function CreateLilyPage() {
     }
 
     let imageBlob: ExternalBlob | null = null;
-    if (lilyType === 'image' && imageFile) {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      imageBlob = ExternalBlob.fromBytes(new Uint8Array(arrayBuffer));
+    if (lilyType === 'image') {
+      if (!compressedImageBytes) {
+        toast.error('Please select an image');
+        return;
+      }
+      imageBlob = ExternalBlob.fromBytes(compressedImageBytes);
     }
 
     createLily(

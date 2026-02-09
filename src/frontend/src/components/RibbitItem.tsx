@@ -1,59 +1,47 @@
 import { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Ribbit } from '@/backend';
+import { MessageSquare, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { 
-  useCreateRibbit,
-  useGetUserAvatarByUsername,
-  useGetRibbitLikeCount,
-  useHasUserLikedRibbit,
-  useLikeRibbit,
-  useUnlikeRibbit
-} from '@/hooks/useQueries';
+import { useCreateRibbit, useGetUserAvatarByUsername, useLikeRibbit, useUnlikeRibbit, useHasUserLikedRibbit, useGetRibbitLikeCount } from '@/hooks/useQueries';
+import { Ribbit } from '@/backend';
 import { getUsername } from '@/lib/user';
-import { toast } from 'sonner';
-import { formatNumber } from '@/lib/formatNumber';
 
 interface RibbitItemProps {
   ribbit: Ribbit;
-  depth?: number;
   postId: string;
+  depth?: number;
 }
 
-export default function RibbitItem({ ribbit, depth = 0, postId }: RibbitItemProps) {
+export default function RibbitItem({ ribbit, postId, depth = 0 }: RibbitItemProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-
-  const username = getUsername();
-  const { mutate: createReply, isPending: isCreatingReply } = useCreateRibbit();
-  const { data: ribbitUserAvatar } = useGetUserAvatarByUsername(ribbit.username);
-  const { data: likeCount = 0 } = useGetRibbitLikeCount(ribbit.id);
-  const { data: hasLiked = false } = useHasUserLikedRibbit(ribbit.id);
+  const { mutate: createRibbit, isPending: isCreatingRibbit } = useCreateRibbit();
   const { mutate: likeRibbit, isPending: isLiking } = useLikeRibbit();
   const { mutate: unlikeRibbit, isPending: isUnliking } = useUnlikeRibbit();
+  const { data: hasLiked = false } = useHasUserLikedRibbit(ribbit.id);
+  const { data: likeCount = 0 } = useGetRibbitLikeCount(ribbit.id);
+  const { data: avatarBlob } = useGetUserAvatarByUsername(ribbit.username);
 
   const timestamp = new Date(Number(ribbit.timestamp) / 1000000);
-  const indentLevel = Math.min(depth, 5);
+  const maxDepth = 5;
+  const indentLevel = Math.min(depth, maxDepth);
 
   const handleSubmitReply = () => {
-    if (!replyContent.trim()) {
-      toast.error('Reply cannot be empty');
-      return;
-    }
+    if (!replyContent.trim()) return;
 
-    createReply(
-      { postId, parentId: ribbit.id, content: replyContent, username },
+    createRibbit(
+      {
+        postId,
+        parentId: ribbit.id,
+        content: replyContent,
+        username: getUsername(),
+      },
       {
         onSuccess: () => {
           setReplyContent('');
           setShowReplyForm(false);
-          toast.success('Reply posted!');
-        },
-        onError: () => {
-          toast.error('Failed to post reply');
         },
       }
     );
@@ -70,62 +58,64 @@ export default function RibbitItem({ ribbit, depth = 0, postId }: RibbitItemProp
   };
 
   return (
-    <div 
+    <div
       className="py-3"
-      style={{ 
+      style={{
         marginLeft: `${indentLevel * 1.5}rem`,
-        borderLeft: depth > 0 ? '2px solid hsl(var(--border))' : 'none',
-        paddingLeft: depth > 0 ? '1rem' : '0'
       }}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex gap-3">
         <Avatar className="h-8 w-8 bg-primary/10 flex-shrink-0">
-          {ribbitUserAvatar ? (
-            <AvatarImage src={ribbitUserAvatar.getDirectURL()} alt={ribbit.username} />
-          ) : (
-            <AvatarFallback className="text-sm">🐸</AvatarFallback>
-          )}
+          {avatarBlob ? (
+            <AvatarImage src={avatarBlob.getDirectURL()} alt={ribbit.username} />
+          ) : null}
+          <AvatarFallback className="text-sm">
+            {ribbit.username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
+
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-            <span className="font-medium">{ribbit.username}</span>
-            <span>•</span>
-            <span>{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm">{ribbit.username}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(timestamp, { addSuffix: true })}
+            </span>
           </div>
-          <p className="text-sm text-foreground/90 whitespace-pre-wrap mb-2">{ribbit.content}</p>
-          
-          <div className="flex items-center gap-2 mb-2">
+
+          <p className="text-sm text-foreground/90 mb-2 whitespace-pre-wrap break-words">
+            {ribbit.content}
+          </p>
+
+          <div className="flex items-center gap-4">
             <button
               onClick={handleLikeClick}
               disabled={isLiking || isUnliking}
-              className="flex items-center gap-1 h-7 px-2 rounded hover:bg-muted transition-colors disabled:opacity-50"
-              style={{ fontSize: '0.875rem' }}
+              className={`flex items-center gap-1.5 text-xs transition-colors ${
+                hasLiked ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+              }`}
             >
               <svg
+                xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                className={`action-icon transition-colors ${
-                  hasLiked 
-                    ? 'fill-primary stroke-primary' 
-                    : 'fill-none stroke-current'
-                }`}
+                fill={hasLiked ? 'currentColor' : 'none'}
+                stroke="currentColor"
                 strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                className="action-icon"
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-              <span className="text-muted-foreground">{formatNumber(likeCount)}</span>
+              {likeCount > 0 && <span>{likeCount}</span>}
             </button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowReplyForm(!showReplyForm)}
-              className="h-7 px-2 text-muted-foreground hover:text-foreground"
-              style={{ fontSize: '0.875rem' }}
-            >
-              <MessageSquare className="action-icon mr-1" />
-              Reply
-            </Button>
+
+            {depth < maxDepth && (
+              <button
+                onClick={() => setShowReplyForm(!showReplyForm)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent transition-colors"
+              >
+                <MessageSquare className="action-icon" />
+                <span>Reply</span>
+              </button>
+            )}
           </div>
 
           {showReplyForm && (
@@ -134,30 +124,27 @@ export default function RibbitItem({ ribbit, depth = 0, postId }: RibbitItemProp
                 placeholder="Write a reply..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                rows={3}
-                className="text-sm"
+                className="resize-none text-sm"
+                rows={2}
               />
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground" style={{ fontSize: '0.875rem' }}>Replying as {username}</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowReplyForm(false);
-                      setReplyContent('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmitReply}
-                    disabled={isCreatingReply}
-                  >
-                    {isCreatingReply ? 'Posting...' : 'Post Reply'}
-                  </Button>
-                </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => {
+                    setShowReplyForm(false);
+                    setReplyContent('');
+                  }}
+                  variant="ghost"
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmitReply}
+                  disabled={!replyContent.trim() || isCreatingRibbit}
+                  size="sm"
+                >
+                  {isCreatingRibbit ? 'Posting...' : 'Reply'}
+                </Button>
               </div>
             </div>
           )}
