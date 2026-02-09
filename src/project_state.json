@@ -1,16 +1,29 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Adjust lily page layout so the pond avatar metadata block aligns with the main content column (title/description/image/actions) Reddit-style, while keeping the back button offset in front/left of that block.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "summary": "New project",
+  "architectural_notes": [
+    "Scope constraint: only address Ribbits image upload functionality and missing blurred background; do not change anything else; do not start coding yet until user approves."
+  ],
+  "known_issues": [
+    "Ribbits image uploads are not working.",
+    "Ribbits image uploads are missing the blurred background effect."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-lily-detail-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-pond-avatar-metadata-block-pond-name-timestamp-username-avatar-is-aligned-to-the-same-left-edge-as-the-lily-title-description-image-and-action-buttons-reddit-style-while-keeping-the-back-button-as-the-only-element-offset-to-the-left-in-front-of-that-aligned-column",
-      "title": "Update the Lily detail page header layout (`frontend/src/pages/LilyPage.tsx`) so the pond avatar metadata block (pond name, timestamp, username, avatar) is aligned to the same left edge as the lily title, description, image, and action buttons (Reddit-style), while keeping the back button as the only element offset to the left/in front of that aligned column.",
+      "id": "feature-add-end-to-end-support-for-images-attached-to-ribbits-the-frontend-must-upload-the-selected-image-when-creating-a-ribbit-the-backend-must-persist-the-image-blob-with-the-ribbit-and-ribbit-queries-must-return-the-image-so-it-can-be-displayed",
+      "title": "Add end-to-end support for images attached to Ribbits: the frontend must upload the selected image when creating a ribbit, the backend must persist the image blob with the ribbit, and ribbit queries must return the image so it can be displayed.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-ribbit-images-render-with-the-same-blurred-background-backdrop-behavior-used-for-non-4-3-images-i-e-a-blurred-backdrop-behind-the-image-and-apply-this-consistently-anywhere-ribbits-are-rendered-with-images-thread-view-on-lily-page-and-the-profile-ribbit-comments-list-if-applicable",
+      "title": "Ensure ribbit images render with the same blurred background/backdrop behavior used for non-4:3 images (i.e., a blurred backdrop behind the image), and apply this consistently anywhere ribbits are rendered with images (thread view on Lily page and the profile ribbit/comments list if applicable).",
+      "reqIds": [
+        "REQ-2"
       ],
       "version": 1
     }
@@ -18,12 +31,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Lily page: align pond avatar metadata block with main content column while keeping back button offset in front/left (Reddit-style layout)",
+      "summary": "Fix Ribbits image uploads so they work and include the blurred background (no other changes)",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Perform a safe state upgrade for existing deployed data to support the new optional ribbit image field without breaking existing ribbits.",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Align Lily page pond avatar metadata with main content while keeping back button offset (Reddit-style)",
+  "projectName": "Fix Ribbits image uploads (store + display) including blurred background",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

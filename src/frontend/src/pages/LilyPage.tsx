@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, ExternalLink, Eye, X, Send, ArrowLeft } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, X, Send, ArrowLeft, Image } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   useGetLily, 
@@ -25,15 +25,19 @@ import { formatNumber } from '@/lib/formatNumber';
 import { shareLily } from '@/lib/shareLily';
 import BookmarkButton from '@/components/BookmarkButton';
 import { isWithinCooldown, recordViewIncrement } from '@/lib/viewCountCooldown';
-import { ViewIncrementResult } from '@/backend';
+import { ViewIncrementResult, ExternalBlob } from '@/backend';
+import LilyImageFrame from '@/components/LilyImageFrame';
+import { compressImageFile } from '@/lib/imageCompression';
+import { toast } from 'sonner';
 
 export default function LilyPage() {
   const { id } = useParams({ strict: false }) as { id: string };
   const navigate = useNavigate();
   const [ribbitContent, setRibbitContent] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'top' | 'newest'>('newest');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Track if we've already attempted to increment view for this lily ID
   const viewIncrementAttemptedRef = useRef<string | null>(null);
@@ -90,18 +94,21 @@ export default function LilyPage() {
     }
   }, [id]);
 
-  useEffect(() => {
-    if (lily?.image) {
-      const img = new Image();
-      img.onload = () => {
-        setImageAspectRatio(img.width / img.height);
-      };
-      img.src = lily.image.getDirectURL();
-    }
-  }, [lily?.image]);
-
-  const handleSubmitRibbit = () => {
+  const handleSubmitRibbit = async () => {
     if (!ribbitContent.trim() || !lily) return;
+
+    let imageBlob: ExternalBlob | null = null;
+
+    if (selectedImage) {
+      try {
+        const result = await compressImageFile(selectedImage);
+        imageBlob = ExternalBlob.fromBytes(result.bytes);
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        toast.error('Failed to process image');
+        return;
+      }
+    }
 
     createRibbit(
       {
@@ -109,10 +116,15 @@ export default function LilyPage() {
         parentId: null,
         content: ribbitContent,
         username: getUsername(),
+        image: imageBlob,
       },
       {
         onSuccess: () => {
           setRibbitContent('');
+          setSelectedImage(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
         },
       }
     );
@@ -143,6 +155,24 @@ export default function LilyPage() {
     }
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setSelectedImage(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   if (lilyLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -169,55 +199,50 @@ export default function LilyPage() {
   }
 
   const timestamp = new Date(Number(lily.timestamp) / 1000000);
-  const shouldShowBlurredBackdrop = imageAspectRatio !== null && imageAspectRatio !== 4/3;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto px-4 lg:px-0">
+          {/* Reddit-style Back button */}
+          <button
+            onClick={handleBackClick}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 -ml-2 px-2 py-1 rounded-md hover:bg-muted"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium" style={{ fontSize: '0.875rem' }}>Back</span>
+          </button>
+
           <div className="overflow-hidden mb-4">
             {/* Single column layout - all elements left-aligned */}
             <div className="flex flex-col gap-4 mb-4">
-              {/* Header: Back button offset, Avatar and metadata aligned with content */}
-              <div className="relative">
-                {/* Back button - positioned absolutely to the left, outside content flow */}
-                <button
-                  onClick={handleBackClick}
-                  className="absolute left-0 top-0 -ml-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted flex-shrink-0 h-10 w-10 z-10"
-                  aria-label="Back"
-                  style={{ marginLeft: '-3rem' }}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
+              {/* Header: Avatar and metadata */}
+              <div className="flex items-start gap-3">
+                {/* Pond Avatar */}
+                <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
+                  {pond?.profileImage ? (
+                    <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
+                  ) : null}
+                  <AvatarFallback className="text-lg">🐸</AvatarFallback>
+                </Avatar>
 
-                {/* Pond Avatar and metadata - aligned with content column */}
-                <div className="flex items-start gap-3">
-                  {/* Pond Avatar */}
-                  <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
-                    {pond?.profileImage ? (
-                      <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
-                    ) : null}
-                    <AvatarFallback className="text-lg">🐸</AvatarFallback>
-                  </Avatar>
-
-                  {/* Metadata: Two lines */}
-                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                    {/* Line 1: Pond name (bold) • timestamp */}
-                    <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
-                      <Link 
-                        to="/pond/$name" 
-                        params={{ name: lily.pond }} 
-                        className="hover:text-primary font-bold"
-                      >
-                        pond/{lily.pond}
-                      </Link>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
-                    </div>
-                    {/* Line 2: Username (not bold) */}
-                    <div style={{ fontSize: '0.875rem' }}>
-                      <span className="text-foreground">{lily.username}</span>
-                    </div>
+                {/* Metadata: Two lines */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                  {/* Line 1: Pond name (bold) • timestamp */}
+                  <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
+                    <Link 
+                      to="/pond/$name" 
+                      params={{ name: lily.pond }} 
+                      className="hover:text-primary font-bold"
+                    >
+                      pond/{lily.pond}
+                    </Link>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+                  </div>
+                  {/* Line 2: Username (not bold) */}
+                  <div style={{ fontSize: '0.875rem' }}>
+                    <span className="text-foreground">{lily.username}</span>
                   </div>
                 </div>
               </div>
@@ -247,161 +272,147 @@ export default function LilyPage() {
               {/* Image block */}
               {lily.image && (
                 <div>
-                  {shouldShowBlurredBackdrop ? (
-                    <div 
-                      className="relative w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => setLightboxOpen(true)}
-                    >
-                      <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url(${lily.image.getDirectURL()})`,
-                          filter: 'blur(30px)',
-                          transform: 'scale(1.1)',
-                        }}
-                      />
-                      <div className="relative flex items-center justify-center w-full h-full">
-                        <img
-                          src={lily.image.getDirectURL()}
-                          alt={lily.title}
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      className="w-full aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => setLightboxOpen(true)}
-                    >
-                      <img
-                        src={lily.image.getDirectURL()}
-                        alt={lily.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  <LilyImageFrame
+                    imageUrl={lily.image.getDirectURL()}
+                    alt={lily.title}
+                    onClick={() => setLightboxOpen(true)}
+                    loading="eager"
+                  />
                 </div>
               )}
 
-              {/* Link block */}
+              {/* Link */}
               {lily.link && (
-                <div>
-                  <a
-                    href={lily.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-accent hover:underline"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="break-all">{lily.link}</span>
-                  </a>
-                </div>
+                <a
+                  href={lily.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="action-icon" />
+                  {new URL(lily.link).hostname}
+                </a>
               )}
             </div>
 
-            {/* Action buttons row - no top padding, no border, 2rem bottom padding */}
-            <div className="flex items-center gap-4 pt-0 pb-8">
+            {/* Action buttons row - no top padding/border, 2rem bottom padding */}
+            <div className="flex items-center gap-4 text-muted-foreground pb-8" style={{ fontSize: '0.875rem' }}>
               <button
                 onClick={handleLikeClick}
                 disabled={isLiking || isUnliking}
-                className={`flex items-center gap-2 transition-colors ${
-                  hasLiked ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+                className={`flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50 ${
+                  hasLiked ? 'text-accent' : ''
                 }`}
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
+                  className={`action-icon transition-colors`}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   fill={hasLiked ? 'currentColor' : 'none'}
                   stroke="currentColor"
-                  strokeWidth="2"
-                  className="action-icon"
                 >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
-                <span style={{ fontSize: '0.875rem' }}>{formatNumber(likeCount)}</span>
+                <span>{formatNumber(likeCount)}</span>
               </button>
-
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors">
+              <div className="flex items-center gap-1.5">
                 <MessageCircle className="action-icon" />
-                <span style={{ fontSize: '0.875rem' }}>{formatNumber(ribbitCount)}</span>
-              </button>
-
-              <button className="flex items-center gap-2 text-muted-foreground">
+                <span>{formatNumber(ribbitCount)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <Eye className="action-icon" />
-                <span style={{ fontSize: '0.875rem' }}>{formatNumber(viewCount)}</span>
-              </button>
-
+                <span>{formatNumber(viewCount)}</span>
+              </div>
               <button
                 onClick={handleShareClick}
-                className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors ml-auto"
+                className="flex items-center gap-1.5 hover:text-foreground transition-colors"
               >
                 <Send className="action-icon" />
-                <span style={{ fontSize: '0.875rem' }}>Share</span>
               </button>
-
-              <BookmarkButton 
-                lilyId={lily.id}
-                inactiveColor="text-muted-foreground"
-                hoverColor="hover:text-accent"
-                activeColor="text-accent"
-              />
+              <BookmarkButton lilyId={lily.id} />
             </div>
           </div>
 
-          {/* Ribbits Section - no heading, no border on form */}
-          <div className="mt-6">
-            {/* Ribbit creation form - no border, no padding */}
-            <div className="mb-6 rounded-lg bg-card">
-              <Textarea
-                placeholder="Write a ribbit..."
-                value={ribbitContent}
-                onChange={(e) => setRibbitContent(e.target.value)}
-                className="mb-3 resize-none"
-                rows={3}
-                style={{ fontSize: '1rem' }}
-              />
-              <div className="flex justify-end">
+          {/* Ribbits Section */}
+          <div>
+            {/* Ribbit creation form - no border on top */}
+            <div className="mb-6">
+              <div className="relative">
+                <Textarea
+                  placeholder="What are your thoughts?"
+                  value={ribbitContent}
+                  onChange={(e) => setRibbitContent(e.target.value)}
+                  className="resize-none pr-12 pb-12"
+                  rows={3}
+                />
+                {/* Image upload button - bottom left */}
+                <button
+                  onClick={handleImageClick}
+                  className="absolute bottom-3 left-3 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Upload image"
+                >
+                  <Image className="h-5 w-5" />
+                </button>
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                {/* Submit button - bottom right */}
                 <Button
                   onClick={handleSubmitRibbit}
                   disabled={!ribbitContent.trim() || isCreatingRibbit}
                   size="sm"
-                  className="rounded-full"
+                  className="absolute bottom-3 right-3"
                 >
-                  {isCreatingRibbit ? (
-                    <>
-                      <span className="mr-2">Posting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Post Ribbit
-                    </>
-                  )}
+                  {isCreatingRibbit ? 'Posting...' : 'Ribbit'}
                 </Button>
               </div>
+              {/* Image preview */}
+              {selectedImage && (
+                <div className="mt-2 relative inline-block">
+                  <img
+                    src={URL.createObjectURL(selectedImage)}
+                    alt="Preview"
+                    className="max-h-32 rounded-md border"
+                  />
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                    aria-label="Remove image"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Sorting toggle */}
-            <div className="flex items-center gap-2 mb-4">
-              <button
-                onClick={() => setSortBy('top')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  sortBy === 'top'
-                    ? 'bg-accent text-accent-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Top
-              </button>
+            {/* Sorting toggle buttons directly below text entry */}
+            <div className="flex items-center gap-2 mb-6">
               <button
                 onClick={() => setSortBy('newest')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   sortBy === 'newest'
-                    ? 'bg-accent text-accent-foreground'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
                 Newest
+              </button>
+              <button
+                onClick={() => setSortBy('top')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  sortBy === 'top'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Top
               </button>
             </div>
 
@@ -410,10 +421,9 @@ export default function LilyPage() {
               <div className="space-y-4">
                 <Skeleton className="h-24 w-full" />
                 <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
               </div>
             ) : ribbits && ribbits.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-0">
                 {ribbits.map((ribbit) => (
                   <RibbitItem key={ribbit.id} ribbit={ribbit} postId={lily.id} />
                 ))}
@@ -436,6 +446,7 @@ export default function LilyPage() {
           <button
             onClick={() => setLightboxOpen(false)}
             className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+            aria-label="Close lightbox"
           >
             <X className="h-8 w-8" />
           </button>

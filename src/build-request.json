@@ -1,42 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Align Lily page pond avatar metadata with main content while keeping back button offset (Reddit-style)",
-  "priority": "normal",
+  "title": "Fix Ribbits image uploads (store + display) including blurred background",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Lily detail page header layout (`frontend/src/pages/LilyPage.tsx`) so the pond avatar metadata block (pond name, timestamp, username, avatar) is aligned to the same left edge as the lily title, description, image, and action buttons (Reddit-style), while keeping the back button as the only element offset to the left/in front of that aligned column.",
-      "target": "frontend",
+      "text": "Add end-to-end support for images attached to Ribbits: the frontend must upload the selected image when creating a ribbit, the backend must persist the image blob with the ribbit, and ribbit queries must return the image so it can be displayed.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-1",
-          "msg-user-2",
-          "msg-user-3",
-          "msg-user-4"
+          "msg-1"
         ],
         "quotes": [
-          "the pond avatar block (that include the pond name, timestamp and username) in the lily page needs to be aligned with the lily title description, image, action buttons, etc. like reddit does it.",
-          "yes and the backbutton needs to remain in front of that block.",
-          "yes that means that the only thing not aligned is the back button.",
-          "yes go ahead and do it"
+          "i just need you to fix ribbits so that image uploads actually work. dont do anything else."
         ]
       },
       "acceptanceCriteria": [
-        "On the Lily page, the left edge of the pond avatar metadata block (avatar + metadata text) visually aligns with the left edge of the lily title, description, image block, link block, and the action buttons row (i.e., they share one consistent content column).",
-        "The back button remains positioned to the left of (in front of) the pond avatar metadata block, and is the only element that does not share the main content column’s left alignment.",
-        "The back button remains clickable and does not overlap/interfere with the avatar/metadata or title on common viewport widths (mobile and desktop).",
-        "Changes are scoped to the Lily page only; do not introduce or move any back button UI to other pages (e.g., the Frog profile page)."
+        "On the Lily page, selecting an image in the ribbit composer and posting creates a ribbit that includes an image attachment.",
+        "After a page refresh, the ribbit image still loads (i.e., it was persisted in the canister, not only in client state).",
+        "The ribbit image is returned as an optional blob field on the ribbit object from the backend APIs used by the UI (threaded ribbits and any other ribbit lists).",
+        "Creating ribbits without an image continues to work exactly as before."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Ensure ribbit images render with the same blurred background/backdrop behavior used for non-4:3 images (i.e., a blurred backdrop behind the image), and apply this consistently anywhere ribbits are rendered with images (thread view on Lily page and the profile ribbit/comments list if applicable).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also image uploads for ribbits dont include the blurred background."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Ribbit images display with a blurred backdrop when the image aspect ratio does not match the intended frame (no plain hard-edge rendering).",
+        "The blurred backdrop behavior is visible on ribbits on the Lily page ribbits list.",
+        "If ribbits are shown on the user profile ribbits/comments list, the same blurred backdrop behavior is used there as well."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Perform a safe state upgrade for existing deployed data to support the new optional ribbit image field without breaking existing ribbits.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "dont change anything else but that."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Upgrading the canister preserves all existing ponds, posts, ribbits, likes, and other state.",
+        "All pre-existing ribbits load successfully after upgrade and have ribbit.image = null/empty.",
+        "New ribbits created after upgrade can include an image and return it correctly."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths listed in SYSTEM_CONTEXT must not be modified (compose existing UI components instead).",
-    "Do not introduce new backend canisters/services; this change is frontend layout only."
+    "Do not make any changes unrelated to ribbit image upload and ribbit image rendering.",
+    "Do not change overall site layout/styling except what is strictly necessary to display ribbit images and their blurred backdrop.",
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Only create backend/migration.mo if required to preserve/upgrade existing stable state."
   ],
   "nonGoals": [
-    "Do not change backend data models or APIs.",
-    "Do not change lily content rendering logic (title/content/image/link), only layout/alignment.",
-    "Do not restyle the overall site theme beyond what is necessary to achieve the requested alignment."
+    "Fixing or changing any other layout issues.",
+    "Adding new features to ribbits beyond image upload + blurred backdrop rendering (e.g., editing, deleting, new reactions, new sorting, new composer UI features).",
+    "Changing how lily (post) image uploads work."
   ],
   "imageRequirements": {
     "required": [],

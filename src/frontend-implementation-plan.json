@@ -1,22 +1,63 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Lily page header alignment: align pond metadata to content column while keeping back button offset",
+  "title": "Fix ribbit image upload + rendering with blurred backdrop",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Adjust LilyPage header layout so pond avatar/metadata aligns with the main content column while the back button remains offset to the left without overlap.",
+      "summary": "Wire ribbit image selection into create-ribbit flow so images upload, persist, and render after refresh.",
       "acceptanceCriteria": [
-        "On the Lily page, the left edge of the pond avatar metadata block (avatar + metadata text) visually aligns with the left edge of the lily title, description, image block, link block, and the action buttons row (i.e., they share one consistent content column).",
-        "The back button remains positioned to the left of (in front of) the pond avatar metadata block, and is the only element that does not share the main content column’s left alignment.",
-        "The back button remains clickable and does not overlap/interfere with the avatar/metadata or title on common viewport widths (mobile and desktop).",
-        "Changes are scoped to the Lily page only; do not introduce or move any back button UI to other pages (e.g., the Frog profile page)."
+        "On the Lily page, selecting an image in the ribbit composer and posting creates a ribbit that includes an image attachment.",
+        "After a page refresh, the ribbit image still loads (i.e., it was persisted in the canister, not only in client state).",
+        "The ribbit image is returned as an optional blob field on the ribbit object from the backend APIs used by the UI (threaded ribbits and any other ribbit lists).",
+        "Creating ribbits without an image continues to work exactly as before."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update the ribbit creation mutation to accept an optional image and pass it through to the backend createRibbit call (matching the existing backend interface signature that includes image). Use the blob-storage ExternalBlob type already exposed in the frontend types to represent the uploaded image. Verify the component's usage instructions before implementing."
+        },
+        {
           "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Rework the header wrapper and positioning so the pond avatar + metadata render in the normal document flow at the same left edge as the title/body content, while the back button is removed from the flow and positioned offset to the left (e.g., via a relative header container with an absolutely-positioned back button and overflow-visible on the surrounding wrapper). Ensure the back button has a safe z-index and hit-area, and that spacing/offsets adapt on mobile/desktop so it remains clickable without overlapping the avatar/metadata or the title. Keep changes scoped to this page and avoid altering lily content rendering logic."
+          "description": "In the ribbit composer, convert the selected File into an ExternalBlob (from blob-storage) and include it when calling useCreateRibbit; keep the image optional so posting without an image behaves exactly as before. Clear selected image (and file input value) on successful post so subsequent posts don't accidentally re-use the prior image. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/RibbitItem.tsx",
+          "operation": "modify",
+          "description": "Render ribbit.image (when present) in the threaded ribbits list by using the image's direct URL (ExternalBlob.getDirectURL()) so images display from persisted storage. Ensure the component remains compatible with image-less ribbits. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/ProfileRibbitItem.tsx",
+          "operation": "modify",
+          "description": "If the profile ribbit/comments list is shown, render ribbit.image (when present) using the image's direct URL (ExternalBlob.getDirectURL()) so profile views also show persisted ribbit images. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Apply the same blurred backdrop image framing for ribbit images anywhere ribbits are rendered.",
+      "acceptanceCriteria": [
+        "Ribbit images display with a blurred backdrop when the image aspect ratio does not match the intended frame (no plain hard-edge rendering).",
+        "The blurred backdrop behavior is visible on ribbits on the Lily page ribbits list.",
+        "If ribbits are shown on the user profile ribbits/comments list, the same blurred backdrop behavior is used there as well."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/LilyImageFrame.tsx",
+          "operation": "modify",
+          "description": "Harden the blurred-backdrop decision logic so near-4:3 images don't accidentally fall into the wrong rendering mode (use a small tolerance instead of exact floating-point equality), preserving existing visuals while making the behavior consistent."
+        },
+        {
+          "path": "frontend/src/components/RibbitItem.tsx",
+          "operation": "modify",
+          "description": "Use the existing LilyImageFrame component to display ribbit images inside the same 4:3 frame with blurred backdrop behavior for non-4:3 images, keeping layout changes minimal and consistent with lily post images."
+        },
+        {
+          "path": "frontend/src/components/ProfileRibbitItem.tsx",
+          "operation": "modify",
+          "description": "If ribbits on the profile page display images, use the same LilyImageFrame-based rendering to ensure identical blurred backdrop behavior as the Lily page thread view."
         }
       ]
     }

@@ -216,6 +216,7 @@
         display: flex;
         align-items: center;
         justify-content: flex-start;
+        gap: 0.5rem;
         padding: 0.75rem 1rem;
         font-weight: 500;
         color: oklch(var(--muted-foreground));
@@ -224,6 +225,9 @@
         border-radius: var(--radius);
         transition: all 150ms ease-in-out;
         text-align: left;
+        min-height: 2.75rem;
+        height: 2.75rem;
+        line-height: 1.25;
     }
 
     .vertical-tabs-trigger:hover {

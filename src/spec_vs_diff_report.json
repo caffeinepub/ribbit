@@ -1,22 +1,47 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T03:55:44.257Z",
-  "summary": "The diff does not provide visible evidence (due to truncation and lack of shown JSX/layout changes) that the Lily page header layout was updated to align the pond avatar metadata block with the main content column while keeping the back button offset. Only non-source-of-truth summary/state files clearly reflect the intent.",
+  "generatedAt": "2026-02-09T21:26:42.360Z",
+  "summary": "Diff adds an optional `image` field to the backend `Ribbit` type, adds a migration module, and updates ribbit rendering components to display images using the existing blurred-backdrop image frame component. However, the diff evidence is incomplete/unclear for end-to-end upload wiring in the Lily ribbit composer and for a safe upgrade that preserves *all* existing stable state beyond ribbits.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Update the Lily detail page header layout (frontend/src/pages/LilyPage.tsx) so the pond avatar metadata block aligns to the same left edge as the lily title/description/image/link/actions, while keeping the back button offset to the left/in front of that aligned column (Reddit-style), without overlap and scoped to Lily page only.",
-      "reason": "The provided LilyPage.tsx diff is truncated before any header/layout JSX changes are shown, so there is no concrete evidence in the diff summary that the required alignment/back-button-offset layout change was implemented.",
+      "requirement": "Frontend must upload the selected image when creating a ribbit, backend must persist it with the ribbit, and ribbit query APIs used by the UI must return the optional image blob so it can be displayed (and still work with no image).",
+      "reason": "While `useCreateRibbit` now accepts/passes an `image` argument and ribbit display components render `ribbit.image`, the provided LilyPage diff is truncated before showing that the selected file is compressed/converted to an `ExternalBlob` and actually passed into `createRibbit(...)`. Backend persistence and API return paths for the new field (e.g., `createRibbit`, `getThreadedRibbitsSorted`) are not shown in the truncated `backend/main.mo` excerpt.",
       "evidence": [
-        "frontend/src/pages/LilyPage.tsx (truncated; no header/layout JSX shown)"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/LilyPage.tsx (truncated)",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Perform a safe state upgrade that preserves all existing deployed data while adding optional ribbit image field; pre-existing ribbits load with image=null, and other state remains intact.",
+      "reason": "`backend/migration.mo` defines `OldActor` and `NewActor` containing only `var ribbits`, and migrates only that field. Based on the diff summary alone, there is no evidence that other stable fields (ponds, posts, likes, profiles, etc.) are included/preserved by the migration, which risks dropping existing state on upgrade.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo (truncated)"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.42,
+  "hallucinated_features": [
+    {
+      "description": "Large set of unrelated frontend layout/styling and routing changes (e.g., new `/f/$username` route, header/search UI changes, feed layout changes, etc.).",
+      "reason": "BuildRequest explicitly constrains changes to ribbit image upload and ribbit image rendering only, and forbids unrelated layout/styling changes. The diff summary includes a modified `frontend-file-summaries.txt` describing many broader UI/layout changes unrelated to ribbit images.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/components/LilyImageFrame.tsx",
+    "frontend/src/components/ProfileRibbitItem.tsx",
+    "frontend/src/components/RibbitItem.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/LilyPage.tsx",
     "project_state.json"
   ]

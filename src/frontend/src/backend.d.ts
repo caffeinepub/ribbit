@@ -42,6 +42,7 @@ export interface Ribbit {
     content: string;
     username: string;
     timestamp: bigint;
+    image?: ExternalBlob;
     parentId?: string;
     postId: string;
 }
@@ -98,7 +99,7 @@ export interface backendInterface {
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
-    createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
+    createRibbit(postId: string, parentId: string | null, content: string, username: string, image: ExternalBlob | null): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;

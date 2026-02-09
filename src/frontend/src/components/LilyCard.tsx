@@ -3,7 +3,6 @@ import { MessageCircle, ExternalLink, Eye, Send } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Post } from '@/backend';
 import { formatDistanceToNow } from 'date-fns';
-import { useState, useEffect } from 'react';
 import { 
   useGetRibbitCount, 
   useGetViewCount, 
@@ -17,6 +16,7 @@ import {
 import { formatNumber } from '@/lib/formatNumber';
 import { shareLily } from '@/lib/shareLily';
 import BookmarkButton from '@/components/BookmarkButton';
+import LilyImageFrame from '@/components/LilyImageFrame';
 
 interface LilyCardProps {
   lily: Post;
@@ -25,7 +25,6 @@ interface LilyCardProps {
 }
 
 export default function LilyCard({ lily, showUserAvatar = false, hideTags = false }: LilyCardProps) {
-  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   const { data: ribbitCount = 0 } = useGetRibbitCount(lily.id);
   const { data: viewCount = 0 } = useGetViewCount(lily.id);
   const { data: likeCount = 0 } = useGetPostLikeCount(lily.id);
@@ -39,18 +38,6 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
   const { data: userAvatar } = useGetUserAvatarByUsername(showUserAvatar ? lily.username : '');
 
   const timestamp = new Date(Number(lily.timestamp) / 1000000);
-
-  useEffect(() => {
-    if (lily.image) {
-      const img = new Image();
-      img.onload = () => {
-        setImageAspectRatio(img.width / img.height);
-      };
-      img.src = lily.image.getDirectURL();
-    }
-  }, [lily.image]);
-
-  const shouldShowBlurredBackdrop = imageAspectRatio !== null && imageAspectRatio !== 4/3;
 
   // Determine which avatar to show
   const avatarUrl = showUserAvatar 
@@ -132,35 +119,11 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
 
           {lily.image && (
             <div className="mb-3">
-              {shouldShowBlurredBackdrop ? (
-                <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url(${lily.image.getDirectURL()})`,
-                      filter: 'blur(30px)',
-                      transform: 'scale(1.1)',
-                    }}
-                  />
-                  <div className="relative flex items-center justify-center w-full h-full">
-                    <img
-                      src={lily.image.getDirectURL()}
-                      alt={lily.title}
-                      className="max-h-full max-w-full object-contain"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full aspect-[4/3] rounded-lg overflow-hidden">
-                  <img
-                    src={lily.image.getDirectURL()}
-                    alt={lily.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              <LilyImageFrame
+                imageUrl={lily.image.getDirectURL()}
+                alt={lily.title}
+                loading="lazy"
+              />
             </div>
           )}
 

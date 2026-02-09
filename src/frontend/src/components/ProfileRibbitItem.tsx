@@ -1,30 +1,29 @@
 import { Link } from '@tanstack/react-router';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useGetUserAvatarByUsername, useGetLily } from '@/hooks/useQueries';
-import type { Ribbit } from '@/backend';
+import { Ribbit } from '@/backend';
+import { useGetUserAvatarByUsername } from '@/hooks/useQueries';
+import RibbitMiniBlurAvatarImage from './RibbitMiniBlurAvatarImage';
+import LilyImageFrame from './LilyImageFrame';
 
 interface ProfileRibbitItemProps {
   ribbit: Ribbit;
 }
 
 export default function ProfileRibbitItem({ ribbit }: ProfileRibbitItemProps) {
-  const { data: avatarBlob } = useGetUserAvatarByUsername(ribbit.username);
-  const { data: lily } = useGetLily(ribbit.postId);
-  
   const timestamp = new Date(Number(ribbit.timestamp) / 1000000);
+  const { data: avatarBlob } = useGetUserAvatarByUsername(ribbit.username);
   const avatarUrl = avatarBlob?.getDirectURL();
 
   return (
-    <div className="bg-card py-4 px-4 transition-colors hover:bg-gray-100">
-      <div className="flex items-start gap-3">
-        <Avatar className="h-8 w-8 bg-primary/10 flex-shrink-0 mt-0.5">
+    <div className="py-4 border-b border-border last:border-b-0">
+      <div className="flex gap-3">
+        <Avatar className="h-8 w-8 bg-primary/10 flex-shrink-0">
           {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={ribbit.username}
-              className="w-full h-full object-cover"
+            <RibbitMiniBlurAvatarImage 
+              avatarUrl={avatarUrl}
+              username={ribbit.username}
+              renderMode="img"
             />
           ) : (
             <AvatarFallback className="text-sm">
@@ -32,35 +31,37 @@ export default function ProfileRibbitItem({ ribbit }: ProfileRibbitItemProps) {
             </AvatarFallback>
           )}
         </Avatar>
+
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 mb-1.5" style={{ fontSize: '0.875rem' }}>
+          <div className="flex items-center gap-2 mb-1" style={{ fontSize: '0.875rem' }}>
             <span className="font-medium text-foreground">{ribbit.username}</span>
-            <span className="text-muted-foreground">commented on</span>
-            {lily && (
-              <Link 
-                to="/lily/$id" 
-                params={{ id: lily.id }} 
-                className="font-medium hover:text-primary transition-colors truncate"
-              >
-                {lily.title}
-              </Link>
-            )}
             <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+            <span className="text-muted-foreground">
+              {formatDistanceToNow(timestamp, { addSuffix: true })}
+            </span>
           </div>
 
-          <p className="text-foreground/90 mb-3 leading-relaxed whitespace-pre-wrap break-words">
+          <p className="text-foreground/90 mb-2 whitespace-pre-wrap" style={{ fontSize: '0.9375rem' }}>
             {ribbit.content}
           </p>
 
-          <Link 
-            to="/lily/$id" 
+          {/* Ribbit image with blurred backdrop */}
+          {ribbit.image && (
+            <div className="mb-2">
+              <LilyImageFrame
+                imageUrl={ribbit.image.getDirectURL()}
+                alt={`Image from ${ribbit.username}`}
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          <Link
+            to="/lily/$id"
             params={{ id: ribbit.postId }}
-            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-            style={{ fontSize: '0.875rem' }}
+            className="text-primary hover:underline text-sm"
           >
-            <MessageCircle className="action-icon" />
-            <span>View conversation</span>
+            View conversation →
           </Link>
         </div>
       </div>

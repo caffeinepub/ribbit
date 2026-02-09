@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Align the pond avatar/metadata header block on the Lily detail page to the same left edge as the main lily content column, while keeping the back button as the only left-offset element (Reddit-style).
+**Goal:** Fix Ribbits so image attachments upload, persist, and display correctly everywhere Ribbits are shown, including the intended blurred backdrop rendering.
 
 **Planned changes:**
-- Update `frontend/src/pages/LilyPage.tsx` header layout so the pond avatar + metadata (pond name, timestamp, username, avatar) shares the same left alignment as the lily title, description, media/link block, and action buttons row.
-- Keep the back button positioned to the left/in front of the aligned content column, ensuring it remains clickable and does not overlap the header/content on common mobile and desktop widths.
-- Scope the change to the Lily page only without altering lily rendering logic or broader site styling beyond what’s needed for alignment.
+- Update ribbit creation flow so the selected image is uploaded from the frontend, persisted with the ribbit in the backend, and returned by ribbit query APIs as an optional image blob field.
+- Update ribbit rendering to consistently show attached images with the same blurred background/backdrop behavior (especially for non-4:3 aspect ratios) on the Lily page thread/list views and anywhere else ribbits with images appear (e.g., profile ribbits/comments list if present).
+- Add a safe backend state upgrade to introduce the new optional ribbit image field without breaking existing stored ribbits (pre-existing ribbits load with no image).
 
-**User-visible outcome:** On the Lily page, the header metadata block lines up with the rest of the post content in a single consistent column, while the back button remains slightly offset to the left and works without interfering with other elements.
+**User-visible outcome:** Users can attach an image when posting a ribbit on the Lily page, see it render with the blurred backdrop, and after refreshing the page the image still loads because it was persisted; ribbits without images continue to work as before.

@@ -124,6 +124,7 @@ export interface Ribbit {
     content: string;
     username: string;
     timestamp: bigint;
+    image?: ExternalBlob;
     parentId?: string;
     postId: string;
 }
@@ -190,7 +191,7 @@ export interface backendInterface {
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
-    createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
+    createRibbit(postId: string, parentId: string | null, content: string, username: string, image: ExternalBlob | null): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;
@@ -458,17 +459,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createRibbit(arg0: string, arg1: string | null, arg2: string, arg3: string): Promise<string> {
+    async createRibbit(arg0: string, arg1: string | null, arg2: string, arg3: string, arg4: ExternalBlob | null): Promise<string> {
         if (this.processError) {
             try {
-                const result = await this.actor.createRibbit(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
+                const result = await this.actor.createRibbit(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), arg2, arg3, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg4));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createRibbit(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
+            const result = await this.actor.createRibbit(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), arg2, arg3, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg4));
             return result;
         }
     }
@@ -1388,8 +1389,8 @@ async function from_candid_Pond_n33(_uploadFile: (file: ExternalBlob) => Promise
 async function from_candid_Post_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Post): Promise<Post> {
     return await from_candid_record_n30(_uploadFile, _downloadFile, value);
 }
-function from_candid_Ribbit_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Ribbit): Ribbit {
-    return from_candid_record_n42(_uploadFile, _downloadFile, value);
+async function from_candid_Ribbit_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Ribbit): Promise<Ribbit> {
+    return await from_candid_record_n42(_uploadFile, _downloadFile, value);
 }
 async function from_candid_UserProfile_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): Promise<UserProfile> {
     return await from_candid_record_n23(_uploadFile, _downloadFile, value);
@@ -1452,8 +1453,8 @@ async function from_candid_opt_n37(_uploadFile: (file: ExternalBlob) => Promise<
 async function from_candid_opt_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Post]): Promise<Post | null> {
     return value.length === 0 ? null : await from_candid_Post_n29(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Ribbit]): Ribbit | null {
-    return value.length === 0 ? null : from_candid_Ribbit_n41(_uploadFile, _downloadFile, value[0]);
+async function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Ribbit]): Promise<Ribbit | null> {
+    return value.length === 0 ? null : await from_candid_Ribbit_n41(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_TagStats]): TagStats | null {
     return value.length === 0 ? null : value[0];
@@ -1632,26 +1633,29 @@ async function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promi
         rules: value.rules
     };
 }
-function from_candid_record_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+async function from_candid_record_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     content: string;
     username: string;
     timestamp: bigint;
+    image: [] | [_ExternalBlob];
     parentId: [] | [string];
     postId: string;
-}): {
+}): Promise<{
     id: string;
     content: string;
     username: string;
     timestamp: bigint;
+    image?: ExternalBlob;
     parentId?: string;
     postId: string;
-} {
+}> {
     return {
         id: value.id,
         content: value.content,
         username: value.username,
         timestamp: value.timestamp,
+        image: record_opt_to_undefined(await from_candid_opt_n24(_uploadFile, _downloadFile, value.image)),
         parentId: record_opt_to_undefined(from_candid_opt_n31(_uploadFile, _downloadFile, value.parentId)),
         postId: value.postId
     };
@@ -1725,8 +1729,8 @@ function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 async function from_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Post>): Promise<Array<Post>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Post_n29(_uploadFile, _downloadFile, x)));
 }
-function from_candid_vec_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Array<Ribbit> {
-    return value.map((x)=>from_candid_Ribbit_n41(_uploadFile, _downloadFile, x));
+async function from_candid_vec_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Promise<Array<Ribbit>> {
+    return await Promise.all(value.map(async (x)=>await from_candid_Ribbit_n41(_uploadFile, _downloadFile, x)));
 }
 async function from_candid_vec_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Pond>): Promise<Array<Pond>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Pond_n33(_uploadFile, _downloadFile, x)));

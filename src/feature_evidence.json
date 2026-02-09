@@ -2,9 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lily-detail-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-pond-avatar-metadata-block-pond-name-timestamp-username-avatar-is-aligned-to-the-same-left-edge-as-the-lily-title-description-image-and-action-buttons-reddit-style-while-keeping-the-back-button-as-the-only-element-offset-to-the-left-in-front-of-that-aligned-column",
-      "featureTitle": "Update the Lily detail page header layout (`frontend/src/pages/LilyPage.tsx`) so the pond avatar metadata block (pond name, timestamp, username, avatar) is aligned to the same left edge as the lily title, description, image, and action buttons (Reddit-style), while keeping the back button as the only element offset to the left/in front of that aligned column.",
+      "featureId": "feature-add-end-to-end-support-for-images-attached-to-ribbits-the-frontend-must-upload-the-selected-image-when-creating-a-ribbit-the-backend-must-persist-the-image-blob-with-the-ribbit-and-ribbit-queries-must-return-the-image-so-it-can-be-displayed",
+      "featureTitle": "Add end-to-end support for images attached to Ribbits: the frontend must upload the selected image when creating a ribbit, the backend must persist the image blob with the ribbit, and ribbit queries must return the image so it can be displayed.",
       "files": [
+        "frontend/src/components/ProfileRibbitItem.tsx",
+        "frontend/src/components/RibbitItem.tsx",
+        "frontend/src/hooks/useQueries.ts",
         "frontend/src/pages/LilyPage.tsx"
       ],
       "components": [
@@ -18,6 +21,28 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-ribbit-images-render-with-the-same-blurred-background-backdrop-behavior-used-for-non-4-3-images-i-e-a-blurred-backdrop-behind-the-image-and-apply-this-consistently-anywhere-ribbits-are-rendered-with-images-thread-view-on-lily-page-and-the-profile-ribbit-comments-list-if-applicable",
+      "featureTitle": "Ensure ribbit images render with the same blurred background/backdrop behavior used for non-4:3 images (i.e., a blurred backdrop behind the image), and apply this consistently anywhere ribbits are rendered with images (thread view on Lily page and the profile ribbit/comments list if applicable).",
+      "files": [
+        "frontend/src/components/LilyImageFrame.tsx",
+        "frontend/src/components/ProfileRibbitItem.tsx",
+        "frontend/src/components/RibbitItem.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
       ],
       "confidence": "high"
     }
