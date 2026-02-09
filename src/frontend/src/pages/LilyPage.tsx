@@ -1,9 +1,9 @@
-import { useParams, Link } from '@tanstack/react-router';
+import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, ExternalLink, Eye, X, Send } from 'lucide-react';
+import { MessageCircle, ExternalLink, Eye, X, Send, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   useGetLily, 
@@ -15,7 +15,7 @@ import {
   useHasUserLikedPost,
   useLikePost,
   useUnlikePost,
-  useIncrementLilyViewCount,
+  useIncrementViewCount,
   useGetPond
 } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,16 +29,18 @@ import { ViewIncrementResult } from '@/backend';
 
 export default function LilyPage() {
   const { id } = useParams({ strict: false }) as { id: string };
+  const navigate = useNavigate();
   const [ribbitContent, setRibbitContent] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<'top' | 'newest'>('newest');
   
   // Track if we've already attempted to increment view for this lily ID
   const viewIncrementAttemptedRef = useRef<string | null>(null);
 
   const { data: lily, isLoading: lilyLoading } = useGetLily(id);
   const { data: pond } = useGetPond(lily?.pond || '');
-  const { data: ribbits, isLoading: ribbitsLoading } = useGetRibbits(id);
+  const { data: ribbits, isLoading: ribbitsLoading } = useGetRibbits(id, sortBy);
   const { data: ribbitCount = 0 } = useGetRibbitCount(id);
   const { data: viewCount = 0 } = useGetViewCount(id);
   const { data: likeCount = 0 } = useGetPostLikeCount(id);
@@ -46,7 +48,7 @@ export default function LilyPage() {
   const { mutate: createRibbit, isPending: isCreatingRibbit } = useCreateRibbit();
   const { mutate: likePost, isPending: isLiking } = useLikePost();
   const { mutate: unlikePost, isPending: isUnliking } = useUnlikePost();
-  const { mutate: incrementViewCount } = useIncrementLilyViewCount();
+  const { mutate: incrementViewCount } = useIncrementViewCount();
 
   // Increment view count immediately on page open (with cooldown guard)
   useEffect(() => {
@@ -131,6 +133,16 @@ export default function LilyPage() {
     shareLily(lily.id);
   };
 
+  const handleBackClick = () => {
+    // Check if there's meaningful history to go back to
+    if (window.history.length > 1) {
+      window.history.back();
+    } else if (lily?.pond) {
+      // Fallback: navigate to the lily's pond
+      navigate({ to: '/pond/$name', params: { name: lily.pond } });
+    }
+  };
+
   if (lilyLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -163,6 +175,15 @@ export default function LilyPage() {
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto px-4 lg:px-0">
+          {/* Reddit-style Back button */}
+          <button
+            onClick={handleBackClick}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 -ml-2 px-2 py-1 rounded-md hover:bg-muted"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium" style={{ fontSize: '0.875rem' }}>Back</span>
+          </button>
+
           <div className="overflow-hidden mb-4">
             {/* Single column layout - all elements left-aligned */}
             <div className="flex flex-col gap-4 mb-4">
@@ -325,8 +346,8 @@ export default function LilyPage() {
 
           {/* Ribbits Section - no heading, no border on form */}
           <div className="mt-6">
-            {/* Ribbit creation form - no border */}
-            <div className="mb-6 p-4 rounded-lg bg-card">
+            {/* Ribbit creation form - no border, no padding */}
+            <div className="mb-6 rounded-lg bg-card">
               <Textarea
                 placeholder="Write a ribbit..."
                 value={ribbitContent}
@@ -354,6 +375,30 @@ export default function LilyPage() {
                   )}
                 </Button>
               </div>
+            </div>
+
+            {/* Sorting toggle */}
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                onClick={() => setSortBy('top')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  sortBy === 'top'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Top
+              </button>
+              <button
+                onClick={() => setSortBy('newest')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  sortBy === 'newest'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Newest
+              </button>
             </div>
 
             {/* Ribbits list */}

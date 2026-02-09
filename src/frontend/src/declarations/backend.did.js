@@ -207,6 +207,7 @@ export const idlService = IDL.Service({
   'getPondRules' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
   'getPost' : IDL.Func([IDL.Text], [IDL.Opt(Post)], ['query']),
   'getPostLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+  'getPostsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
   'getRecentPosts' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
   'getRecentRibbitViews' : IDL.Func(
       [IDL.Text, IDL.Nat],
@@ -218,6 +219,7 @@ export const idlService = IDL.Service({
   'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
   'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+  'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
   'getTagRank' : IDL.Func(
       [IDL.Text],
       [
@@ -240,7 +242,11 @@ export const idlService = IDL.Service({
       [IDL.Vec(IDL.Text)],
       ['query'],
     ),
-  'getThreadedRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+  'getThreadedRibbitsSorted' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Vec(Ribbit)],
+      ['query'],
+    ),
   'getTopTags' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
@@ -258,6 +264,11 @@ export const idlService = IDL.Service({
     ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'getUserProfileByUsername' : IDL.Func(
+      [IDL.Text],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
@@ -503,6 +514,7 @@ export const idlFactory = ({ IDL }) => {
     'getPondRules' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
     'getPost' : IDL.Func([IDL.Text], [IDL.Opt(Post)], ['query']),
     'getPostLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+    'getPostsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
     'getRecentPosts' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
     'getRecentRibbitViews' : IDL.Func(
         [IDL.Text, IDL.Nat],
@@ -518,6 +530,7 @@ export const idlFactory = ({ IDL }) => {
     'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
     'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
+    'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
     'getTagRank' : IDL.Func(
         [IDL.Text],
         [
@@ -540,7 +553,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Text)],
         ['query'],
       ),
-    'getThreadedRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+    'getThreadedRibbitsSorted' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Vec(Ribbit)],
+        ['query'],
+      ),
     'getTopTags' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
@@ -558,6 +575,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'getUserProfileByUsername' : IDL.Func(
+        [IDL.Text],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),

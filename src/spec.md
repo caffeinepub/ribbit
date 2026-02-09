@@ -1,14 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Add shared client-side image compression and apply it across all existing image upload flows so uploads are smaller while previews match what will be uploaded.
+**Goal:** Fix the Frog Profile page Back button so it appears in the header row to the left of the avatar without overlapping, and navigates back reliably.
 
 **Planned changes:**
-- Create a reusable frontend image-compression utility that validates image types, resizes to a reasonable max dimension, and applies lossy compression (JPEG/WebP), returning compressed bytes suitable for `ExternalBlob` uploads.
-- Ensure animated GIFs are detected and bypass recompression (uploaded as-is).
-- Add robust error handling: reject non-image files with a clear English error, and on compression failure show an English toast and fall back to uploading the original file bytes.
-- Update `CreateLilyPage` image Lily flow to compress before `ExternalBlob.fromBytes(...)` and use the compressed image for the on-screen preview.
-- Update `CreatePondPage` banner/profile image uploads to compress before building `ExternalBlob`s and ensure both previews display the compressed versions; preserve per-image fallback on failure.
-- Update `UserSettingsPage` avatar upload to compress before `ExternalBlob.fromBytes(...).withUploadProgress(...)`, keeping existing upload progress behavior while previewing the compressed image.
+- Add/restore a Reddit-style Back button on `frontend/src/pages/FrogProfilePage.tsx` and lay it out in the profile header row to the left of the pond avatar with consistent spacing across mobile and desktop viewports.
+- Implement Back button behavior to navigate to the previous page when `window.history.length > 1`, otherwise fall back to `/`.
+- Match the Back button’s look and feel to the existing Lily page Back button (arrow-left icon + “Back” label, muted styling, hover state, rounded hit area) and ensure it is keyboard accessible with an accessible label.
 
-**User-visible outcome:** When users upload images (image Lilies, pond banner/profile images, avatars), the app uploads compressed images by default and the preview matches the uploaded result; invalid files or compression issues show an English error and still allow upload via the original image when compression fails.
+**User-visible outcome:** On the Frog Profile page, users see a properly placed “Back” button left of the avatar that doesn’t overlap other header elements and takes them to the previous page (or home when no history is available).

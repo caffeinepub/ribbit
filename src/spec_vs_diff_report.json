@@ -1,34 +1,38 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T00:59:47.921Z",
-  "summary": "A shared image compression utility was added and the Lily, Pond creation, and User Settings pages were updated to call it and store compressed bytes + preview URLs. However, at least the pond creation flow does not meet the required fallback behavior on compression failure, and the diff summary indicates several unrelated UI/routing changes not requested.",
+  "generatedAt": "2026-02-09T03:38:17.590Z",
+  "summary": "FrogProfilePage adds a leftmost Back button with history-based navigation and fallback to '/', addressing placement and behavior. However, the Back control appears icon-only (no visible \"Back\" text), so it does not fully match the Lily page Back button styling requirement (icon + label). Also, non-requested meta/state files were modified.",
   "missing_requirements": [
     {
       "id": "REQ-3",
-      "requirement": "If compression fails for either banner/profile image, show an English toast error and fall back to uploading the original bytes for that image.",
-      "reason": "In CreatePondPage, the catch handler toasts an error but clears the selected file/bytes/preview, preventing fallback upload of original bytes for that image.",
+      "requirement": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
+      "reason": "The Back button in FrogProfilePage renders only an ArrowLeft icon with an aria-label; there is no visible “Back” label text shown alongside the icon, which is explicitly required.",
       "evidence": [
-        "frontend/src/pages/CreatePondPage.tsx"
+        "frontend/src/pages/FrogProfilePage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/changed app routing and multiple UI/layout redesign changes (e.g., new TagHubPage route at /tags, header/footer/layout redesign, feed layout changes) unrelated to client-side image compression.",
-      "reason": "These changes are described in the modified frontend-file-summaries.txt but are not part of the BuildRequest requirements or constraints.",
+      "description": "Modified repository meta/state tracking files unrelated to the Frog Profile back button fix (project_state.json).",
+      "reason": "BuildRequest constraints ask to keep changes scoped to fixing the Frog Profile page back button placement and behavior; updating project state metadata is not requested by any REQ.",
+      "evidence": [
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Modified generated/summary documentation file (frontend-file-summaries.txt).",
+      "reason": "Not requested by any requirement; outside the scoped UI fix for FrogProfilePage back button.",
       "evidence": [
         "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/lib/imageCompression.ts",
-    "frontend/src/pages/CreateLilyPage.tsx",
-    "frontend/src/pages/CreatePondPage.tsx",
-    "frontend/src/pages/UserSettingsPage.tsx",
+    "frontend/src/pages/FrogProfilePage.tsx",
     "project_state.json"
   ]
 }

@@ -130,6 +130,7 @@ export interface backendInterface {
     getPondRules(pondName: string): Promise<Array<string>>;
     getPost(id: string): Promise<Post | null>;
     getPostLikeCount(postId: string): Promise<bigint>;
+    getPostsByUsername(username: string): Promise<Array<Post>>;
     getRecentPosts(limit: bigint): Promise<Array<Activity>>;
     getRecentRibbitViews(username: string, limit: bigint): Promise<Array<Activity>>;
     getRecentRibbits(limit: bigint): Promise<Array<Activity>>;
@@ -137,6 +138,7 @@ export interface backendInterface {
     getRibbit(id: string): Promise<Ribbit | null>;
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
+    getRibbitsByUsername(username: string): Promise<Array<Ribbit>>;
     getTagRank(tag: string): Promise<{
         tag: string;
         rank?: bigint;
@@ -145,11 +147,12 @@ export interface backendInterface {
     getTagRedirects(): Promise<Array<[string, string]>>;
     getTagStatsForTag(tag: string): Promise<TagStats | null>;
     getTagSuggestions(prefix: string, limit: bigint): Promise<Array<string>>;
-    getThreadedRibbits(postId: string): Promise<Array<Ribbit>>;
+    getThreadedRibbitsSorted(postId: string, sortBy: string): Promise<Array<Ribbit>>;
     getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUserProfileByUsername(username: string): Promise<UserProfile | null>;
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;

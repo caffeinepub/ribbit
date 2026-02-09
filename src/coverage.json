@@ -1,57 +1,46 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T00:59:47.923Z",
+  "generatedAt": "2026-02-09T03:38:17.593Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+        "summary": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/lib/imageCompression.ts"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/lib/imageCompression.ts"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+        "summary": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/CreateLilyPage.tsx"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/CreateLilyPage.tsx"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
+        "summary": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/CreatePondPage.tsx"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/CreatePondPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
+          "frontend/src/pages/FrogProfilePage.tsx"
         ]
       }
     ]
@@ -61,10 +50,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/lib/imageCompression.ts",
-    "frontend/src/pages/CreateLilyPage.tsx",
-    "frontend/src/pages/CreatePondPage.tsx",
-    "frontend/src/pages/UserSettingsPage.tsx",
+    "frontend/src/pages/FrogProfilePage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

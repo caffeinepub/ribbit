@@ -557,6 +557,43 @@ actor Ribbit {
     principalMap.get(userProfiles, user);
   };
 
+  // New query to fetch user profile by username (public profile page)
+  public query func getUserProfileByUsername(username : Text) : async ?UserProfile {
+    // Step 1: Find the principal associated with the username
+    switch (textMap.get(usernameOwnership, username)) {
+      case (null) {
+        // Username not found in registry
+        null;
+      };
+      case (?profilePrincipal) {
+        // Found - look up user profile by principal
+        principalMap.get(userProfiles, profilePrincipal);
+      };
+    };
+  };
+
+  // New query to fetch posts by username (public profile page)
+  public query func getPostsByUsername(username : Text) : async [Post] {
+    let filteredPosts = Array.filter<Post>(
+      Iter.toArray(textMap.vals(posts)),
+      func(post : Post) : Bool {
+        post.username == username;
+      },
+    );
+    filteredPosts;
+  };
+
+  // New query to fetch ribbits by username (public profile page)
+  public query func getRibbitsByUsername(username : Text) : async [Ribbit] {
+    let filteredRibbits = Array.filter<Ribbit>(
+      Iter.toArray(textMap.vals(ribbits)),
+      func(ribbit : Ribbit) : Bool {
+        ribbit.username == username;
+      },
+    );
+    filteredRibbits;
+  };
+
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     // Allow anonymous users to save profiles (anonymous-first model)
     // For non-anonymous users, ensure they have proper role tracking
@@ -1464,8 +1501,8 @@ actor Ribbit {
     filtered;
   };
 
-  // Public query - no authorization required
-  public query func getThreadedRibbits(postId : Text) : async [Ribbit] {
+  // New query function for threaded ribbits with sorting support
+  public query func getThreadedRibbitsSorted(postId : Text, sortBy : Text) : async [Ribbit] {
     let allRibbits = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
       func(r : Ribbit) : Bool { r.postId == postId },
@@ -1475,6 +1512,35 @@ actor Ribbit {
       allRibbits,
       func(r : Ribbit) : Bool { switch (r.parentId) { case (null) { true }; case (?_) { false } } },
     );
+
+    // Sorting root ribbits based on sortBy parameter
+    let sortedRootRibbits = switch (sortBy) {
+      case ("top") {
+        Array.sort<Ribbit>(
+          rootRibbits,
+          func(a : Ribbit, b : Ribbit) : { #less; #equal; #greater } {
+            let aLikes = switch (textMap.get(ribbitLikes, a.id)) {
+              case (null) { 0 };
+              case (?likes) { principalMap.size(likes) };
+            };
+            let bLikes = switch (textMap.get(ribbitLikes, b.id)) {
+              case (null) { 0 };
+              case (?likes) { principalMap.size(likes) };
+            };
+            if (aLikes > bLikes) { #less } else if (aLikes < bLikes) { #greater } else { #equal };
+          },
+        );
+      };
+      case ("newest") {
+        Array.sort<Ribbit>(
+          rootRibbits,
+          func(a : Ribbit, b : Ribbit) : { #less; #equal; #greater } {
+            if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+          },
+        );
+      };
+      case (_) { rootRibbits }; // default order
+    };
 
     func buildThread(ribbit : Ribbit) : [Ribbit] {
       let children = Array.filter<Ribbit>(
@@ -1495,7 +1561,7 @@ actor Ribbit {
     };
 
     var threadedRibbits : [Ribbit] = [];
-    for (root in rootRibbits.vals()) {
+    for (root in sortedRootRibbits.vals()) {
       threadedRibbits := Array.append(threadedRibbits, buildThread(root));
     };
 
@@ -1924,3 +1990,4 @@ actor Ribbit {
     textMap.get(tagStats, canonicalTag);
   };
 };
+

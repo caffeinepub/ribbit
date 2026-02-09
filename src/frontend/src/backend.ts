@@ -222,6 +222,7 @@ export interface backendInterface {
     getPondRules(pondName: string): Promise<Array<string>>;
     getPost(id: string): Promise<Post | null>;
     getPostLikeCount(postId: string): Promise<bigint>;
+    getPostsByUsername(username: string): Promise<Array<Post>>;
     getRecentPosts(limit: bigint): Promise<Array<Activity>>;
     getRecentRibbitViews(username: string, limit: bigint): Promise<Array<Activity>>;
     getRecentRibbits(limit: bigint): Promise<Array<Activity>>;
@@ -229,6 +230,7 @@ export interface backendInterface {
     getRibbit(id: string): Promise<Ribbit | null>;
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
+    getRibbitsByUsername(username: string): Promise<Array<Ribbit>>;
     getTagRank(tag: string): Promise<{
         tag: string;
         rank?: bigint;
@@ -237,11 +239,12 @@ export interface backendInterface {
     getTagRedirects(): Promise<Array<[string, string]>>;
     getTagStatsForTag(tag: string): Promise<TagStats | null>;
     getTagSuggestions(prefix: string, limit: bigint): Promise<Array<string>>;
-    getThreadedRibbits(postId: string): Promise<Array<Ribbit>>;
+    getThreadedRibbitsSorted(postId: string, sortBy: string): Promise<Array<Ribbit>>;
     getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUserProfileByUsername(username: string): Promise<UserProfile | null>;
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
@@ -721,6 +724,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getPostsByUsername(arg0: string): Promise<Array<Post>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPostsByUsername(arg0);
+                return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPostsByUsername(arg0);
+            return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getRecentPosts(arg0: bigint): Promise<Array<Activity>> {
         if (this.processError) {
             try {
@@ -819,6 +836,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getRibbitsByUsername(arg0: string): Promise<Array<Ribbit>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRibbitsByUsername(arg0);
+                return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRibbitsByUsername(arg0);
+            return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getTagRank(arg0: string): Promise<{
         tag: string;
         rank?: bigint;
@@ -827,14 +858,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getTagRank(arg0);
-                return from_candid_record_n43(this._uploadFile, this._downloadFile, result);
+                return from_candid_record_n44(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTagRank(arg0);
-            return from_candid_record_n43(this._uploadFile, this._downloadFile, result);
+            return from_candid_record_n44(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTagRedirects(): Promise<Array<[string, string]>> {
@@ -855,14 +886,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getTagStatsForTag(arg0);
-                return from_candid_opt_n44(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTagStatsForTag(arg0);
-            return from_candid_opt_n44(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTagSuggestions(arg0: string, arg1: bigint): Promise<Array<string>> {
@@ -879,18 +910,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getThreadedRibbits(arg0: string): Promise<Array<Ribbit>> {
+    async getThreadedRibbitsSorted(arg0: string, arg1: string): Promise<Array<Ribbit>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getThreadedRibbits(arg0);
-                return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getThreadedRibbitsSorted(arg0, arg1);
+                return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getThreadedRibbits(arg0);
-            return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getThreadedRibbitsSorted(arg0, arg1);
+            return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTopTags(arg0: bigint): Promise<Array<[string, TagStats]>> {
@@ -946,6 +977,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
+            return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getUserProfileByUsername(arg0: string): Promise<UserProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserProfileByUsername(arg0);
+                return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserProfileByUsername(arg0);
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
@@ -1149,14 +1194,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.listRibbits(arg0);
-                return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listRibbits(arg0);
-            return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
         }
     }
     async mergeSimilarTags(): Promise<void> {
@@ -1410,7 +1455,7 @@ async function from_candid_opt_n39(_uploadFile: (file: ExternalBlob) => Promise<
 function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Ribbit]): Ribbit | null {
     return value.length === 0 ? null : from_candid_Ribbit_n41(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_TagStats]): TagStats | null {
+function from_candid_opt_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_TagStats]): TagStats | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
@@ -1611,7 +1656,7 @@ function from_candid_record_n42(_uploadFile: (file: ExternalBlob) => Promise<Uin
         postId: value.postId
     };
 }
-function from_candid_record_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     tag: string;
     rank: [] | [bigint];
     canonicalTag: string;
@@ -1680,7 +1725,7 @@ function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 async function from_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Post>): Promise<Array<Post>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Post_n29(_uploadFile, _downloadFile, x)));
 }
-function from_candid_vec_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Array<Ribbit> {
+function from_candid_vec_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ribbit>): Array<Ribbit> {
     return value.map((x)=>from_candid_Ribbit_n41(_uploadFile, _downloadFile, x));
 }
 async function from_candid_vec_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Pond>): Promise<Array<Pond>> {

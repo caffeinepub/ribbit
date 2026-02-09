@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import TagPage from './pages/TagPage';
 import SavedLiliesPage from './pages/SavedLiliesPage';
 import TagHubPage from './pages/TagHubPage';
+import FrogProfilePage from './pages/FrogProfilePage';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -91,6 +92,12 @@ const tagHubRoute = createRoute({
   component: TagHubPage,
 });
 
+const frogProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/f/$username',
+  component: FrogProfilePage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   pondRoute,
@@ -104,6 +111,7 @@ const routeTree = rootRoute.addChildren([
   tagRoute,
   savedLiliesRoute,
   tagHubRoute,
+  frogProfileRoute,
 ]);
 
 const router = createRouter({ routeTree });

@@ -1,72 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Client-side compression for all image uploads",
+  "title": "Fix Frog Profile header Back button placement, behavior, and styling",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a shared client-side image compression utility and standardize image-to-bytes conversion for uploads.",
+      "summary": "Add/restore a Reddit-style Back button in the Frog Profile header row and place it to the left of the avatar without overlap.",
       "acceptanceCriteria": [
-        "A reusable utility exists (e.g., in frontend/src/lib/) that takes an image File and returns a compressed File or Uint8Array suitable for upload.",
-        "The utility resizes images to a reasonable maximum dimension (to prevent huge uploads) and applies lossy compression (quality setting) for JPEG/WebP outputs.",
-        "Non-image files are rejected and produce a clear error.",
-        "Animated GIFs (if supported by the browser input) are not recompressed (to avoid stripping animation) and are uploaded as-is.",
-        "Compression failures fall back to uploading the original file bytes with a user-facing error toast indicating compression could not be applied."
+        "The Frog Profile page shows a Back button in the profile header area.",
+        "The Back button is horizontally placed to the left of the avatar (same row) with consistent spacing (i.e., not stacked on top of the avatar).",
+        "At common viewport sizes (mobile and desktop), the Back button does not overlap the avatar, username, or counts; the layout remains stable and readable."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/imageCompression.ts",
-          "operation": "create",
-          "description": "Create a shared utility for client-side image validation + compression + resizing. It should (1) reject non-image files with a clear English error, (2) detect GIFs and skip recompression for animated GIF safety, (3) resize to a reasonable max dimension and apply lossy compression (quality) for JPEG/WebP outputs, and (4) return data usable to build an ExternalBlob via ExternalBlob.fromBytes(Uint8Array). Include helpers to produce preview URLs for the exact file that will be uploaded and to fall back to original bytes on compression failure. Use the blob-storage component’s ExternalBlob upload flow downstream (ExternalBlob.fromBytes), but keep this file UI-agnostic. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/pages/FrogProfilePage.tsx",
+          "operation": "modify",
+          "description": "Update the profile header layout to include a Back button placed as the leftmost element in the header row (left of the Avatar) using a stable flex layout (e.g., button + avatar + content with appropriate gap/flex-shrink/min-w-0) so the button never overlaps the avatar or header content across mobile/desktop widths."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Compress CreateLilyPage image uploads before building ExternalBlob bytes and preview the compressed image.",
+      "summary": "Implement Frog Profile Back button navigation using browser history with a home-route fallback and accessible interaction.",
       "acceptanceCriteria": [
-        "In frontend/src/pages/CreateLilyPage.tsx, when lilyType === 'image', the selected image is compressed prior to ExternalBlob.fromBytes(...).",
-        "The on-screen preview for an image Lily uses the compressed image (not the original), so users preview exactly what will be uploaded.",
-        "Submitting a non-image file (if forced via devtools) does not crash and shows an English error message."
+        "Clicking Back navigates to the previous page when `window.history.length > 1`.",
+        "If there is no meaningful browser history entry, the Back button falls back to navigating to the home route (`/`).",
+        "The Back button is keyboard accessible and has an accessible label (e.g., visible “Back” text and/or sr-only label)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CreateLilyPage.tsx",
+          "path": "frontend/src/pages/FrogProfilePage.tsx",
           "operation": "modify",
-          "description": "Integrate the shared image compression utility into the image selection and submit flow: when lilyType is 'image' and a file is selected, validate it is an image, compress/resize it, and store the compressed File (or upload bytes) as the source of truth. Update the preview to render from the compressed result so it matches what will be uploaded. On compression failure, show an English toast error and fall back to using the original file bytes for upload; ensure non-image files (even if forced) are rejected gracefully with an English error and without crashing. Build the upload blob using the blob-storage component’s ExternalBlob.fromBytes(compressedOrFallbackBytes). Verify the component's usage instructions before implementing."
+          "description": "Add Back button click handling to prefer `window.history.back()` when `window.history.length > 1`, otherwise navigate to `/` via TanStack Router; ensure the control is a semantic <button> with visible \"Back\" text (and/or aria-label) for keyboard and screen-reader accessibility."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Compress CreatePondPage banner and profile image uploads before building ExternalBlob bytes and preview the compressed images.",
+      "summary": "Match Frog Profile Back button styling to the existing Lily page Back button (icon + label, muted/hover, rounded hit area) in English.",
       "acceptanceCriteria": [
-        "In frontend/src/pages/CreatePondPage.tsx, both bannerImageFile and profileImageFile are compressed before arrayBuffer()/ExternalBlob.fromBytes(...).",
-        "Both previews (banner and profile) display the compressed versions that will be uploaded.",
-        "If compression fails for either image, the UI shows an English toast error and falls back to uploading the original bytes for that image."
+        "The Frog Profile Back button uses an arrow-left icon and the label text “Back”.",
+        "Default styling is muted and changes on hover similarly to the Lily page Back button.",
+        "No new non-English user-facing strings are introduced as part of this change."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CreatePondPage.tsx",
+          "path": "frontend/src/pages/FrogProfilePage.tsx",
           "operation": "modify",
-          "description": "Apply the shared compression utility to both profileImageFile and bannerImageFile on selection: validate image type, compress/resize, and set previews from the compressed results (matching what will be uploaded). On submit, ensure ExternalBlob.fromBytes(...) is built from compressed bytes for each image independently. If compression fails for either file, show an English toast error for that specific image and fall back to uploading that image’s original bytes while keeping the other image compressed if successful. Use the blob-storage component’s ExternalBlob.fromBytes for both compressed and fallback bytes. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Compress avatar uploads in UserSettingsPage before building ExternalBlob bytes while preserving upload progress behavior and preview accuracy.",
-      "acceptanceCriteria": [
-        "In frontend/src/pages/UserSettingsPage.tsx, the selected avatar is compressed before ExternalBlob.fromBytes(...).withUploadProgress(...).",
-        "Upload progress continues to display and updates as before.",
-        "The avatar preview reflects the compressed image that will be uploaded.",
-        "If compression fails, show an English toast error and upload the original avatar bytes instead."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
-          "operation": "modify",
-          "description": "Update avatar selection + save flow to use the shared compression utility: when an avatar file is chosen, validate it is an image, compress/resize it, and update avatarPreview to display the compressed image that will be uploaded. In handleSaveAvatar, build the ExternalBlob from the compressed (or fallback) bytes and then call .withUploadProgress(...) exactly as before so progress UI remains intact. If compression fails, show an English toast error and upload original bytes instead, updating the preview to match the fallback upload source. Use the blob-storage component’s ExternalBlob.fromBytes(...).withUploadProgress(...) pattern unchanged aside from the bytes source. Verify the component's usage instructions before implementing."
+          "description": "Implement the Back button UI to mirror the LilyPage Back button styling: include the ArrowLeft icon from lucide-react, the English label \"Back\", muted foreground with hover-to-foreground, hover background, and rounded hit area consistent with LilyPage."
         }
       ]
     }

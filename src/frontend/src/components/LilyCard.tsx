@@ -100,7 +100,14 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
                 <span className="text-muted-foreground">•</span>
               </>
             )}
-            <span className="font-medium text-foreground">{lily.username}</span>
+            <Link 
+              to="/f/$username" 
+              params={{ username: lily.username }}
+              className="font-medium text-foreground hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {lily.username}
+            </Link>
             <span className="text-muted-foreground">•</span>
             <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
           </div>

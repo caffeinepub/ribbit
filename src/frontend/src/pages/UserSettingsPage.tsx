@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { getUsername, setUsername, getPreviousUsername, getFroggyPhrase, setFroggyPhrase, restoreFromFroggyPhrase, clearFroggyPhrase } from '@/lib/user';
-import { useCheckUsernameAvailability, useRegisterUsername, useReleaseUsername, useCanChangeUsername, useRecordUsernameChange, useGetJoinedPonds, useGetAllPonds, useIsAdmin, useMergeSimilarTags, useGetTagRedirects, useLeavePond, useGetCallerUserProfile, useSaveCallerUserProfile, useGetUserAvatarByUsername } from '@/hooks/useQueries';
+import { useIsUsernameAvailable, useRegisterUsername, useReleaseUsername, useCanChangeUsername, useRecordUsernameChange, useGetJoinedPonds, useGetAllPonds, useIsAdmin, useMergeSimilarTags, useGetTagRedirects, useLeavePond, useGetCallerUserProfile, useSaveCallerUserProfile, useGetUserAvatarByUsername } from '@/hooks/useQueries';
 import { toast } from 'sonner';
 import { Loader2, Copy, Check, AlertCircle, ArrowRight, LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -86,10 +86,10 @@ export default function UserSettingsPage() {
     return () => clearTimeout(timer);
   }, [newUsername]);
 
-  // Check username availability
-  const { data: isAvailable, isLoading: checkingAvailability } = useCheckUsernameAvailability(
-    debouncedUsername,
-    currentUsername
+  // Check username availability (only check if different from current username)
+  const shouldCheckAvailability = debouncedUsername !== currentUsername && debouncedUsername.trim() !== '';
+  const { data: isAvailable, isLoading: checkingAvailability } = useIsUsernameAvailable(
+    shouldCheckAvailability ? debouncedUsername : ''
   );
 
   // Cleanup avatar preview on unmount
@@ -493,32 +493,38 @@ export default function UserSettingsPage() {
                   {saveProfile.isPending && uploadProgress > 0 && (
                     <div className="w-full max-w-xs">
                       <Progress value={uploadProgress} className="h-2" />
-                      <p className="text-center text-muted-foreground mt-1" style={{ fontSize: '0.875rem' }}>
-                        Uploading... {uploadProgress}%
+                      <p className="text-sm text-muted-foreground text-center mt-2">
+                        Uploading: {uploadProgress}%
                       </p>
                     </div>
                   )}
 
-                  <div className="flex flex-col items-center gap-2">
-                    <Label htmlFor="avatar" className="cursor-pointer">
-                      <Button variant="outline" asChild className="hover-darken-light rounded-full">
-                        <span>Choose Avatar</span>
-                      </Button>
-                    </Label>
-                    <Input
-                      id="avatar"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      className="hidden"
-                    />
-                  </div>
+                  <div className="w-full max-w-xs space-y-4">
+                    <div>
+                      <Label htmlFor="avatar-upload" className="cursor-pointer">
+                        <div className="flex items-center justify-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                          <span>Choose Avatar Image</span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                    </div>
 
-                  {avatarFile && (
-                    <Button 
+                    {avatarFile && (
+                      <div className="text-sm text-muted-foreground text-center">
+                        Selected: {avatarFile.name}
+                      </div>
+                    )}
+
+                    <Button
                       onClick={handleSaveAvatar}
-                      disabled={saveProfile.isPending}
-                      className="rounded-full"
+                      disabled={!avatarCompressedBytes || saveProfile.isPending}
+                      className="w-full rounded-full"
                     >
                       {saveProfile.isPending ? (
                         <>
@@ -529,52 +535,50 @@ export default function UserSettingsPage() {
                         'Save Avatar'
                       )}
                     </Button>
-                  )}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h3 className="font-semibold mb-2">About Avatars</h3>
+                  <p className="text-muted-foreground">
+                    Your avatar is stored on-chain and associated with your username. Images are automatically compressed for optimal storage.
+                  </p>
                 </div>
               </TabsContent>
 
               <TabsContent value="phrase" className="space-y-4 mt-0">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">What is a Froggy Phrase?</h3>
-                    <p className="text-muted-foreground">
-                      A Froggy Phrase is a secret passphrase that lets you restore your anonymous identity on any device.
-                      Save it somewhere safe!
-                    </p>
-                  </div>
-
-                  {existingPhrase && showPhrase ? (
-                    <div className="space-y-4">
-                      <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Your Froggy Phrase</AlertTitle>
-                        <AlertDescription className="mt-2">
-                          <div className="flex items-center gap-2">
-                            <code className="flex-1 p-2 bg-muted rounded text-sm break-all">
-                              {existingPhrase}
-                            </code>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleCopyPhrase}
-                            >
-                              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-
+                {existingPhrase && showPhrase ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Your Froggy Phrase</AlertTitle>
+                    <AlertDescription className="space-y-4">
+                      <div className="flex items-center gap-2 mt-2">
+                        <code className="flex-1 p-2 bg-muted rounded text-sm break-all">
+                          {existingPhrase}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCopyPhrase}
+                          className="flex-shrink-0"
+                        >
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-sm">
+                        Save this phrase securely. You can use it to restore your settings on any device.
+                      </p>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" className="rounded-full">
+                          <Button variant="destructive" size="sm">
                             Clear Froggy Phrase
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogTitle>Clear Froggy Phrase?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will permanently delete your Froggy Phrase. Make sure you have it saved elsewhere!
+                              This will permanently delete your Froggy Phrase. Make sure you have it saved elsewhere if you want to restore your settings later.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -585,129 +589,143 @@ export default function UserSettingsPage() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="froggy-phrase">Create or Restore Froggy Phrase</Label>
+                      <Input
+                        id="froggy-phrase"
+                        value={froggyPhrase}
+                        onChange={(e) => setFroggyPhraseInput(e.target.value)}
+                        placeholder="Enter at least 5 words..."
+                        style={{ fontSize: '1rem' }}
+                      />
+                      {phraseError && (
+                        <p className="text-red-500">
+                          {phraseError}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="froggyPhrase">Create or Restore Froggy Phrase</Label>
-                        <Input
-                          id="froggyPhrase"
-                          placeholder="Enter at least 5 words"
-                          value={froggyPhrase}
-                          onChange={(e) => setFroggyPhraseInput(e.target.value)}
-                          style={{ fontSize: '1rem' }}
-                        />
-                        {phraseError && (
-                          <p className="text-red-500 text-sm">{phraseError}</p>
-                        )}
-                      </div>
 
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleSaveFroggyPhrase}
-                          disabled={!froggyPhrase.trim()}
-                          className="rounded-full"
-                        >
-                          Save New Phrase
-                        </Button>
-                        <Button
-                          onClick={handleRestoreFroggyPhrase}
-                          variant="outline"
-                          disabled={!froggyPhrase.trim()}
-                          className="rounded-full"
-                        >
-                          Restore from Phrase
-                        </Button>
-                      </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSaveFroggyPhrase}
+                        disabled={!froggyPhrase.trim()}
+                        className="rounded-full"
+                      >
+                        Save New Phrase
+                      </Button>
+                      <Button 
+                        onClick={handleRestoreFroggyPhrase}
+                        disabled={!froggyPhrase.trim()}
+                        variant="outline"
+                        className="rounded-full"
+                      >
+                        Restore from Phrase
+                      </Button>
                     </div>
-                  )}
+                  </>
+                )}
+
+                <div className="pt-4 border-t">
+                  <h3 className="font-semibold mb-2">About Froggy Phrases</h3>
+                  <p className="text-muted-foreground">
+                    A Froggy Phrase is a secure way to backup and restore your anonymous identity across devices.
+                    Create a phrase with at least 5 words, save it securely, and use it to restore your settings anytime.
+                  </p>
                 </div>
               </TabsContent>
 
               <TabsContent value="ponds" className="space-y-4 mt-0">
-                <div>
-                  <h3 className="font-semibold mb-4">My Ponds</h3>
-                  {isLoadingJoined || isLoadingAllPonds ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
-                    </div>
-                  ) : joinedPonds.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
-                      <Link to="/ponds">
-                        <Button variant="outline" className="rounded-full">
-                          Browse Ponds
-                        </Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {joinedPonds.map((pond) => (
-                        <div
-                          key={pond.name}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            {pond.profileImage && (
-                              <img
-                                src={pond.profileImage.getDirectURL()}
-                                alt={pond.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                            )}
-                            <div>
-                              <Link
-                                to="/pond/$name"
-                                params={{ name: pond.name }}
-                                className="font-medium hover:underline"
-                              >
-                                {pond.name}
-                              </Link>
-                              <p className="text-sm text-muted-foreground">
-                                {Number(pond.memberCount).toLocaleString()} members
-                              </p>
-                            </div>
+                {isLoadingJoined || isLoadingAllPonds ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ) : joinedPonds.length > 0 ? (
+                  <div className="space-y-4">
+                    {joinedPonds.map((pond) => (
+                      <div
+                        key={pond.name}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12 bg-primary/10">
+                            {pond.profileImage ? (
+                              <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
+                            ) : null}
+                            <AvatarFallback>🐸</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <Link
+                              to="/pond/$name"
+                              params={{ name: pond.name }}
+                              className="font-semibold hover:text-primary"
+                            >
+                              {pond.name}
+                            </Link>
+                            <p className="text-sm text-muted-foreground">
+                              {Number(pond.memberCount)} members
+                            </p>
                           </div>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <LogOut className="h-4 w-4 mr-2" />
-                                Leave
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Leave {pond.name}?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  You can always rejoin this pond later.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
-                                  Leave Pond
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <LogOut className="h-4 w-4 mr-2" />
+                              Leave
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Leave {pond.name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                You will no longer be a member of this pond. You can rejoin anytime.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
+                                Leave Pond
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
+                    <Link to="/ponds">
+                      <Button className="rounded-full">
+                        Browse Ponds
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </TabsContent>
 
               {isAdmin && (
                 <TabsContent value="admin" className="space-y-4 mt-0">
-                  <div>
-                    <h3 className="font-semibold mb-4">Admin Tools</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="p-4 border rounded-lg">
-                        <h4 className="font-medium mb-2">Merge Similar Tags</h4>
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Admin Tools</AlertTitle>
+                    <AlertDescription>
+                      These tools are only available to administrators.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-4">
+                    <div className="p-4 border rounded-lg space-y-4">
+                      <div>
+                        <h3 className="font-semibold mb-2">Merge Similar Tags</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Automatically merge tags that are similar (e.g., "frog" and "frogs").
+                          Automatically merge tags that are similar (e.g., plural/singular, different cases).
                         </p>
                         <Button
                           onClick={handleMergeTags}
@@ -726,24 +744,23 @@ export default function UserSettingsPage() {
                       </div>
 
                       {isLoadingRedirects ? (
-                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-20 w-full" />
                       ) : tagRedirects && tagRedirects.length > 0 ? (
-                        <div className="p-4 border rounded-lg">
-                          <h4 className="font-medium mb-2">Tag Redirects</h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Tags that have been merged into canonical versions.
-                          </p>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                        <div>
+                          <h4 className="font-semibold mb-2">Tag Redirects ({tagRedirects.length})</h4>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
                             {tagRedirects.map(([from, to]) => (
                               <div key={from} className="flex items-center gap-2 text-sm">
-                                <Badge variant="outline">#{from}</Badge>
+                                <Badge variant="outline">{from}</Badge>
                                 <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                                <Badge>#{to}</Badge>
+                                <Badge>{to}</Badge>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ) : null}
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No tag redirects configured.</p>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
@@ -751,7 +768,7 @@ export default function UserSettingsPage() {
             </div>
           </div>
 
-          {/* Mobile tabs content */}
+          {/* Mobile content (< lg) - same content but without the sidebar */}
           <div className="lg:hidden">
             <TabsContent value="username" className="space-y-4 mt-0">
               <div className="space-y-2">
@@ -824,34 +841,40 @@ export default function UserSettingsPage() {
                 </p>
 
                 {saveProfile.isPending && uploadProgress > 0 && (
-                  <div className="w-full max-w-xs">
+                  <div className="w-full">
                     <Progress value={uploadProgress} className="h-2" />
-                    <p className="text-center text-muted-foreground mt-1" style={{ fontSize: '0.875rem' }}>
-                      Uploading... {uploadProgress}%
+                    <p className="text-sm text-muted-foreground text-center mt-2">
+                      Uploading: {uploadProgress}%
                     </p>
                   </div>
                 )}
 
-                <div className="flex flex-col items-center gap-2">
-                  <Label htmlFor="avatar-mobile" className="cursor-pointer">
-                    <Button variant="outline" asChild className="hover-darken-light rounded-full">
-                      <span>Choose Avatar</span>
-                    </Button>
-                  </Label>
-                  <Input
-                    id="avatar-mobile"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </div>
+                <div className="w-full space-y-4">
+                  <div>
+                    <Label htmlFor="avatar-upload-mobile" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                        <span>Choose Avatar Image</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id="avatar-upload-mobile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </div>
 
-                {avatarFile && (
-                  <Button 
+                  {avatarFile && (
+                    <div className="text-sm text-muted-foreground text-center">
+                      Selected: {avatarFile.name}
+                    </div>
+                  )}
+
+                  <Button
                     onClick={handleSaveAvatar}
-                    disabled={saveProfile.isPending}
-                    className="rounded-full w-full"
+                    disabled={!avatarCompressedBytes || saveProfile.isPending}
+                    className="w-full rounded-full"
                   >
                     {saveProfile.isPending ? (
                       <>
@@ -862,52 +885,50 @@ export default function UserSettingsPage() {
                       'Save Avatar'
                     )}
                   </Button>
-                )}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <h3 className="font-semibold mb-2">About Avatars</h3>
+                <p className="text-muted-foreground">
+                  Your avatar is stored on-chain and associated with your username. Images are automatically compressed for optimal storage.
+                </p>
               </div>
             </TabsContent>
 
             <TabsContent value="phrase" className="space-y-4 mt-0">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">What is a Froggy Phrase?</h3>
-                  <p className="text-muted-foreground">
-                    A Froggy Phrase is a secret passphrase that lets you restore your anonymous identity on any device.
-                    Save it somewhere safe!
-                  </p>
-                </div>
-
-                {existingPhrase && showPhrase ? (
-                  <div className="space-y-4">
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Your Froggy Phrase</AlertTitle>
-                      <AlertDescription className="mt-2">
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 p-2 bg-muted rounded text-sm break-all">
-                            {existingPhrase}
-                          </code>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCopyPhrase}
-                          >
-                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-
+              {existingPhrase && showPhrase ? (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Your Froggy Phrase</AlertTitle>
+                  <AlertDescription className="space-y-4">
+                    <div className="flex items-center gap-2 mt-2">
+                      <code className="flex-1 p-2 bg-muted rounded text-sm break-all">
+                        {existingPhrase}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyPhrase}
+                        className="flex-shrink-0"
+                      >
+                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-sm">
+                      Save this phrase securely. You can use it to restore your settings on any device.
+                    </p>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="rounded-full w-full">
+                        <Button variant="destructive" size="sm">
                           Clear Froggy Phrase
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogTitle>Clear Froggy Phrase?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete your Froggy Phrase. Make sure you have it saved elsewhere!
+                            This will permanently delete your Froggy Phrase. Make sure you have it saved elsewhere if you want to restore your settings later.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -918,129 +939,143 @@ export default function UserSettingsPage() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="froggy-phrase-mobile">Create or Restore Froggy Phrase</Label>
+                    <Input
+                      id="froggy-phrase-mobile"
+                      value={froggyPhrase}
+                      onChange={(e) => setFroggyPhraseInput(e.target.value)}
+                      placeholder="Enter at least 5 words..."
+                      style={{ fontSize: '1rem' }}
+                    />
+                    {phraseError && (
+                      <p className="text-red-500">
+                        {phraseError}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="froggyPhrase-mobile">Create or Restore Froggy Phrase</Label>
-                      <Input
-                        id="froggyPhrase-mobile"
-                        placeholder="Enter at least 5 words"
-                        value={froggyPhrase}
-                        onChange={(e) => setFroggyPhraseInput(e.target.value)}
-                        style={{ fontSize: '1rem' }}
-                      />
-                      {phraseError && (
-                        <p className="text-red-500 text-sm">{phraseError}</p>
-                      )}
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={handleSaveFroggyPhrase}
-                        disabled={!froggyPhrase.trim()}
-                        className="rounded-full w-full"
-                      >
-                        Save New Phrase
-                      </Button>
-                      <Button
-                        onClick={handleRestoreFroggyPhrase}
-                        variant="outline"
-                        disabled={!froggyPhrase.trim()}
-                        className="rounded-full w-full"
-                      >
-                        Restore from Phrase
-                      </Button>
-                    </div>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={handleSaveFroggyPhrase}
+                      disabled={!froggyPhrase.trim()}
+                      className="rounded-full w-full"
+                    >
+                      Save New Phrase
+                    </Button>
+                    <Button 
+                      onClick={handleRestoreFroggyPhrase}
+                      disabled={!froggyPhrase.trim()}
+                      variant="outline"
+                      className="rounded-full w-full"
+                    >
+                      Restore from Phrase
+                    </Button>
                   </div>
-                )}
+                </>
+              )}
+
+              <div className="pt-4 border-t">
+                <h3 className="font-semibold mb-2">About Froggy Phrases</h3>
+                <p className="text-muted-foreground">
+                  A Froggy Phrase is a secure way to backup and restore your anonymous identity across devices.
+                  Create a phrase with at least 5 words, save it securely, and use it to restore your settings anytime.
+                </p>
               </div>
             </TabsContent>
 
             <TabsContent value="ponds" className="space-y-4 mt-0">
-              <div>
-                <h3 className="font-semibold mb-4">My Ponds</h3>
-                {isLoadingJoined || isLoadingAllPonds ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                  </div>
-                ) : joinedPonds.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
-                    <Link to="/ponds">
-                      <Button variant="outline" className="rounded-full">
-                        Browse Ponds
-                      </Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {joinedPonds.map((pond) => (
-                      <div
-                        key={pond.name}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          {pond.profileImage && (
-                            <img
-                              src={pond.profileImage.getDirectURL()}
-                              alt={pond.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          )}
-                          <div>
-                            <Link
-                              to="/pond/$name"
-                              params={{ name: pond.name }}
-                              className="font-medium hover:underline"
-                            >
-                              {pond.name}
-                            </Link>
-                            <p className="text-sm text-muted-foreground">
-                              {Number(pond.memberCount).toLocaleString()} members
-                            </p>
-                          </div>
+              {isLoadingJoined || isLoadingAllPonds ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : joinedPonds.length > 0 ? (
+                <div className="space-y-4">
+                  {joinedPonds.map((pond) => (
+                    <div
+                      key={pond.name}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12 bg-primary/10">
+                          {pond.profileImage ? (
+                            <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
+                          ) : null}
+                          <AvatarFallback>🐸</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <Link
+                            to="/pond/$name"
+                            params={{ name: pond.name }}
+                            className="font-semibold hover:text-primary"
+                          >
+                            {pond.name}
+                          </Link>
+                          <p className="text-sm text-muted-foreground">
+                            {Number(pond.memberCount)} members
+                          </p>
                         </div>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <LogOut className="h-4 w-4 mr-2" />
-                              Leave
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Leave {pond.name}?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                You can always rejoin this pond later.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
-                                Leave Pond
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Leave
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Leave {pond.name}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              You will no longer be a member of this pond. You can rejoin anytime.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
+                              Leave Pond
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
+                  <Link to="/ponds">
+                    <Button className="rounded-full">
+                      Browse Ponds
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </TabsContent>
 
             {isAdmin && (
               <TabsContent value="admin" className="space-y-4 mt-0">
-                <div>
-                  <h3 className="font-semibold mb-4">Admin Tools</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">Merge Similar Tags</h4>
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Admin Tools</AlertTitle>
+                  <AlertDescription>
+                    These tools are only available to administrators.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Merge Similar Tags</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Automatically merge tags that are similar (e.g., "frog" and "frogs").
+                        Automatically merge tags that are similar (e.g., plural/singular, different cases).
                       </p>
                       <Button
                         onClick={handleMergeTags}
@@ -1059,24 +1094,23 @@ export default function UserSettingsPage() {
                     </div>
 
                     {isLoadingRedirects ? (
-                      <Skeleton className="h-32 w-full" />
+                      <Skeleton className="h-20 w-full" />
                     ) : tagRedirects && tagRedirects.length > 0 ? (
-                      <div className="p-4 border rounded-lg">
-                        <h4 className="font-medium mb-2">Tag Redirects</h4>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Tags that have been merged into canonical versions.
-                        </p>
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                      <div>
+                        <h4 className="font-semibold mb-2">Tag Redirects ({tagRedirects.length})</h4>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
                           {tagRedirects.map(([from, to]) => (
                             <div key={from} className="flex items-center gap-2 text-sm">
-                              <Badge variant="outline">#{from}</Badge>
+                              <Badge variant="outline">{from}</Badge>
                               <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              <Badge>#{to}</Badge>
+                              <Badge>{to}</Badge>
                             </div>
                           ))}
                         </div>
                       </div>
-                    ) : null}
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No tag redirects configured.</p>
+                    )}
                   </div>
                 </div>
               </TabsContent>

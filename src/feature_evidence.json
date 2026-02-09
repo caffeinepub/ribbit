@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-a-shared-client-side-image-compression-utility-and-apply-it-to-all-image-uploads-before-converting-to-externalblob-bytes",
-      "featureTitle": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+      "featureId": "feature-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-add-restore-a-reddit-style-back-button-and-position-it-to-the-left-of-the-profile-pond-avatar-within-the-profile-header-row-so-it-never-overlaps-the-avatar",
+      "featureTitle": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
       "files": [
-        "frontend/src/lib/imageCompression.ts"
+        "frontend/src/pages/FrogProfilePage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -22,10 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-compress-images-uploaded-when-creating-a-lily-createlilypage-so-the-uploaded-externalblob-is-built-from-the-compressed-bytes-and-ensure-the-preview-reflects-what-will-be-uploaded",
-      "featureTitle": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "featureId": "feature-implement-back-button-navigation-behavior-on-the-frog-profile-page-to-go-to-the-previous-page-using-browser-history-when-possible",
+      "featureTitle": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
       "files": [
-        "frontend/src/pages/CreateLilyPage.tsx"
+        "frontend/src/pages/FrogProfilePage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -42,10 +42,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-compress-pond-banner-and-profile-images-during-pond-creation-createpondpage-so-both-uploaded-externalblobs-use-compressed-bytes-and-ensure-previews-reflect-the-compressed-images",
-      "featureTitle": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
+      "featureId": "feature-match-the-frog-profile-back-button-visual-styling-to-the-existing-lily-page-back-button-icon-back-label-muted-foreground-hover-state-rounded-hit-area-while-keeping-all-user-facing-text-in-english",
+      "featureTitle": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
       "files": [
-        "frontend/src/pages/CreatePondPage.tsx"
+        "frontend/src/pages/FrogProfilePage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -58,26 +58,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-compress-avatar-images-in-user-settings-before-uploading-so-the-avatar-externalblob-is-built-from-compressed-bytes-while-keeping-the-existing-upload-progress-behavior-intact",
-      "featureTitle": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
-      "files": [
-        "frontend/src/pages/UserSettingsPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

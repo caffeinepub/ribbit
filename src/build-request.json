@@ -1,106 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Add client-side compression for all image uploads",
+  "title": "Fix Frog Profile Page back button placement (left of avatar, not overlapping)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+      "text": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add compression to all image uploads."
+          "ok i reverted. now try it again you dumbfuck"
         ]
       },
       "acceptanceCriteria": [
-        "A reusable utility exists (e.g., in frontend/src/lib/) that takes an image File and returns a compressed File or Uint8Array suitable for upload.",
-        "The utility resizes images to a reasonable maximum dimension (to prevent huge uploads) and applies lossy compression (quality setting) for JPEG/WebP outputs.",
-        "Non-image files are rejected and produce a clear error.",
-        "Animated GIFs (if supported by the browser input) are not recompressed (to avoid stripping animation) and are uploaded as-is.",
-        "Compression failures fall back to uploading the original file bytes with a user-facing error toast indicating compression could not be applied."
+        "The Frog Profile page shows a Back button in the profile header area.",
+        "The Back button is horizontally placed to the left of the avatar (same row) with consistent spacing (i.e., not stacked on top of the avatar).",
+        "At common viewport sizes (mobile and desktop), the Back button does not overlap the avatar, username, or counts; the layout remains stable and readable."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "text": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add compression to all image uploads."
+          "ok i reverted. now try it again you dumbfuck"
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/pages/CreateLilyPage.tsx, when lilyType === 'image', the selected image is compressed prior to ExternalBlob.fromBytes(...).",
-        "The on-screen preview for an image Lily uses the compressed image (not the original), so users preview exactly what will be uploaded.",
-        "Submitting a non-image file (if forced via devtools) does not crash and shows an English error message."
+        "Clicking Back navigates to the previous page when `window.history.length > 1`.",
+        "If there is no meaningful browser history entry, the Back button falls back to navigating to the home route (`/`).",
+        "The Back button is keyboard accessible and has an accessible label (e.g., visible “Back” text and/or sr-only label)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
+      "text": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add compression to all image uploads."
+          "ok i reverted. now try it again you dumbfuck"
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/pages/CreatePondPage.tsx, both bannerImageFile and profileImageFile are compressed before arrayBuffer()/ExternalBlob.fromBytes(...).",
-        "Both previews (banner and profile) display the compressed versions that will be uploaded.",
-        "If compression fails for either image, the UI shows an English toast error and falls back to uploading the original bytes for that image."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Add compression to all image uploads."
-        ]
-      },
-      "acceptanceCriteria": [
-        "In frontend/src/pages/UserSettingsPage.tsx, the selected avatar is compressed before ExternalBlob.fromBytes(...).withUploadProgress(...).",
-        "Upload progress continues to display and updates as before.",
-        "The avatar preview reflects the compressed image that will be uploaded.",
-        "If compression fails, show an English toast error and upload the original avatar bytes instead."
+        "The Frog Profile Back button uses an arrow-left icon and the label text “Back”.",
+        "Default styling is muted and changes on hover similarly to the Lily page Back button.",
+        "No new non-English user-facing strings are introduced as part of this change."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/components/ui (compose them only).",
-    "Do not modify files listed in frontend.immutablePaths (e.g., frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/main.tsx).",
-    "Keep all changes within the existing React + TypeScript + Tailwind + React Query stack; do not add external backend services."
+    "Frontend immutable paths must not be edited: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, and anything under `frontend/src/components/ui`.",
+    "Keep changes scoped to fixing the Frog Profile page back button placement and behavior."
   ],
   "nonGoals": [
-    "Backend-side image compression or transcoding in Motoko.",
-    "Adding new image upload features or new upload destinations beyond existing flows.",
-    "Changing existing data models or canister storage schema for images."
+    "Do not change the Lily page back button behavior or styling.",
+    "Do not introduce new authentication methods or any third-party integrations.",
+    "Do not redesign the entire Frog Profile page beyond what is necessary to correctly place the Back button."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

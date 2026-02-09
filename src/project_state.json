@@ -1,53 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Project includes a profile page UI; current task is correcting back button placement relative to the pond avatar.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Profile page: back button was placed on top of the pond avatar; it should be positioned to the left of the avatar."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-implement-a-shared-client-side-image-compression-utility-and-apply-it-to-all-image-uploads-before-converting-to-externalblob-bytes",
-      "title": "Implement a shared client-side image compression utility and apply it to all image uploads before converting to ExternalBlob bytes.",
+      "id": "feature-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-add-restore-a-reddit-style-back-button-and-position-it-to-the-left-of-the-profile-pond-avatar-within-the-profile-header-row-so-it-never-overlaps-the-avatar",
+      "title": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-compress-images-uploaded-when-creating-a-lily-createlilypage-so-the-uploaded-externalblob-is-built-from-the-compressed-bytes-and-ensure-the-preview-reflects-what-will-be-uploaded",
-      "title": "Compress images uploaded when creating a Lily (CreateLilyPage) so the uploaded ExternalBlob is built from the compressed bytes, and ensure the preview reflects what will be uploaded.",
+      "id": "feature-implement-back-button-navigation-behavior-on-the-frog-profile-page-to-go-to-the-previous-page-using-browser-history-when-possible",
+      "title": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-compress-pond-banner-and-profile-images-during-pond-creation-createpondpage-so-both-uploaded-externalblobs-use-compressed-bytes-and-ensure-previews-reflect-the-compressed-images",
-      "title": "Compress pond banner and profile images during pond creation (CreatePondPage) so both uploaded ExternalBlobs use compressed bytes, and ensure previews reflect the compressed images.",
+      "id": "feature-match-the-frog-profile-back-button-visual-styling-to-the-existing-lily-page-back-button-icon-back-label-muted-foreground-hover-state-rounded-hit-area-while-keeping-all-user-facing-text-in-english",
+      "title": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-compress-avatar-images-in-user-settings-before-uploading-so-the-avatar-externalblob-is-built-from-compressed-bytes-while-keeping-the-existing-upload-progress-behavior-intact",
-      "title": "Compress avatar images in User Settings before uploading so the avatar ExternalBlob is built from compressed bytes, while keeping the existing upload progress behavior intact.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Add compression to all image uploads",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Add client-side compression for all image uploads",
+  "new_feature_requests": [],
+  "projectName": "Fix Frog Profile Page back button placement (left of avatar, not overlapping)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
