@@ -1,74 +1,58 @@
 {
   "kind": "build_request",
-  "title": "Fix Frog Profile Page back button placement (left of avatar, not overlapping)",
+  "title": "Fix back button placement on Lily page header",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
+      "text": "Update the Lily detail page (`frontend/src/pages/LilyPage.tsx`) so the existing Reddit-style Back button is positioned immediately to the left of the pond avatar within the lily header row (same row that currently starts with the pond avatar and metadata), instead of being rendered as a separate block above the content.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
-        ],
-        "quotes": [
-          "ok i reverted. now try it again you dumbfuck"
         ]
       },
       "acceptanceCriteria": [
-        "The Frog Profile page shows a Back button in the profile header area.",
-        "The Back button is horizontally placed to the left of the avatar (same row) with consistent spacing (i.e., not stacked on top of the avatar).",
-        "At common viewport sizes (mobile and desktop), the Back button does not overlap the avatar, username, or counts; the layout remains stable and readable."
+        "On `/lily/:id`, the Back control (ArrowLeft icon + “Back” label) appears directly to the left of the pond avatar in the header area.",
+        "The Back control remains keyboard-accessible and clickable, and continues to call the existing `handleBackClick` behavior (history back when possible, otherwise navigate to `/pond/$name`).",
+        "There is no duplicate Back button rendered above the lily content after the change."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
+      "text": "Ensure the Back button change is scoped to the Lily detail page only, and that no Back button UI is added to or rendered on the frog profile page (`frontend/src/pages/FrogProfilePage.tsx`) as part of this fix.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
-        ],
-        "quotes": [
-          "ok i reverted. now try it again you dumbfuck"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking Back navigates to the previous page when `window.history.length > 1`.",
-        "If there is no meaningful browser history entry, the Back button falls back to navigating to the home route (`/`).",
-        "The Back button is keyboard accessible and has an accessible label (e.g., visible “Back” text and/or sr-only label)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "ok i reverted. now try it again you dumbfuck"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Frog Profile Back button uses an arrow-left icon and the label text “Back”.",
-        "Default styling is muted and changes on hover similarly to the Lily page Back button.",
-        "No new non-English user-facing strings are introduced as part of this change."
+        "On `/f/:username`, there is no Back button UI introduced by this change.",
+        "The only page affected by the Back button placement/layout adjustment is `frontend/src/pages/LilyPage.tsx`."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be edited: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, and anything under `frontend/src/components/ui`.",
-    "Keep changes scoped to fixing the Frog Profile page back button placement and behavior."
+    "Do not edit any files under `frontend/src/components/ui` (compose existing UI components instead).",
+    "Do not modify the Internet Identity or actor hooks located in immutable paths."
   ],
   "nonGoals": [
-    "Do not change the Lily page back button behavior or styling.",
-    "Do not introduce new authentication methods or any third-party integrations.",
-    "Do not redesign the entire Frog Profile page beyond what is necessary to correctly place the Back button."
+    "Do not change backend logic or data models.",
+    "Do not change the Back button navigation logic (history/back vs pond fallback), only its placement/layout."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -1,31 +1,20 @@
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetUserProfileByUsername, useGetPostsByUsername, useGetRibbitsByUsername } from '@/hooks/useQueries';
 import LilyCard from '@/components/LilyCard';
 import ProfileRibbitItem from '@/components/ProfileRibbitItem';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { formatNumber } from '@/lib/formatNumber';
 
 export default function FrogProfilePage() {
   const { username } = useParams({ from: '/f/$username' });
-  const navigate = useNavigate();
   
   const { data: profile, isLoading: profileLoading, isFetched: profileFetched } = useGetUserProfileByUsername(username);
   const { data: posts = [], isLoading: postsLoading } = useGetPostsByUsername(username);
   const { data: ribbits = [], isLoading: ribbitsLoading } = useGetRibbitsByUsername(username);
 
   const isLoading = profileLoading || postsLoading || ribbitsLoading;
-
-  const handleBackClick = () => {
-    // Check if there's meaningful history to go back to
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      // Fallback: navigate to home
-      navigate({ to: '/' });
-    }
-  };
 
   // Not found state
   if (profileFetched && !profile && !profileLoading) {
@@ -61,16 +50,6 @@ export default function FrogProfilePage() {
       {/* Profile Header */}
       <div className="bg-card border rounded-lg p-6 mb-6">
         <div className="flex items-start gap-4">
-          {/* Back button - leftmost element */}
-          <button
-            onClick={handleBackClick}
-            className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted flex-shrink-0 -ml-2 px-2 py-2"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-
-          {/* Avatar */}
           <Avatar className="h-20 w-20 bg-primary/10 flex-shrink-0">
             {avatarUrl ? (
               <img
@@ -82,9 +61,7 @@ export default function FrogProfilePage() {
               <AvatarFallback className="text-2xl">🐸</AvatarFallback>
             )}
           </Avatar>
-
-          {/* Profile info */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1">
             <h1 className="text-2xl font-bold mb-1">f/{username}</h1>
             {profile?.name && profile.name !== username && (
               <p className="text-muted-foreground mb-3">{profile.name}</p>

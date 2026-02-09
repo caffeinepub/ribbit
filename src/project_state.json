@@ -1,40 +1,39 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project includes a profile page UI; current task is correcting back button placement relative to the pond avatar.",
+  "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Profile page: back button was placed on top of the pond avatar; it should be positioned to the left of the avatar."
+    "Back button is currently placed on the profile page instead of on the Lily page to the left of the pond avatar."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-add-restore-a-reddit-style-back-button-and-position-it-to-the-left-of-the-profile-pond-avatar-within-the-profile-header-row-so-it-never-overlaps-the-avatar",
-      "title": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
+      "id": "feature-update-the-lily-detail-page-frontend-src-pages-lilypage-tsx-so-the-existing-reddit-style-back-button-is-positioned-immediately-to-the-left-of-the-pond-avatar-within-the-lily-header-row-same-row-that-currently-starts-with-the-pond-avatar-and-metadata-instead-of-being-rendered-as-a-separate-block-above-the-content",
+      "title": "Update the Lily detail page (`frontend/src/pages/LilyPage.tsx`) so the existing Reddit-style Back button is positioned immediately to the left of the pond avatar within the lily header row (same row that currently starts with the pond avatar and metadata), instead of being rendered as a separate block above the content.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-back-button-navigation-behavior-on-the-frog-profile-page-to-go-to-the-previous-page-using-browser-history-when-possible",
-      "title": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
+      "id": "feature-ensure-the-back-button-change-is-scoped-to-the-lily-detail-page-only-and-that-no-back-button-ui-is-added-to-or-rendered-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-as-part-of-this-fix",
+      "title": "Ensure the Back button change is scoped to the Lily detail page only, and that no Back button UI is added to or rendered on the frog profile page (`frontend/src/pages/FrogProfilePage.tsx`) as part of this fix.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-match-the-frog-profile-back-button-visual-styling-to-the-existing-lily-page-back-button-icon-back-label-muted-foreground-hover-state-rounded-hit-area-while-keeping-all-user-facing-text-in-english",
-      "title": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix Frog Profile Page back button placement (left of avatar, not overlapping)",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Fix back button placement: should be on Lily page to the left of the pond avatar (not on the profile page)",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Fix back button placement on Lily page header",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

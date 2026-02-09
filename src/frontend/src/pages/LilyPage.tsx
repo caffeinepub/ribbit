@@ -175,20 +175,20 @@ export default function LilyPage() {
     <div className="min-h-screen bg-background">
       <div className="lg:container py-8">
         <div className="max-w-4xl lg:mx-auto px-4 lg:px-0">
-          {/* Reddit-style Back button */}
-          <button
-            onClick={handleBackClick}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 -ml-2 px-2 py-1 rounded-md hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium" style={{ fontSize: '0.875rem' }}>Back</span>
-          </button>
-
           <div className="overflow-hidden mb-4">
             {/* Single column layout - all elements left-aligned */}
             <div className="flex flex-col gap-4 mb-4">
-              {/* Header: Avatar and metadata */}
+              {/* Header: Back button, Avatar and metadata */}
               <div className="flex items-start gap-3">
+                {/* Back button - directly to the left of the pond avatar */}
+                <button
+                  onClick={handleBackClick}
+                  className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted flex-shrink-0 h-10 w-10"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+
                 {/* Pond Avatar */}
                 <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
                   {pond?.profileImage ? (

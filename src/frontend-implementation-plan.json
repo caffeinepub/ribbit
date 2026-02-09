@@ -1,53 +1,36 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Frog Profile header Back button placement, behavior, and styling",
+  "title": "Fix Lily page back button placement in header",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add/restore a Reddit-style Back button in the Frog Profile header row and place it to the left of the avatar without overlap.",
+      "summary": "Move the existing Reddit-style Back button into the Lily header row, immediately left of the pond avatar, without changing its behavior.",
       "acceptanceCriteria": [
-        "The Frog Profile page shows a Back button in the profile header area.",
-        "The Back button is horizontally placed to the left of the avatar (same row) with consistent spacing (i.e., not stacked on top of the avatar).",
-        "At common viewport sizes (mobile and desktop), the Back button does not overlap the avatar, username, or counts; the layout remains stable and readable."
+        "On `/lily/:id`, the Back control (ArrowLeft icon + “Back” label) appears directly to the left of the pond avatar in the header area.",
+        "The Back control remains keyboard-accessible and clickable, and continues to call the existing `handleBackClick` behavior (history back when possible, otherwise navigate to `/pond/$name`).",
+        "There is no duplicate Back button rendered above the lily content after the change."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/FrogProfilePage.tsx",
+          "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Update the profile header layout to include a Back button placed as the leftmost element in the header row (left of the Avatar) using a stable flex layout (e.g., button + avatar + content with appropriate gap/flex-shrink/min-w-0) so the button never overlaps the avatar or header content across mobile/desktop widths."
+          "description": "Rework the Lily header layout so the existing Back button (ArrowLeft + label) is rendered inside the header row container immediately before the pond Avatar, and remove the current standalone Back button block above the content. Keep the existing `handleBackClick` logic unchanged and preserve button semantics for keyboard accessibility. Ensure no edits are made under `frontend/src/components/ui`."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Implement Frog Profile Back button navigation using browser history with a home-route fallback and accessible interaction.",
+      "summary": "Keep the Back button placement change scoped to LilyPage only, with no Back button UI added to FrogProfilePage.",
       "acceptanceCriteria": [
-        "Clicking Back navigates to the previous page when `window.history.length > 1`.",
-        "If there is no meaningful browser history entry, the Back button falls back to navigating to the home route (`/`).",
-        "The Back button is keyboard accessible and has an accessible label (e.g., visible “Back” text and/or sr-only label)."
+        "On `/f/:username`, there is no Back button UI introduced by this change.",
+        "The only page affected by the Back button placement/layout adjustment is `frontend/src/pages/LilyPage.tsx`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/FrogProfilePage.tsx",
+          "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Add Back button click handling to prefer `window.history.back()` when `window.history.length > 1`, otherwise navigate to `/` via TanStack Router; ensure the control is a semantic <button> with visible \"Back\" text (and/or aria-label) for keyboard and screen-reader accessibility."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Match Frog Profile Back button styling to the existing Lily page Back button (icon + label, muted/hover, rounded hit area) in English.",
-      "acceptanceCriteria": [
-        "The Frog Profile Back button uses an arrow-left icon and the label text “Back”.",
-        "Default styling is muted and changes on hover similarly to the Lily page Back button.",
-        "No new non-English user-facing strings are introduced as part of this change."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/FrogProfilePage.tsx",
-          "operation": "modify",
-          "description": "Implement the Back button UI to mirror the LilyPage Back button styling: include the ArrowLeft icon from lucide-react, the English label \"Back\", muted foreground with hover-to-foreground, hover background, and rounded hit area consistent with LilyPage."
+          "description": "Confine all Back button placement/layout changes to LilyPage only (no shared layout/components touched) so FrogProfilePage remains unchanged and does not render any Back button UI as a side-effect."
         }
       ]
     }

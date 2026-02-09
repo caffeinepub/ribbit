@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the Frog Profile page Back button so it appears in the header row to the left of the avatar without overlapping, and navigates back reliably.
+**Goal:** Fix the placement of the existing Back button on the Lily detail page header.
 
 **Planned changes:**
-- Add/restore a Reddit-style Back button on `frontend/src/pages/FrogProfilePage.tsx` and lay it out in the profile header row to the left of the pond avatar with consistent spacing across mobile and desktop viewports.
-- Implement Back button behavior to navigate to the previous page when `window.history.length > 1`, otherwise fall back to `/`.
-- Match the Back button’s look and feel to the existing Lily page Back button (arrow-left icon + “Back” label, muted styling, hover state, rounded hit area) and ensure it is keyboard accessible with an accessible label.
+- Update `frontend/src/pages/LilyPage.tsx` to render the existing Reddit-style Back control (ArrowLeft + “Back”) inline within the lily header row, positioned immediately to the left of the pond avatar and metadata.
+- Remove the current separate/above-content Back button rendering on the Lily page so only the inline header Back control remains.
+- Ensure the change is limited to the Lily detail page and does not introduce any Back button UI on `frontend/src/pages/FrogProfilePage.tsx`.
 
-**User-visible outcome:** On the Frog Profile page, users see a properly placed “Back” button left of the avatar that doesn’t overlap other header elements and takes them to the previous page (or home when no history is available).
+**User-visible outcome:** On `/lily/:id`, the Back control appears directly to the left of the pond avatar in the header area, remains clickable and keyboard-accessible with the same behavior, and no duplicate Back button appears above the content.

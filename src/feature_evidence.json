@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-add-restore-a-reddit-style-back-button-and-position-it-to-the-left-of-the-profile-pond-avatar-within-the-profile-header-row-so-it-never-overlaps-the-avatar",
-      "featureTitle": "On the Frog Profile page (`frontend/src/pages/FrogProfilePage.tsx`), add/restore a Reddit-style Back button and position it to the left of the profile (pond) avatar within the profile header row so it never overlaps the avatar.",
+      "featureId": "feature-update-the-lily-detail-page-frontend-src-pages-lilypage-tsx-so-the-existing-reddit-style-back-button-is-positioned-immediately-to-the-left-of-the-pond-avatar-within-the-lily-header-row-same-row-that-currently-starts-with-the-pond-avatar-and-metadata-instead-of-being-rendered-as-a-separate-block-above-the-content",
+      "featureTitle": "Update the Lily detail page (`frontend/src/pages/LilyPage.tsx`) so the existing Reddit-style Back button is positioned immediately to the left of the pond avatar within the lily header row (same row that currently starts with the pond avatar and metadata), instead of being rendered as a separate block above the content.",
       "files": [
-        "frontend/src/pages/FrogProfilePage.tsx"
+        "frontend/src/pages/LilyPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -22,10 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-back-button-navigation-behavior-on-the-frog-profile-page-to-go-to-the-previous-page-using-browser-history-when-possible",
-      "featureTitle": "Implement Back button navigation behavior on the Frog Profile page to go to the previous page using browser history when possible.",
+      "featureId": "feature-ensure-the-back-button-change-is-scoped-to-the-lily-detail-page-only-and-that-no-back-button-ui-is-added-to-or-rendered-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-as-part-of-this-fix",
+      "featureTitle": "Ensure the Back button change is scoped to the Lily detail page only, and that no Back button UI is added to or rendered on the frog profile page (`frontend/src/pages/FrogProfilePage.tsx`) as part of this fix.",
       "files": [
-        "frontend/src/pages/FrogProfilePage.tsx"
+        "frontend/src/pages/LilyPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -38,26 +38,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-match-the-frog-profile-back-button-visual-styling-to-the-existing-lily-page-back-button-icon-back-label-muted-foreground-hover-state-rounded-hit-area-while-keeping-all-user-facing-text-in-english",
-      "featureTitle": "Match the Frog Profile Back button visual styling to the existing Lily page Back button (icon + “Back” label, muted foreground, hover state, rounded hit area) while keeping all user-facing text in English.",
-      "files": [
-        "frontend/src/pages/FrogProfilePage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }
