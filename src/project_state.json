@@ -1,26 +1,16 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Adjust lily page layout so the pond avatar metadata block aligns with the main content column (title/description/image/actions) Reddit-style, while keeping the back button offset in front/left of that block.",
   "architectural_notes": [],
-  "known_issues": [
-    "Back button is currently placed on the profile page instead of on the Lily page to the left of the pond avatar."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-the-lily-detail-page-frontend-src-pages-lilypage-tsx-so-the-existing-reddit-style-back-button-is-positioned-immediately-to-the-left-of-the-pond-avatar-within-the-lily-header-row-same-row-that-currently-starts-with-the-pond-avatar-and-metadata-instead-of-being-rendered-as-a-separate-block-above-the-content",
-      "title": "Update the Lily detail page (`frontend/src/pages/LilyPage.tsx`) so the existing Reddit-style Back button is positioned immediately to the left of the pond avatar within the lily header row (same row that currently starts with the pond avatar and metadata), instead of being rendered as a separate block above the content.",
+      "id": "feature-update-the-lily-detail-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-pond-avatar-metadata-block-pond-name-timestamp-username-avatar-is-aligned-to-the-same-left-edge-as-the-lily-title-description-image-and-action-buttons-reddit-style-while-keeping-the-back-button-as-the-only-element-offset-to-the-left-in-front-of-that-aligned-column",
+      "title": "Update the Lily detail page header layout (`frontend/src/pages/LilyPage.tsx`) so the pond avatar metadata block (pond name, timestamp, username, avatar) is aligned to the same left edge as the lily title, description, image, and action buttons (Reddit-style), while keeping the back button as the only element offset to the left/in front of that aligned column.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-back-button-change-is-scoped-to-the-lily-detail-page-only-and-that-no-back-button-ui-is-added-to-or-rendered-on-the-frog-profile-page-frontend-src-pages-frogprofilepage-tsx-as-part-of-this-fix",
-      "title": "Ensure the Back button change is scoped to the Lily detail page only, and that no Back button UI is added to or rendered on the frog profile page (`frontend/src/pages/FrogProfilePage.tsx`) as part of this fix.",
-      "reqIds": [
-        "REQ-2"
       ],
       "version": 1
     }
@@ -28,12 +18,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix back button placement: should be on Lily page to the left of the pond avatar (not on the profile page)",
+      "summary": "Lily page: align pond avatar metadata block with main content column while keeping back button offset in front/left (Reddit-style layout)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix back button placement on Lily page header",
+  "projectName": "Align Lily page pond avatar metadata with main content while keeping back button offset (Reddit-style)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

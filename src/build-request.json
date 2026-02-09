@@ -1,45 +1,42 @@
 {
   "kind": "build_request",
-  "title": "Fix back button placement on Lily page header",
+  "title": "Align Lily page pond avatar metadata with main content while keeping back button offset (Reddit-style)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Lily detail page (`frontend/src/pages/LilyPage.tsx`) so the existing Reddit-style Back button is positioned immediately to the left of the pond avatar within the lily header row (same row that currently starts with the pond avatar and metadata), instead of being rendered as a separate block above the content.",
+      "text": "Update the Lily detail page header layout (`frontend/src/pages/LilyPage.tsx`) so the pond avatar metadata block (pond name, timestamp, username, avatar) is aligned to the same left edge as the lily title, description, image, and action buttons (Reddit-style), while keeping the back button as the only element offset to the left/in front of that aligned column.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-user-1",
+          "msg-user-2",
+          "msg-user-3",
+          "msg-user-4"
+        ],
+        "quotes": [
+          "the pond avatar block (that include the pond name, timestamp and username) in the lily page needs to be aligned with the lily title description, image, action buttons, etc. like reddit does it.",
+          "yes and the backbutton needs to remain in front of that block.",
+          "yes that means that the only thing not aligned is the back button.",
+          "yes go ahead and do it"
         ]
       },
       "acceptanceCriteria": [
-        "On `/lily/:id`, the Back control (ArrowLeft icon + “Back” label) appears directly to the left of the pond avatar in the header area.",
-        "The Back control remains keyboard-accessible and clickable, and continues to call the existing `handleBackClick` behavior (history back when possible, otherwise navigate to `/pond/$name`).",
-        "There is no duplicate Back button rendered above the lily content after the change."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Ensure the Back button change is scoped to the Lily detail page only, and that no Back button UI is added to or rendered on the frog profile page (`frontend/src/pages/FrogProfilePage.tsx`) as part of this fix.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On `/f/:username`, there is no Back button UI introduced by this change.",
-        "The only page affected by the Back button placement/layout adjustment is `frontend/src/pages/LilyPage.tsx`."
+        "On the Lily page, the left edge of the pond avatar metadata block (avatar + metadata text) visually aligns with the left edge of the lily title, description, image block, link block, and the action buttons row (i.e., they share one consistent content column).",
+        "The back button remains positioned to the left of (in front of) the pond avatar metadata block, and is the only element that does not share the main content column’s left alignment.",
+        "The back button remains clickable and does not overlap/interfere with the avatar/metadata or title on common viewport widths (mobile and desktop).",
+        "Changes are scoped to the Lily page only; do not introduce or move any back button UI to other pages (e.g., the Frog profile page)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under `frontend/src/components/ui` (compose existing UI components instead).",
-    "Do not modify the Internet Identity or actor hooks located in immutable paths."
+    "Frontend immutable paths listed in SYSTEM_CONTEXT must not be modified (compose existing UI components instead).",
+    "Do not introduce new backend canisters/services; this change is frontend layout only."
   ],
   "nonGoals": [
-    "Do not change backend logic or data models.",
-    "Do not change the Back button navigation logic (history/back vs pond fallback), only its placement/layout."
+    "Do not change backend data models or APIs.",
+    "Do not change lily content rendering logic (title/content/image/link), only layout/alignment.",
+    "Do not restyle the overall site theme beyond what is necessary to achieve the requested alignment."
   ],
   "imageRequirements": {
     "required": [],

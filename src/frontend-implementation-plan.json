@@ -1,36 +1,22 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Lily page back button placement in header",
+  "title": "Lily page header alignment: align pond metadata to content column while keeping back button offset",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Move the existing Reddit-style Back button into the Lily header row, immediately left of the pond avatar, without changing its behavior.",
+      "summary": "Adjust LilyPage header layout so pond avatar/metadata aligns with the main content column while the back button remains offset to the left without overlap.",
       "acceptanceCriteria": [
-        "On `/lily/:id`, the Back control (ArrowLeft icon + “Back” label) appears directly to the left of the pond avatar in the header area.",
-        "The Back control remains keyboard-accessible and clickable, and continues to call the existing `handleBackClick` behavior (history back when possible, otherwise navigate to `/pond/$name`).",
-        "There is no duplicate Back button rendered above the lily content after the change."
+        "On the Lily page, the left edge of the pond avatar metadata block (avatar + metadata text) visually aligns with the left edge of the lily title, description, image block, link block, and the action buttons row (i.e., they share one consistent content column).",
+        "The back button remains positioned to the left of (in front of) the pond avatar metadata block, and is the only element that does not share the main content column’s left alignment.",
+        "The back button remains clickable and does not overlap/interfere with the avatar/metadata or title on common viewport widths (mobile and desktop).",
+        "Changes are scoped to the Lily page only; do not introduce or move any back button UI to other pages (e.g., the Frog profile page)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/LilyPage.tsx",
           "operation": "modify",
-          "description": "Rework the Lily header layout so the existing Back button (ArrowLeft + label) is rendered inside the header row container immediately before the pond Avatar, and remove the current standalone Back button block above the content. Keep the existing `handleBackClick` logic unchanged and preserve button semantics for keyboard accessibility. Ensure no edits are made under `frontend/src/components/ui`."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Keep the Back button placement change scoped to LilyPage only, with no Back button UI added to FrogProfilePage.",
-      "acceptanceCriteria": [
-        "On `/f/:username`, there is no Back button UI introduced by this change.",
-        "The only page affected by the Back button placement/layout adjustment is `frontend/src/pages/LilyPage.tsx`."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/LilyPage.tsx",
-          "operation": "modify",
-          "description": "Confine all Back button placement/layout changes to LilyPage only (no shared layout/components touched) so FrogProfilePage remains unchanged and does not render any Back button UI as a side-effect."
+          "description": "Rework the header wrapper and positioning so the pond avatar + metadata render in the normal document flow at the same left edge as the title/body content, while the back button is removed from the flow and positioned offset to the left (e.g., via a relative header container with an absolutely-positioned back button and overflow-visible on the surrounding wrapper). Ensure the back button has a safe z-index and hit-area, and that spacing/offsets adapt on mobile/desktop so it remains clickable without overlapping the avatar/metadata or the title. Keep changes scoped to this page and avoid altering lily content rendering logic."
         }
       ]
     }

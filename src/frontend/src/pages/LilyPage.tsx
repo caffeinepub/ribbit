@@ -178,42 +178,46 @@ export default function LilyPage() {
           <div className="overflow-hidden mb-4">
             {/* Single column layout - all elements left-aligned */}
             <div className="flex flex-col gap-4 mb-4">
-              {/* Header: Back button, Avatar and metadata */}
-              <div className="flex items-start gap-3">
-                {/* Back button - directly to the left of the pond avatar */}
+              {/* Header: Back button offset, Avatar and metadata aligned with content */}
+              <div className="relative">
+                {/* Back button - positioned absolutely to the left, outside content flow */}
                 <button
                   onClick={handleBackClick}
-                  className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted flex-shrink-0 h-10 w-10"
+                  className="absolute left-0 top-0 -ml-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted flex-shrink-0 h-10 w-10 z-10"
                   aria-label="Back"
+                  style={{ marginLeft: '-3rem' }}
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
 
-                {/* Pond Avatar */}
-                <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
-                  {pond?.profileImage ? (
-                    <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
-                  ) : null}
-                  <AvatarFallback className="text-lg">🐸</AvatarFallback>
-                </Avatar>
+                {/* Pond Avatar and metadata - aligned with content column */}
+                <div className="flex items-start gap-3">
+                  {/* Pond Avatar */}
+                  <Avatar className="h-10 w-10 bg-primary/10 flex-shrink-0">
+                    {pond?.profileImage ? (
+                      <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
+                    ) : null}
+                    <AvatarFallback className="text-lg">🐸</AvatarFallback>
+                  </Avatar>
 
-                {/* Metadata: Two lines */}
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                  {/* Line 1: Pond name (bold) • timestamp */}
-                  <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
-                    <Link 
-                      to="/pond/$name" 
-                      params={{ name: lily.pond }} 
-                      className="hover:text-primary font-bold"
-                    >
-                      pond/{lily.pond}
-                    </Link>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
-                  </div>
-                  {/* Line 2: Username (not bold) */}
-                  <div style={{ fontSize: '0.875rem' }}>
-                    <span className="text-foreground">{lily.username}</span>
+                  {/* Metadata: Two lines */}
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    {/* Line 1: Pond name (bold) • timestamp */}
+                    <div className="flex flex-wrap items-center gap-2" style={{ fontSize: '0.875rem' }}>
+                      <Link 
+                        to="/pond/$name" 
+                        params={{ name: lily.pond }} 
+                        className="hover:text-primary font-bold"
+                      >
+                        pond/{lily.pond}
+                      </Link>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">{formatDistanceToNow(timestamp, { addSuffix: true })}</span>
+                    </div>
+                    {/* Line 2: Username (not bold) */}
+                    <div style={{ fontSize: '0.875rem' }}>
+                      <span className="text-foreground">{lily.username}</span>
+                    </div>
                   </div>
                 </div>
               </div>
