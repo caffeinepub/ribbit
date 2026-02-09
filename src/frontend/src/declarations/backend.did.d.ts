@@ -56,7 +56,6 @@ export interface Ribbit {
   'content' : string,
   'username' : string,
   'timestamp' : bigint,
-  'image' : [] | [ExternalBlob],
   'parentId' : [] | [string],
   'postId' : string,
 }
@@ -128,10 +127,7 @@ export interface _SERVICE {
     ],
     string
   >,
-  'createRibbit' : ActorMethod<
-    [string, [] | [string], string, string, [] | [ExternalBlob]],
-    string
-  >,
+  'createRibbit' : ActorMethod<[string, [] | [string], string, string], string>,
   'deleteLily' : ActorMethod<[string], undefined>,
   'deleteRibbit' : ActorMethod<[string], undefined>,
   'editPondSettings' : ActorMethod<

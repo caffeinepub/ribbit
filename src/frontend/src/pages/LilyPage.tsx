@@ -25,10 +25,8 @@ import { formatNumber } from '@/lib/formatNumber';
 import { shareLily } from '@/lib/shareLily';
 import BookmarkButton from '@/components/BookmarkButton';
 import { isWithinCooldown, recordViewIncrement } from '@/lib/viewCountCooldown';
-import { ViewIncrementResult, ExternalBlob } from '@/backend';
+import { ViewIncrementResult } from '@/backend';
 import LilyImageFrame from '@/components/LilyImageFrame';
-import { compressImageFile } from '@/lib/imageCompression';
-import { toast } from 'sonner';
 
 export default function LilyPage() {
   const { id } = useParams({ strict: false }) as { id: string };
@@ -94,21 +92,8 @@ export default function LilyPage() {
     }
   }, [id]);
 
-  const handleSubmitRibbit = async () => {
+  const handleSubmitRibbit = () => {
     if (!ribbitContent.trim() || !lily) return;
-
-    let imageBlob: ExternalBlob | null = null;
-
-    if (selectedImage) {
-      try {
-        const result = await compressImageFile(selectedImage);
-        imageBlob = ExternalBlob.fromBytes(result.bytes);
-      } catch (error) {
-        console.error('Image compression failed:', error);
-        toast.error('Failed to process image');
-        return;
-      }
-    }
 
     createRibbit(
       {
@@ -116,15 +101,11 @@ export default function LilyPage() {
         parentId: null,
         content: ribbitContent,
         username: getUsername(),
-        image: imageBlob,
       },
       {
         onSuccess: () => {
           setRibbitContent('');
           setSelectedImage(null);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
         },
       }
     );
@@ -163,13 +144,6 @@ export default function LilyPage() {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
       setSelectedImage(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
     }
   };
 
@@ -373,23 +347,6 @@ export default function LilyPage() {
                   {isCreatingRibbit ? 'Posting...' : 'Ribbit'}
                 </Button>
               </div>
-              {/* Image preview */}
-              {selectedImage && (
-                <div className="mt-2 relative inline-block">
-                  <img
-                    src={URL.createObjectURL(selectedImage)}
-                    alt="Preview"
-                    className="max-h-32 rounded-md border"
-                  />
-                  <button
-                    onClick={handleRemoveImage}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Sorting toggle buttons directly below text entry */}

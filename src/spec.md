@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Ribbits so image attachments upload, persist, and display correctly everywhere Ribbits are shown, including the intended blurred backdrop rendering.
+**Goal:** Re-implement the “mini blurred placeholder” loading for Ribbits avatar images only, while preserving the exact Version 214 UI layout and styling.
 
 **Planned changes:**
-- Update ribbit creation flow so the selected image is uploaded from the frontend, persisted with the ribbit in the backend, and returned by ribbit query APIs as an optional image blob field.
-- Update ribbit rendering to consistently show attached images with the same blurred background/backdrop behavior (especially for non-4:3 aspect ratios) on the Lily page thread/list views and anywhere else ribbits with images appear (e.g., profile ribbits/comments list if present).
-- Add a safe backend state upgrade to introduce the new optional ribbit image field without breaking existing stored ribbits (pre-existing ribbits load with no image).
+- Add mini blurred placeholder loading behavior for Ribbits avatar images in the Lily page ribbits list and in the user profile ribbits/comments list.
+- Ensure the avatar transitions from blurred placeholder to final image smoothly (no flicker) and retains existing fallback behavior when an avatar URL is missing/unavailable.
+- Keep the Version 214 layout/styles unchanged (no className/spacing/typography/position changes), including leaving the Lily page sorting toggle exactly where it is (directly below the composer textarea).
 
-**User-visible outcome:** Users can attach an image when posting a ribbit on the Lily page, see it render with the blurred backdrop, and after refreshing the page the image still loads because it was persisted; ribbits without images continue to work as before.
+**User-visible outcome:** Ribbit avatars briefly show a small blurred placeholder while loading, then resolve cleanly to the final avatar without flicker, with no visible UI/layout changes anywhere else.

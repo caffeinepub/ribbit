@@ -1,29 +1,18 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Apply mini blurred placeholder image optimization for Ribbits while preserving Version 214 layout styles exactly (no layout/style changes).",
   "architectural_notes": [
-    "Scope constraint: only address Ribbits image upload functionality and missing blurred background; do not change anything else; do not start coding yet until user approves."
+    "Layout/style must remain identical to Version 214 when re-applying the mini blurred placeholder image optimization."
   ],
-  "known_issues": [
-    "Ribbits image uploads are not working.",
-    "Ribbits image uploads are missing the blurred background effect."
-  ],
+  "known_issues": [],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-end-to-end-support-for-images-attached-to-ribbits-the-frontend-must-upload-the-selected-image-when-creating-a-ribbit-the-backend-must-persist-the-image-blob-with-the-ribbit-and-ribbit-queries-must-return-the-image-so-it-can-be-displayed",
-      "title": "Add end-to-end support for images attached to Ribbits: the frontend must upload the selected image when creating a ribbit, the backend must persist the image blob with the ribbit, and ribbit queries must return the image so it can be displayed.",
+      "id": "feature-implement-the-mini-blurred-placeholder-image-loading-optimization-for-ribbits-avatar-images-and-only-ribbits-while-preserving-the-version-214-ui-layout-styles-exactly-no-tailwind-class-changes-no-spacing-typography-changes-no-element-repositioning-apply-this-to-ribbits-rendered-on-the-lily-page-ribbits-list-and-to-ribbits-rendered-in-the-user-profile-ribbits-comments-list",
+      "title": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-ribbit-images-render-with-the-same-blurred-background-backdrop-behavior-used-for-non-4-3-images-i-e-a-blurred-backdrop-behind-the-image-and-apply-this-consistently-anywhere-ribbits-are-rendered-with-images-thread-view-on-lily-page-and-the-profile-ribbit-comments-list-if-applicable",
-      "title": "Ensure ribbit images render with the same blurred background/backdrop behavior used for non-4:3 images (i.e., a blurred backdrop behind the image), and apply this consistently anywhere ribbits are rendered with images (thread view on Lily page and the profile ribbit/comments list if applicable).",
-      "reqIds": [
-        "REQ-2"
       ],
       "version": 1
     }
@@ -31,20 +20,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix Ribbits image uploads so they work and include the blurred background (no other changes)",
+      "summary": "Redo mini blurred placeholder image optimization for Ribbits without changing any layout styles (keep Version 214 layout identical).",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Perform a safe state upgrade for existing deployed data to support the new optional ribbit image field without breaking existing ribbits.",
-      "reqIds": [
-        "REQ-3"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix Ribbits image uploads (store + display) including blurred background",
+  "projectName": "Ribbits",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

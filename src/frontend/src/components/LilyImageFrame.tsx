@@ -18,11 +18,7 @@ export default function LilyImageFrame({ imageUrl, alt, onClick, loading = 'lazy
     img.src = imageUrl;
   }, [imageUrl]);
 
-  const targetRatio = 4 / 3;
-  const tolerance = 0.05;
-  const shouldShowBlurredBackdrop = 
-    imageAspectRatio !== null && 
-    Math.abs(imageAspectRatio - targetRatio) > tolerance;
+  const shouldShowBlurredBackdrop = imageAspectRatio !== null && imageAspectRatio !== 4/3;
 
   if (shouldShowBlurredBackdrop) {
     // Blurred backdrop mode for non-4:3 images (portrait/landscape)

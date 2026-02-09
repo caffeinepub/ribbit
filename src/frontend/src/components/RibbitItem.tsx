@@ -8,7 +8,6 @@ import { useCreateRibbit, useGetUserAvatarByUsername, useLikeRibbit, useUnlikeRi
 import { Ribbit } from '@/backend';
 import { getUsername } from '@/lib/user';
 import RibbitMiniBlurAvatarImage from './RibbitMiniBlurAvatarImage';
-import LilyImageFrame from './LilyImageFrame';
 
 interface RibbitItemProps {
   ribbit: Ribbit;
@@ -76,94 +75,82 @@ export default function RibbitItem({ ribbit, postId, depth = 0 }: RibbitItemProp
               username={ribbit.username}
               renderMode="avatar"
             />
-          ) : (
-            <AvatarFallback className="text-sm">
-              {ribbit.username.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          )}
+          ) : null}
+          <AvatarFallback className="text-sm">
+            {ribbit.username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1" style={{ fontSize: '0.875rem' }}>
-            <span className="font-medium text-foreground">{ribbit.username}</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm">{ribbit.username}</span>
+            <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(timestamp, { addSuffix: true })}
             </span>
           </div>
 
-          <p className="text-foreground/90 mb-2 whitespace-pre-wrap" style={{ fontSize: '0.9375rem' }}>
+          <p className="text-sm text-foreground/90 mb-2 whitespace-pre-wrap break-words">
             {ribbit.content}
           </p>
 
-          {/* Ribbit image with blurred backdrop */}
-          {ribbit.image && (
-            <div className="mb-2">
-              <LilyImageFrame
-                imageUrl={ribbit.image.getDirectURL()}
-                alt={`Image from ${ribbit.username}`}
-                loading="lazy"
-              />
-            </div>
-          )}
-
-          <div className="flex items-center gap-3 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+          <div className="flex items-center gap-4">
             <button
               onClick={handleLikeClick}
               disabled={isLiking || isUnliking}
-              className={`flex items-center gap-1 hover:text-foreground transition-colors disabled:opacity-50 ${
-                hasLiked ? 'text-accent' : ''
+              className={`flex items-center gap-1.5 text-xs transition-colors ${
+                hasLiked ? 'text-accent' : 'text-muted-foreground hover:text-accent'
               }`}
             >
               <svg
+                xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                className="action-icon"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
                 fill={hasLiked ? 'currentColor' : 'none'}
                 stroke="currentColor"
+                strokeWidth="2"
+                className="action-icon"
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>
 
-            <button
-              onClick={() => setShowReplyForm(!showReplyForm)}
-              className="flex items-center gap-1 hover:text-foreground transition-colors"
-            >
-              <MessageSquare className="action-icon" />
-              <span>Reply</span>
-            </button>
+            {depth < maxDepth && (
+              <button
+                onClick={() => setShowReplyForm(!showReplyForm)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent transition-colors"
+              >
+                <MessageSquare className="action-icon" />
+                <span>Reply</span>
+              </button>
+            )}
           </div>
 
           {showReplyForm && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-2">
               <Textarea
                 placeholder="Write a reply..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                className="mb-2 resize-none"
+                className="resize-none text-sm"
                 rows={2}
               />
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => {
+                    setShowReplyForm(false);
+                    setReplyContent('');
+                  }}
+                  variant="ghost"
+                  size="sm"
+                >
+                  Cancel
+                </Button>
                 <Button
                   onClick={handleSubmitReply}
                   disabled={!replyContent.trim() || isCreatingRibbit}
                   size="sm"
                 >
                   {isCreatingRibbit ? 'Posting...' : 'Reply'}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setShowReplyForm(false);
-                    setReplyContent('');
-                  }}
-                  variant="outline"
-                  size="sm"
-                >
-                  Cancel
                 </Button>
               </div>
             </div>

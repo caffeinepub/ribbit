@@ -2,13 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-end-to-end-support-for-images-attached-to-ribbits-the-frontend-must-upload-the-selected-image-when-creating-a-ribbit-the-backend-must-persist-the-image-blob-with-the-ribbit-and-ribbit-queries-must-return-the-image-so-it-can-be-displayed",
-      "featureTitle": "Add end-to-end support for images attached to Ribbits: the frontend must upload the selected image when creating a ribbit, the backend must persist the image blob with the ribbit, and ribbit queries must return the image so it can be displayed.",
+      "featureId": "feature-implement-the-mini-blurred-placeholder-image-loading-optimization-for-ribbits-avatar-images-and-only-ribbits-while-preserving-the-version-214-ui-layout-styles-exactly-no-tailwind-class-changes-no-spacing-typography-changes-no-element-repositioning-apply-this-to-ribbits-rendered-on-the-lily-page-ribbits-list-and-to-ribbits-rendered-in-the-user-profile-ribbits-comments-list",
+      "featureTitle": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
       "files": [
         "frontend/src/components/ProfileRibbitItem.tsx",
         "frontend/src/components/RibbitItem.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/LilyPage.tsx"
+        "frontend/src/components/RibbitMiniBlurAvatarImage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -21,28 +20,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-ribbit-images-render-with-the-same-blurred-background-backdrop-behavior-used-for-non-4-3-images-i-e-a-blurred-backdrop-behind-the-image-and-apply-this-consistently-anywhere-ribbits-are-rendered-with-images-thread-view-on-lily-page-and-the-profile-ribbit-comments-list-if-applicable",
-      "featureTitle": "Ensure ribbit images render with the same blurred background/backdrop behavior used for non-4:3 images (i.e., a blurred backdrop behind the image), and apply this consistently anywhere ribbits are rendered with images (thread view on Lily page and the profile ribbit/comments list if applicable).",
-      "files": [
-        "frontend/src/components/LilyImageFrame.tsx",
-        "frontend/src/components/ProfileRibbitItem.tsx",
-        "frontend/src/components/RibbitItem.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
       ],
       "confidence": "high"
     }

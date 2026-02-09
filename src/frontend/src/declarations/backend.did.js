@@ -88,7 +88,6 @@ export const Ribbit = IDL.Record({
   'content' : IDL.Text,
   'username' : IDL.Text,
   'timestamp' : IDL.Int,
-  'image' : IDL.Opt(ExternalBlob),
   'parentId' : IDL.Opt(IDL.Text),
   'postId' : IDL.Text,
 });
@@ -149,7 +148,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'createRibbit' : IDL.Func(
-      [IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)],
+      [IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
       [IDL.Text],
       [],
     ),
@@ -385,7 +384,6 @@ export const idlFactory = ({ IDL }) => {
     'content' : IDL.Text,
     'username' : IDL.Text,
     'timestamp' : IDL.Int,
-    'image' : IDL.Opt(ExternalBlob),
     'parentId' : IDL.Opt(IDL.Text),
     'postId' : IDL.Text,
   });
@@ -453,13 +451,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createRibbit' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Opt(IDL.Text),
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(ExternalBlob),
-        ],
+        [IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
         [IDL.Text],
         [],
       ),
