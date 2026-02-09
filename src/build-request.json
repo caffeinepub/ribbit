@@ -1,73 +1,94 @@
 {
   "kind": "build_request",
-  "title": "Adjust LilyPage header metadata layout, use pond avatar, and add border between lily and ribbits",
-  "priority": "normal",
+  "title": "Allow anonymous visitors to create ponds, create lilies, and save avatars by removing #user role gating",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
-      "target": "frontend",
+      "text": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
+      "target": "backend",
       "source": {
         "messageIds": [
+          "msg-5",
           "msg-6"
         ],
         "quotes": [
-          "in the lily page. can you put the pond name in bold to the right of the avatar followed by the separator and then the timestamp and on the next line below add the username (not in bold)."
+          "why cant i create ponds, save custom avatars, or create lilies? it says only users can do it. but the site is supposed to be anonymous and all users should have full access.",
+          "just do it fix it"
         ]
       },
       "acceptanceCriteria": [
-        "On the Lily page, the metadata area to the right of the avatar renders two lines.",
-        "Line 1 displays the pond name in bold, then a \"•\" separator, then the relative timestamp.",
-        "Line 2 displays the lily author's username in non-bold text.",
-        "The existing pond link behavior (navigating to /pond/$name) is preserved for the pond name."
+        "Using the app without Internet Identity login (anonymous principal), a user can successfully create a pond from the Create Pond page and is navigated to the new pond page.",
+        "Using the app without Internet Identity login (anonymous principal), a user can successfully create a lily/post from the Create Lily page and see it appear in feeds.",
+        "Using the app without Internet Identity login (anonymous principal), a user can join and leave a pond without backend authorization traps.",
+        "Using the app without Internet Identity login (anonymous principal), a user can like/unlike a lily and like/unlike a ribbit without backend authorization traps.",
+        "Using the app without Internet Identity login (anonymous principal), a user can create ribbits/replies without backend authorization traps.",
+        "No backend method invoked by these flows throws/traps with a message indicating \"Only users can do it\" for anonymous callers."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
-      "target": "frontend",
+      "text": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
+      "target": "backend",
       "source": {
         "messageIds": [
+          "msg-5",
           "msg-6"
         ],
         "quotes": [
-          "also make the avatar in the same lily page the pond avatar (not the user avatar)"
+          "why cant i create ponds, save custom avatars, or create lilies? it says only users can do it. but the site is supposed to be anonymous and all users should have full access.",
+          "just do it fix it"
         ]
       },
       "acceptanceCriteria": [
-        "When a pond profile image exists, the Lily page avatar renders that image.",
-        "When no pond profile image exists (or pond data is unavailable), the Lily page avatar falls back to the existing fallback UI.",
-        "No user avatar is used in the Lily page header avatar slot."
+        "Opening the User Settings page while anonymous does not crash due to `getCallerUserProfile` trapping; it returns a safe value (e.g., null) and the page renders.",
+        "Saving an avatar on the User Settings page while anonymous completes successfully and the saved avatar is shown on subsequent reloads (as supported by the backend’s current avatar storage approach).",
+        "No backend method used by User Settings traps with \"Unauthorized: Only users can access/save profiles\" for anonymous callers."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
+      "text": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
       "target": "frontend",
       "source": {
         "messageIds": [
+          "msg-5",
           "msg-6"
         ],
         "quotes": [
-          "also separate the lily block and the ribbit block with a border."
+          "but the site is supposed to be anonymous and all users should have full access.",
+          "just do it fix it"
         ]
       },
       "acceptanceCriteria": [
-        "There is a clear horizontal border between the end of the lily content/engagement section and the start of the Ribbits section.",
-        "The border uses existing Tailwind theme tokens/classes (e.g., border-border) and looks consistent in light/dark mode."
+        "While not logged in, the Create Pond and Create Lily entry points remain available and their forms submit without the UI blocking due to role/permission assumptions.",
+        "While not logged in, the User Settings avatar upload flow is available and does not show a role-based restriction message before attempting the save.",
+        "Any error messaging shown for these actions reflects real validation issues (e.g., pond name validation) rather than role/permission restrictions for anonymous users."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files in frontend/src/components/ui (read-only).",
-    "Do not modify frontend immutable hook files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit frontend files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not change ribbit item layout/styling beyond adding the lily-vs-ribbits section divider on LilyPage.",
-    "Do not change backend data models or add new backend endpoints solely for this UI change."
+    "Implementing third-party authentication providers (only Internet Identity is supported).",
+    "Adding external databases or non-Internet-Computer storage systems.",
+    "Introducing real-time features (WebSockets/push/chat)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -67,7 +67,7 @@ export default function LilyPage() {
 
     // Attempt to increment view count
     incrementViewCount(id, {
-      onSuccess: ({ result }) => {
+      onSuccess: (result) => {
         if (result === ViewIncrementResult.success) {
           // Record the successful increment timestamp
           recordViewIncrement(id);
@@ -104,6 +104,7 @@ export default function LilyPage() {
     createRibbit(
       {
         postId: lily.id,
+        parentId: null,
         content: ribbitContent,
         username: getUsername(),
       },
@@ -264,114 +265,149 @@ export default function LilyPage() {
                     href={lily.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                    className="flex items-center gap-2 text-accent hover:underline"
                   >
-                    <ExternalLink className="action-icon" />
-                    {lily.link}
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="break-all">{lily.link}</span>
                   </a>
                 </div>
               )}
+            </div>
 
-              {/* Engagement row */}
-              <div className="flex items-center gap-4 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                <button
-                  onClick={handleLikeClick}
-                  disabled={isLiking || isUnliking}
-                  className={`flex items-center gap-1.5 disabled:opacity-50 hover:text-foreground transition-colors ${
-                    hasLiked ? 'text-primary' : ''
-                  }`}
+            {/* Action buttons row */}
+            <div className="flex items-center gap-4 py-3 border-y border-border">
+              <button
+                onClick={handleLikeClick}
+                disabled={isLiking || isUnliking}
+                className={`flex items-center gap-2 transition-colors ${
+                  hasLiked ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill={hasLiked ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="action-icon"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className={`action-icon transition-all`}
-                    strokeWidth="2"
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <span style={{ fontSize: '0.875rem' }}>{formatNumber(likeCount)}</span>
+              </button>
+
+              <button className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors">
+                <MessageCircle className="action-icon" />
+                <span style={{ fontSize: '0.875rem' }}>{formatNumber(ribbitCount)}</span>
+              </button>
+
+              <button className="flex items-center gap-2 text-muted-foreground">
+                <Eye className="action-icon" />
+                <span style={{ fontSize: '0.875rem' }}>{formatNumber(viewCount)}</span>
+              </button>
+
+              <button
+                onClick={handleShareClick}
+                className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors ml-auto"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="action-icon"
+                >
+                  <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={hasLiked ? 'currentColor' : 'none'}
-                    stroke="currentColor"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                  <span>{formatNumber(likeCount)}</span>
-                </button>
-                <div className="flex items-center gap-1.5">
-                  <MessageCircle className="action-icon" />
-                  <span>{formatNumber(ribbitCount)}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Eye className="action-icon" />
-                  <span>{formatNumber(viewCount)}</span>
-                </div>
-                <button
-                  onClick={handleShareClick}
-                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                >
-                  <Send className="action-icon" />
-                </button>
-                <BookmarkButton lilyId={lily.id} />
-              </div>
+                    d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+                  />
+                </svg>
+                <span style={{ fontSize: '0.875rem' }}>Share</span>
+              </button>
+
+              <BookmarkButton lilyId={lily.id} />
             </div>
           </div>
 
-          {/* Lightbox Modal */}
-          {lightboxOpen && lily.image && (
-            <div
-              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-              onClick={() => setLightboxOpen(false)}
-            >
-              <button
-                className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-                onClick={() => setLightboxOpen(false)}
-              >
-                <X className="h-8 w-8" />
-              </button>
-              <img
-                src={lily.image.getDirectURL()}
-                alt={lily.title}
-                className="max-h-full max-w-full object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
+          {/* Ribbits Section */}
+          <div className="mt-6">
+            <h2 className="text-xl font-bold mb-4">Ribbits</h2>
 
-          {/* Border divider between lily and ribbits */}
-          <div className="border-t border-border my-6"></div>
-
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-4">Ribbits ({formatNumber(ribbitCount)})</h2>
-            <div className="p-4 border border-border lg:rounded-lg">
+            {/* Ribbit creation form */}
+            <div className="mb-6 p-4 border border-border rounded-lg bg-card">
               <Textarea
-                placeholder="Share your thoughts..."
+                placeholder="Write a ribbit..."
                 value={ribbitContent}
                 onChange={(e) => setRibbitContent(e.target.value)}
-                className="mb-3 min-h-[100px]"
+                className="mb-3 resize-none"
+                rows={3}
+                style={{ fontSize: '1rem' }}
               />
-              <Button
-                onClick={handleSubmitRibbit}
-                disabled={!ribbitContent.trim() || isCreatingRibbit}
-              >
-                {isCreatingRibbit ? 'Posting...' : 'Post Ribbit'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {ribbitsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-24 w-full" />
-              ))
-            ) : ribbits && ribbits.length > 0 ? (
-              ribbits.map((ribbit) => (
-                <RibbitItem key={ribbit.id} ribbit={ribbit} postId={lily.id} />
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p style={{ fontSize: '1rem' }}>No ribbits yet. Be the first to share your thoughts!</p>
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmitRibbit}
+                  disabled={!ribbitContent.trim() || isCreatingRibbit}
+                  size="sm"
+                  className="rounded-full"
+                >
+                  {isCreatingRibbit ? (
+                    <>
+                      <span className="mr-2">Posting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Post Ribbit
+                    </>
+                  )}
+                </Button>
               </div>
+            </div>
+
+            {/* Ribbits list */}
+            {ribbitsLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ) : ribbits && ribbits.length > 0 ? (
+              <div className="space-y-4">
+                {ribbits.map((ribbit) => (
+                  <RibbitItem key={ribbit.id} ribbit={ribbit} postId={lily.id} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8" style={{ fontSize: '1rem' }}>
+                No ribbits yet. Be the first to ribbit!
+              </p>
             )}
           </div>
         </div>
       </div>
+
+      {/* Lightbox for full-size image */}
+      {lightboxOpen && lily.image && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img
+            src={lily.image.getDirectURL()}
+            alt={lily.title}
+            className="max-h-full max-w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

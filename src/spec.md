@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Refine the Lily page header metadata layout, show the pond avatar, and visually separate the lily content from the ribbits section.
+**Goal:** Make the app fully usable in an anonymous-first mode by removing backend and frontend “#user role” gating so anonymous visitors can create and interact with content and save avatars.
 
 **Planned changes:**
-- Update the Lily page header metadata layout so the avatar is on the left and the text to the right renders as two lines: (1) pond name in bold, followed by a “•” separator and the relative timestamp; (2) username in regular (non-bold) text, while preserving the pond name link to `/pond/$name`.
-- Change the Lily page header avatar to use the pond’s profile image (pond avatar) instead of the user avatar, with an existing-style fallback (e.g., 🐸) when no pond image is available.
-- Add a horizontal border divider between the lily content/engagement block and the Ribbits section using existing Tailwind theme border classes so it looks consistent in light/dark mode.
+- Update backend authorization to allow anonymous callers to perform core actions: create ponds, create lilies/posts, join/leave ponds, like/unlike lilies and ribbits, and create ribbits/replies without “Only users can …” traps.
+- Adjust backend profile/avatar endpoints so `getCallerUserProfile` and `saveCallerUserProfile` work safely for anonymous callers (or return safe values) to support loading and saving avatars in User Settings.
+- Remove/relax any frontend UI checks that block anonymous visitors from starting pond creation, lily creation, or avatar saving based on user role assumptions, and ensure error messages reflect real validation issues rather than permission gating.
 
-**User-visible outcome:** On the Lily page, users see the pond avatar with cleaner two-line metadata (pond name + timestamp on the first line, username on the second), and a clear border separating the lily content from the ribbits section.
+**User-visible outcome:** Visitors who are not logged in can create ponds and lilies, join/leave ponds, like/unlike, post ribbits/replies, and save an avatar in User Settings without authorization errors.

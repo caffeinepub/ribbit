@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Home, Compass, PlusCircle, Settings, Clock, Bookmark, Hash } from 'lucide-react';
-import { useGetAllRecentActivities, useGetLily } from '@/hooks/useQueries';
+import { useGetRecentActivities, useGetLily } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { useMatchRoute } from '@tanstack/react-router';
@@ -29,7 +29,7 @@ function ActivityItem({ activity }: { activity: any }) {
 }
 
 export default function LeftSidebar({ isMobileDrawer = false }: LeftSidebarProps) {
-  const { data: recentActivities, isLoading } = useGetAllRecentActivities(5);
+  const { data: recentActivities, isLoading } = useGetRecentActivities(5);
   const matchRoute = useMatchRoute();
 
   const isHomeActive = !!matchRoute({ to: '/', fuzzy: false });

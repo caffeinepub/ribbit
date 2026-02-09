@@ -627,30 +627,28 @@ export function useCreateRibbit() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      postId, 
-      parentId, 
-      content, 
-      username 
-    }: { 
-      postId: string; 
-      parentId?: string | null; 
-      content: string; 
+    mutationFn: async ({
+      postId,
+      parentId,
+      content,
+      username,
+    }: {
+      postId: string;
+      parentId: string | null;
+      content: string;
       username: string;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      return actor.createRibbit(postId, parentId || null, content, username);
+      return actor.createRibbit(postId, parentId, content, username);
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ['ribbitCount', variables.postId] });
+    onSuccess: (_, { postId }) => {
+      queryClient.invalidateQueries({ queryKey: ['ribbits', postId] });
+      queryClient.invalidateQueries({ queryKey: ['ribbitCount', postId] });
       queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
-      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
     },
   });
 }
 
-// View Count Increment Mutation
 export function useIncrementLilyViewCount() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -658,34 +656,30 @@ export function useIncrementLilyViewCount() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not initialized');
-      const result = await actor.incrementLilyViewCount(postId);
-      return { postId, result };
+      return actor.incrementLilyViewCount(postId);
     },
-    onSuccess: ({ postId, result }) => {
-      // Only invalidate queries if the increment was successful
-      if (result === ViewIncrementResult.success) {
-        queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
-        queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      }
-      // Return result for caller to handle
-      return result;
-    },
-    // Don't throw on error - let the page continue loading
-    onError: (error) => {
-      console.error('Failed to increment view count:', error);
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
     },
   });
 }
 
-// User Profile
+// User Profile Functions - Anonymous-safe
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
   const query = useQuery<UserProfile | null>({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
+      if (!actor) return null;
+      try {
+        return await actor.getCallerUserProfile();
+      } catch (error) {
+        // Silently handle errors for anonymous users
+        console.log('Profile fetch error (expected for anonymous):', error);
+        return null;
+      }
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -706,30 +700,38 @@ export function useSaveCallerUserProfile() {
     mutationFn: async (profile: UserProfile) => {
       if (!actor) throw new Error('Actor not initialized');
       await actor.saveCallerUserProfile(profile);
-      return profile;
     },
-    onSuccess: (profile) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      // Invalidate avatar cache for this username
-      queryClient.invalidateQueries({ queryKey: ['userAvatar', profile.name] });
+      queryClient.invalidateQueries({ queryKey: ['userAvatar'] });
     },
   });
 }
 
-// Username Availability
+export function useGetUserAvatarByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<ExternalBlob | null>({
+    queryKey: ['userAvatar', username],
+    queryFn: async () => {
+      if (!actor || !username) return null;
+      return actor.getUserAvatarByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+// Username Registry Functions - Anonymous-safe
 export function useCheckUsernameAvailability(username: string, currentUsername: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<boolean>({
     queryKey: ['usernameAvailable', username],
     queryFn: async () => {
-      if (!actor) return true;
-      // If checking current username, it's always available
-      if (username === currentUsername) return true;
+      if (!actor || !username || username === currentUsername) return true;
       return actor.isUsernameAvailable(username);
     },
     enabled: !!actor && !isFetching && !!username && username !== currentUsername,
-    staleTime: 0, // Always check freshness for username availability
   });
 }
 
@@ -743,34 +745,36 @@ export function useRegisterUsername() {
       await actor.registerUsername(username);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
     },
   });
 }
 
 export function useReleaseUsername() {
   const { actor } = useActor();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
       if (!actor) throw new Error('Actor not initialized');
       await actor.releaseUsername(username);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
+    },
   });
 }
 
-// Username Change Cooldown
 export function useCanChangeUsername(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<boolean>({
     queryKey: ['canChangeUsername', username],
     queryFn: async () => {
-      if (!actor) return true;
+      if (!actor || !username) return true;
       return actor.canChangeUsername(username);
     },
     enabled: !!actor && !isFetching && !!username,
-    staleTime: 0, // Always check freshness for cooldown status
   });
 }
 
@@ -785,22 +789,8 @@ export function useRecordUsernameChange() {
   });
 }
 
-// Username-based Avatar Functions
-export function useGetUserAvatarByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<ExternalBlob | null>({
-    queryKey: ['userAvatar', username],
-    queryFn: async () => {
-      if (!actor || !username) return null;
-      return actor.getUserAvatarByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-// Recent Activity Functions
-export function useGetAllRecentActivities(limit: number = 10) {
+// Activity Tracking
+export function useGetRecentActivities(limit: number = 20) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Activity[]>({
@@ -810,48 +800,18 @@ export function useGetAllRecentActivities(limit: number = 10) {
       return actor.getAllRecentActivities(BigInt(limit));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30 * 1000, // Cache for 30 seconds
   });
 }
 
-export function useGetRecentPosts(limit: number = 10) {
+export function useGetRecentRibbitViews(username: string, limit: number = 30) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Activity[]>({
-    queryKey: ['recentPosts', limit],
+    queryKey: ['recentRibbitViews', username, limit],
     queryFn: async () => {
-      if (!actor) return [];
-      return actor.getRecentPosts(BigInt(limit));
+      if (!actor || !username) return [];
+      return actor.getRecentRibbitViews(username, BigInt(limit));
     },
-    enabled: !!actor && !isFetching,
-    staleTime: 30 * 1000, // Cache for 30 seconds
-  });
-}
-
-export function useGetRecentRibbits(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Activity[]>({
-    queryKey: ['recentRibbits', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getRecentRibbits(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 30 * 1000, // Cache for 30 seconds
-  });
-}
-
-export function useGetRecentlyLikedPosts(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Activity[]>({
-    queryKey: ['recentlyLikedPosts', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getRecentlyLikedPosts(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 30 * 1000, // Cache for 30 seconds
+    enabled: !!actor && !isFetching && !!username,
   });
 }

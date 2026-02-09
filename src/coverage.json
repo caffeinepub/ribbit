@@ -1,57 +1,57 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T23:55:33.990Z",
+  "generatedAt": "2026-02-09T00:14:04.739Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 3,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
-        ]
+        "summary": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
-        ]
+        "summary": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
+        "summary": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/UserSettingsPage.tsx",
+          "frontend/src/pages/CreatePondPage.tsx",
+          "frontend/src/pages/CreateLilyPage.tsx",
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LilyPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/UserSettingsPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/components/LeftSidebar.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

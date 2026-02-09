@@ -2,50 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lily-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-avatar-is-on-the-left-and-the-text-to-its-right-is-two-lines-line-1-shows-the-pond-name-in-bold-followed-by-a-separator-dot-and-the-timestamp-line-2-shows-the-username-in-regular-not-bold-text",
-      "featureTitle": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
+      "featureId": "feature-frontend-remove-or-relax-any-ui-side-gating-that-blocks-anonymous-visitors-from-initiating-pond-creation-lily-creation-or-avatar-saving-based-on-a-user-role-check-so-the-ui-matches-the-new-backend-behavior-anonymous-users-have-full-access",
+      "featureTitle": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
       "files": [
-        "frontend/src/pages/LilyPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-change-the-avatar-shown-on-the-lily-page-frontend-src-pages-lilypage-tsx-to-display-the-pond-avatar-pond-profile-image-instead-of-the-user-avatar-with-a-fallback-e-g-when-the-pond-has-no-profile-image",
-      "featureTitle": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
-      "files": [
-        "frontend/src/pages/LilyPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-visible-border-to-separate-the-lily-content-block-from-the-ribbits-block-on-the-lily-page-frontend-src-pages-lilypage-tsx",
-      "featureTitle": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
-      "files": [
-        "frontend/src/pages/LilyPage.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/UserSettingsPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",

@@ -1,53 +1,41 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "LilyPage header metadata layout + pond avatar + lily/ribbits divider",
+  "title": "Remove frontend role gating so anonymous visitors can create ponds, create lilies, and save avatars",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Rework LilyPage header metadata so avatar is left and the text to the right is two lines (pond name • timestamp, then username).",
-      "acceptanceCriteria": [
-        "On the Lily page, the metadata area to the right of the avatar renders two lines.",
-        "Line 1 displays the pond name in bold, then a \"•\" separator, then the relative timestamp.",
-        "Line 2 displays the lily author's username in non-bold text.",
-        "The existing pond link behavior (navigating to /pond/$name) is preserved for the pond name."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/LilyPage.tsx",
-          "operation": "modify",
-          "description": "Update the header section to a horizontal layout: avatar on the left, and a right-side text block with two lines. Keep the pond name as a Link to /pond/$name, render it in bold, followed by a \"•\" separator and the existing relative timestamp on line 1; render the username (non-bold) on line 2."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Show the pond profile image in the LilyPage avatar slot (with 🐸 fallback when missing).",
-      "acceptanceCriteria": [
-        "When a pond profile image exists, the Lily page avatar renders that image.",
-        "When no pond profile image exists (or pond data is unavailable), the Lily page avatar falls back to the existing fallback UI.",
-        "No user avatar is used in the Lily page header avatar slot."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/LilyPage.tsx",
-          "operation": "modify",
-          "description": "Fetch pond data for the lily's pond (e.g., via existing query hooks) and render the pond profile image in the header Avatar using the blob-storage ExternalBlob capability (use getDirectURL() to obtain an image URL). Keep 🐸 as the AvatarFallback when pond/profileImage is unavailable. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
       "id": "REQ-3",
-      "summary": "Add a horizontal border divider between the lily content/engagement section and the Ribbits section on LilyPage.",
+      "summary": "Remove/relax any UI-side “user role” gating so anonymous visitors can access pond creation, lily creation, and avatar saving flows.",
       "acceptanceCriteria": [
-        "There is a clear horizontal border between the end of the lily content/engagement section and the start of the Ribbits section.",
-        "The border uses existing Tailwind theme tokens/classes (e.g., border-border) and looks consistent in light/dark mode."
+        "While not logged in, the Create Pond and Create Lily entry points remain available and their forms submit without the UI blocking due to role/permission assumptions.",
+        "While not logged in, the User Settings avatar upload flow is available and does not show a role-based restriction message before attempting the save.",
+        "Any error messaging shown for these actions reflects real validation issues (e.g., pond name validation) rather than role/permission restrictions for anonymous users."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LilyPage.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Insert a section divider element between the lily block (ending after the engagement row) and the Ribbits block, using Tailwind border tokens/classes such as border-t and border-border to ensure consistent theming in light/dark mode."
+          "description": "Adjust any role/profile-related React Query hooks to be anonymous-safe (no UI-side role gating; avoid surfacing “Only users can …” style authorization messages as a precondition). Where appropriate, catch authorization-style failures and return safe UI values (e.g., null/empty) so anonymous users can proceed and pages render. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/UserSettingsPage.tsx",
+          "operation": "modify",
+          "description": "Ensure avatar selection and saving are always available for anonymous visitors: remove any role-based restriction messaging/disablement, and rely on actual validation (file present/type/size) plus mutation outcomes. Keep avatar upload using the blob-storage ExternalBlob flow (getDirectURL for display; fromBytes/withUploadProgress for upload) and ensure errors shown are not role/permission-based. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CreatePondPage.tsx",
+          "operation": "modify",
+          "description": "Audit and remove any UI-side checks that prevent anonymous users from submitting pond creation (e.g., role checks, login-required guards). If any authorization-related errors are currently surfaced, update messaging to be generic and validation-focused rather than role/permission-focused. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CreateLilyPage.tsx",
+          "operation": "modify",
+          "description": "Audit and remove any UI-side checks that prevent anonymous users from submitting lily creation (e.g., role checks, login-required guards). Ensure any displayed errors are validation-related (required fields, tag validation) rather than role/permission assumptions. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Confirm Create entry points (Start a Pond, Create Lily) remain visible/usable for anonymous visitors and are not conditionally hidden/disabled due to user role checks; remove any such gating if present. Verify the component's usage instructions before implementing."
         }
       ]
     }

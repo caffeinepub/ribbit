@@ -2,29 +2,17 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "architectural_notes": [
+    "Authorization currently gates core actions (create ponds/lilies, save avatars, etc.) behind a #user role; anonymous principals are not treated as users, conflicting with the intended fully-anonymous access model."
+  ],
+  "known_issues": [
+    "Anonymous visitors cannot create ponds/lilies or save custom avatars due to backend permission checks requiring a #user role; site is intended to allow full access anonymously."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-lily-page-header-layout-frontend-src-pages-lilypage-tsx-so-the-avatar-is-on-the-left-and-the-text-to-its-right-is-two-lines-line-1-shows-the-pond-name-in-bold-followed-by-a-separator-dot-and-the-timestamp-line-2-shows-the-username-in-regular-not-bold-text",
-      "title": "Update the Lily page header layout (frontend/src/pages/LilyPage.tsx) so the avatar is on the left and the text to its right is two lines: line 1 shows the pond name in bold, followed by a separator dot and the timestamp; line 2 shows the username in regular (not bold) text.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-change-the-avatar-shown-on-the-lily-page-frontend-src-pages-lilypage-tsx-to-display-the-pond-avatar-pond-profile-image-instead-of-the-user-avatar-with-a-fallback-e-g-when-the-pond-has-no-profile-image",
-      "title": "Change the avatar shown on the Lily page (frontend/src/pages/LilyPage.tsx) to display the pond avatar (pond profile image) instead of the user avatar, with a fallback (e.g., 🐸) when the pond has no profile image.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-visible-border-to-separate-the-lily-content-block-from-the-ribbits-block-on-the-lily-page-frontend-src-pages-lilypage-tsx",
-      "title": "Add a visible border to separate the lily content block from the ribbits block on the Lily page (frontend/src/pages/LilyPage.tsx).",
+      "id": "feature-frontend-remove-or-relax-any-ui-side-gating-that-blocks-anonymous-visitors-from-initiating-pond-creation-lily-creation-or-avatar-saving-based-on-a-user-role-check-so-the-ui-matches-the-new-backend-behavior-anonymous-users-have-full-access",
+      "title": "Frontend: remove or relax any UI-side gating that blocks anonymous visitors from initiating pond creation, lily creation, or avatar saving based on a “user role” check, so the UI matches the new backend behavior (anonymous users have full access).",
       "reqIds": [
         "REQ-3"
       ],
@@ -34,24 +22,22 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Lily page: update header layout to show pond name (bold) to the right of avatar, followed by separator and timestamp; show username on next line (not bold)",
-      "reqIds": [],
+      "summary": "Update backend authorization so anonymous visitors (Principal.isAnonymous(caller) == true) are allowed to perform all actions required for the anonymous-first product model, specifically including: creating ponds, creating lilies/posts, joining/leaving ponds, liking/unliking, creating ribbits/replies, and saving user settings/avatars—without trapping with errors like \"Unauthorized: Only users can ...\".",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Lily page: add a border to visually separate the lily block and the ribbit block",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Lily page: use the pond avatar (not the user avatar) for the avatar shown",
-      "reqIds": [],
+      "summary": "Adjust backend profile and avatar endpoints to support anonymous usage without trapping. In particular, ensure `getCallerUserProfile` and `saveCallerUserProfile` work for anonymous callers (or return safe results) so that the User Settings page can load and save an avatar for an anonymous visitor.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Adjust LilyPage header metadata layout, use pond avatar, and add border between lily and ribbits",
+  "projectName": "Allow anonymous visitors to create ponds, create lilies, and save avatars by removing #user role gating",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
