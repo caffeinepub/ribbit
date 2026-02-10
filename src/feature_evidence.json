@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-compact-join-control-on-each-pond-card-in-the-all-ponds-page-grid-that-allows-the-user-to-join-the-pond-directly-from-the-card-without-navigating-to-the-pond-page",
-      "featureTitle": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
+      "featureId": "feature-update-the-all-ponds-page-pond-cards-to-display-each-pond-s-rank-on-the-card",
+      "featureTitle": "Update the All Ponds page pond cards to display each pond’s rank on the card.",
       "files": [
-        "frontend/src/components/PondCardJoinControl.tsx",
+        "frontend/src/lib/pondRank.ts",
         "frontend/src/pages/AllPondsPage.tsx"
       ],
       "components": [
@@ -19,27 +19,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-all-ponds-page-membership-indicator-stays-consistent-with-the-join-action-by-refreshing-the-joined-ponds-query-state-after-a-join-from-a-pond-card",
-      "featureTitle": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
-      "files": [
-        "frontend/src/components/PondCardJoinControl.tsx",
-        "frontend/src/pages/AllPondsPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
       ],
       "confidence": "high"
     }

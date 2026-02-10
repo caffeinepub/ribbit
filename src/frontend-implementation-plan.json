@@ -1,48 +1,27 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Join button to pond cards on All Ponds page",
+  "title": "Add deterministic pond rank indicator to All Ponds cards",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add an in-card compact Join control for each pond card on the All Ponds grid that triggers the existing join flow without navigating.",
+      "summary": "Compute deterministic ranks from the rendered ponds list and display each pond’s rank on its /ponds card without overlapping the Join/Joined control.",
       "acceptanceCriteria": [
-        "Each pond card in frontend/src/pages/AllPondsPage.tsx renders a Join button when the user is not a member.",
-        "Clicking the Join button triggers the existing join flow via the existing React Query mutation (useJoinPond) and does not trigger the card Link navigation (e.g., click is stopped/prevented).",
-        "While the join mutation is pending, the Join button is disabled and shows a loading label (e.g., \"Joining...\").",
-        "On successful join, the card reflects membership status (button switches to a non-interactive \"Joined\" state or a disabled Joined button, consistent with existing UI patterns).",
-        "On join failure, an error toast is shown using the existing toast system (sonner), and the UI remains in the not-joined state."
+        "On /ponds (All Ponds page), each pond card shows a visible rank indicator (e.g., “#1”, “#2”, …).",
+        "Ranks are computed deterministically from the same list being rendered: sort ponds by lilyCount (descending), then memberCount (descending), then name (ascending), and assign ranks starting at 1.",
+        "The Join/Joined control remains in the top-right of the card and is not visually overlapped by the rank indicator.",
+        "No backend API changes are required to render rank (rank is derived client-side from the ponds list)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/PondCardJoinControl.tsx",
+          "path": "frontend/src/lib/pondRank.ts",
           "operation": "create",
-          "description": "Create a small, reusable pond-card join control that uses the existing useJoinPond mutation and sonner toast to handle join, pending/disabled states, success \"Joined\" state, and error messaging; ensure the control prevents/stops click events so it does not trigger the parent card navigation."
+          "description": "Add a small utility to deterministically sort ponds by lilyCount (desc), then memberCount (desc), then name (asc), and return a stable rank mapping (pond name -> rank starting at 1) derived solely from the provided list."
         },
         {
           "path": "frontend/src/pages/AllPondsPage.tsx",
           "operation": "modify",
-          "description": "Render the new compact join control on each pond card when the user is not a member, and show a non-interactive \"Joined\" state when they are; ensure the control is placed within the card UI while the card remains wrapped by the existing Link for navigation."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Keep pond membership indicators in sync after joining from a pond card by refreshing joined-ponds query state.",
-      "acceptanceCriteria": [
-        "After joining from a pond card, the joined status displayed on that same card updates without a full page refresh.",
-        "The All Ponds page continues to correctly show membership status for all ponds based on the joined ponds list query (useGetJoinedPonds)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/PondCardJoinControl.tsx",
-          "operation": "modify",
-          "description": "After a successful join, update/refresh React Query cache so the joined ponds list state reflects the new membership (leveraging the existing invalidation in useJoinPond and/or explicitly updating the ['joinedPonds'] query cache), ensuring the card’s joined indicator updates immediately without a full page reload."
-        },
-        {
-          "path": "frontend/src/pages/AllPondsPage.tsx",
-          "operation": "modify",
-          "description": "Ensure membership rendering stays derived from the joined ponds list query (useGetJoinedPonds) so that post-join cache refresh causes the correct joined state to display across the grid."
+          "description": "Update the All Ponds grid rendering to (1) derive ranks client-side from the same ponds list being rendered using the deterministic sort rules, and (2) render a visible rank indicator (e.g., “#1”) on each pond card (e.g., absolute top-left with appropriate padding/z-index) while preserving the Join/Joined control in the existing top-right position and ensuring the two UI elements do not overlap."
         }
       ]
     }

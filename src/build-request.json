@@ -1,57 +1,36 @@
 {
   "kind": "build_request",
-  "title": "Add Join button to pond cards on All Ponds page",
+  "title": "Add pond rank to All Ponds cards",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
+      "text": "Update the All Ponds page pond cards to display each pond’s rank on the card.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-3"
         ],
         "quotes": [
-          "i was thinking about adding a join button for the pond cards in the all ponds page.",
-          "ok do it"
+          "ok do the rank now"
         ]
       },
       "acceptanceCriteria": [
-        "Each pond card in frontend/src/pages/AllPondsPage.tsx renders a Join button when the user is not a member.",
-        "Clicking the Join button triggers the existing join flow via the existing React Query mutation (useJoinPond) and does not trigger the card Link navigation (e.g., click is stopped/prevented).",
-        "While the join mutation is pending, the Join button is disabled and shows a loading label (e.g., \"Joining...\").",
-        "On successful join, the card reflects membership status (button switches to a non-interactive \"Joined\" state or a disabled Joined button, consistent with existing UI patterns).",
-        "On join failure, an error toast is shown using the existing toast system (sonner), and the UI remains in the not-joined state."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1",
-          "msg-2"
-        ],
-        "quotes": [
-          "add a join button for the pond cards in the all ponds page",
-          "ok do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After joining from a pond card, the joined status displayed on that same card updates without a full page refresh.",
-        "The All Ponds page continues to correctly show membership status for all ponds based on the joined ponds list query (useGetJoinedPonds)."
+        "On /ponds (All Ponds page), each pond card shows a visible rank indicator (e.g., “#1”, “#2”, …).",
+        "Ranks are computed deterministically from the same list being rendered: sort ponds by lilyCount (descending), then memberCount (descending), then name (ascending), and assign ranks starting at 1.",
+        "The Join/Joined control remains in the top-right of the card and is not visually overlapped by the rank indicator.",
+        "No backend API changes are required to render rank (rank is derived client-side from the ponds list)."
       ]
     }
   ],
   "constraints": [
-    "Frontend files listed as immutable in SYSTEM_CONTEXT must not be modified (e.g., frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/main.tsx, and anything under frontend/src/components/ui).",
-    "Do not introduce new backend services or external databases; use the existing backend joinPond API through the existing actor and React Query hooks."
+    "Do not edit files under frontend/src/components/ui (shadcn components are read-only).",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional canisters/services."
   ],
   "nonGoals": [
-    "Do not change the backend join/leave semantics or add new backend endpoints for this feature.",
-    "Do not add a Leave button to pond cards on the All Ponds page unless required for the Joined toggle state; the scope is joining from cards and showing Joined state."
+    "Do not add new sorting/filtering controls to the All Ponds page beyond what is needed to compute and display rank.",
+    "Do not change the existing lily count and member count text content or ordering, except as required for layout to accommodate the rank indicator."
   ],
   "imageRequirements": {
     "required": [],

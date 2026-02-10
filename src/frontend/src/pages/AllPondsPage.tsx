@@ -3,10 +3,14 @@ import { Button } from '@/components/ui/button';
 import { useGetAllPonds, useGetJoinedPonds } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import PondCardJoinControl from '@/components/PondCardJoinControl';
+import { computePondRanks } from '@/lib/pondRank';
 
 export default function AllPondsPage() {
   const { data: ponds, isLoading } = useGetAllPonds();
   const { data: joinedPonds, isLoading: isLoadingJoined } = useGetJoinedPonds();
+
+  // Compute ranks from the ponds list
+  const rankMap = ponds ? computePondRanks(ponds) : new Map<string, number>();
 
   return (
     <div className="lg:container py-8">
@@ -36,11 +40,26 @@ export default function AllPondsPage() {
           ) : (
             ponds?.map((pond) => {
               const isMember = joinedPonds?.includes(pond.name) || false;
+              const rank = rankMap.get(pond.name);
               
               return (
                 <Link key={pond.name} to="/pond/$name" params={{ name: pond.name }}>
-                  <div className="h-full p-4 border border-border rounded-lg transition-shadow hover:shadow-lg">
-                    <div className="pb-3">
+                  <div className="relative h-full p-4 border border-border rounded-lg transition-shadow hover:shadow-lg">
+                    {/* Rank indicator - top left */}
+                    {rank !== undefined && (
+                      <div className="absolute top-3 left-3 z-10 bg-primary/10 text-primary font-bold px-2 py-1 rounded-md text-sm">
+                        #{rank}
+                      </div>
+                    )}
+                    
+                    {/* Join control - top right */}
+                    {!isLoadingJoined && (
+                      <div className="absolute top-3 right-3 z-10">
+                        <PondCardJoinControl pondName={pond.name} isMember={isMember} />
+                      </div>
+                    )}
+                    
+                    <div className="pb-3 pr-20 pl-12">
                       <div className="flex items-center gap-3 mb-2">
                         {pond.profileImage && (
                           <img
@@ -53,16 +72,15 @@ export default function AllPondsPage() {
                           <h3 className="text-xl font-bold line-clamp-2">{pond.name}</h3>
                         </div>
                       </div>
-                      {!isLoadingJoined && (
-                        <PondCardJoinControl pondName={pond.name} isMember={isMember} />
-                      )}
                     </div>
                     <div>
                       <p className="text-muted-foreground line-clamp-3 mb-3">
                         {pond.description}
                       </p>
-                      <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
-                        <span>{Number(pond.memberCount)} members</span>
+                      <div className="flex items-center gap-3 text-muted-foreground" style={{ fontSize: '0.875rem' }}>
+                        <span>{Number(pond.lilyCount)} {Number(pond.lilyCount) === 1 ? 'lily' : 'lilies'}</span>
+                        <span>•</span>
+                        <span>{Number(pond.memberCount)} {Number(pond.memberCount) === 1 ? 'member' : 'members'}</span>
                       </div>
                     </div>
                   </div>

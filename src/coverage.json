@@ -1,38 +1,25 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:44:39.758Z",
+  "generatedAt": "2026-02-10T22:31:27.185Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
+        "summary": "Update the All Ponds page pond cards to display each pond’s rank on the card.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/PondCardJoinControl.tsx",
+          "frontend/src/lib/pondRank.ts",
           "frontend/src/pages/AllPondsPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/PondCardJoinControl.tsx",
-          "frontend/src/pages/AllPondsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/PondCardJoinControl.tsx",
-          "frontend/src/pages/AllPondsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/PondCardJoinControl.tsx",
+          "frontend/src/lib/pondRank.ts",
           "frontend/src/pages/AllPondsPage.tsx"
         ]
       }
@@ -43,7 +30,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/PondCardJoinControl.tsx",
+    "frontend/src/lib/pondRank.ts",
     "frontend/src/pages/AllPondsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

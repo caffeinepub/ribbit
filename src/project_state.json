@@ -7,18 +7,10 @@
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-add-a-compact-join-control-on-each-pond-card-in-the-all-ponds-page-grid-that-allows-the-user-to-join-the-pond-directly-from-the-card-without-navigating-to-the-pond-page",
-      "title": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
+      "id": "feature-update-the-all-ponds-page-pond-cards-to-display-each-pond-s-rank-on-the-card",
+      "title": "Update the All Ponds page pond cards to display each pond’s rank on the card.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-all-ponds-page-membership-indicator-stays-consistent-with-the-join-action-by-refreshing-the-joined-ponds-query-state-after-a-join-from-a-pond-card",
-      "title": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
-      "reqIds": [
-        "REQ-2"
       ],
       "version": 1
     }
@@ -26,12 +18,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add a Join button on each pond card in the All Ponds page that toggles to Joined after joining",
+      "summary": "Add rank to the cards (in addition to lily count)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Add Join button to pond cards on All Ponds page",
+  "projectName": "Add pond rank to All Ponds cards",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -44,13 +44,13 @@ export default function PondCardJoinControl({ pondName, isMember }: PondCardJoin
 
   return (
     <Button
-      variant="default"
+      variant="secondary"
       size="sm"
       disabled={joinPondMutation.isPending}
       onClick={handleJoin}
       className="rounded-full"
     >
-      {joinPondMutation.isPending ? 'Joining...' : 'Join'}
+      {joinPondMutation.isPending ? 'Joining…' : 'Join'}
     </Button>
   );
 }
