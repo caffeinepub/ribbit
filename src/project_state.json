@@ -1,18 +1,30 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Project is now focused on restoring/creating the missing frontend so core UI features (notably avatar uploads and image upload behavior) can function.",
+  "architectural_notes": [
+    "Backend expects avatar blobs stored in UserProfile.avatar via saveCallerUserProfile (usernameAvatars map is obsolete).",
+    "Current build failures stem from missing/renamed frontend directory structure (e.g., frontend/src not found), so frontend features cannot be implemented until frontend exists."
+  ],
   "known_issues": [
-    "Recent deployment caused a desktop layout regression requiring revert (inset/layout spacing issue)."
+    "Users cannot upload avatars because the frontend/avatar upload implementation is missing (and possibly the entire frontend directory is absent).",
+    "Image upload/compression pipeline may be blocking uploads; GIFs should bypass compression."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-lilycard-inset-hover-background-layer-so-that-on-desktop-tailwind-lg-breakpoint-and-up-it-has-no-horizontal-inset-i-e-the-hover-background-reaches-the-left-and-right-edges-of-the-card-while-preserving-the-current-vertical-inset-rounded-corners-opacity-transition-and-non-interactive-behavior-do-not-change-any-other-layout-or-spacing",
-      "title": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
+      "id": "feature-ensure-the-frontend-react-application-is-present-and-builds-runs-successfully-using-the-existing-entry-points-frontend-index-html-loading-src-main-tsx-and-frontend-src-main-tsx-rendering-frontend-src-app-tsx-fix-any-missing-imports-broken-routes-or-placeholder-empty-components-that-prevent-the-frontend-from-compiling",
+      "title": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-a-working-user-avatar-upload-flow-in-the-frontend-user-settings-page-allow-selecting-an-image-file-generate-a-preview-compress-images-client-side-while-preserving-animated-gifs-by-skipping-recompression-upload-the-bytes-to-the-backend-by-calling-the-existing-savecalleruserprofile-mutation-with-userprofile-avatar-set-and-refresh-displayed-avatar-after-a-successful-save",
+      "title": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+      "reqIds": [
+        "REQ-2"
       ],
       "version": 1
     }
@@ -20,12 +32,24 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove horizontal inset on Lilies section/page for desktop only (no other layout changes)",
+      "summary": "Create/restore the frontend app folder and basic structure so UI code can be added and built",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement working user avatar upload flow (frontend UI + call backend saveCallerUserProfile to store UserProfile.avatar)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Adjust image compression behavior to skip compression for GIF files during uploads",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Remove horizontal inset on LilyCard hover background on desktop only",
+  "projectName": "Create/restore frontend app and ensure avatar upload works",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

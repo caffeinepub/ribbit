@@ -1,29 +1,84 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T02:08:29.785Z",
-  "summary": "REQ-1 appears implemented in LilyCard by removing horizontal inset at `lg`+ via `lg:inset-x-0` while keeping vertical inset (`inset-y-2`), rounded corners, opacity transition, and non-interactive hover layer. However, additional unrelated file modifications are present in the diff summary (project metadata and a large frontend summary text file) that were not requested.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-10T10:14:43.233Z",
+  "summary": "The diff shows broad UI work across many frontend components/pages and React Query hooks, including image compression usage in CreatePostPage and avatar-related state/imports in UserSettingsPage. However, the provided diff summary does not include sufficient evidence that the core BuildRequest requirements (frontend entry-point build stability and a complete working avatar upload flow using saveCallerUserProfile with GIF-safe compression, preview, progress, and post-save refresh) are fully implemented. Several features appear added beyond the request (reactions, likes, view-count cooldown, threaded comments UI changes, etc.).",
+  "missing_requirements": [
     {
-      "description": "Updated project metadata/state tracking (new_feature_requests entries marked pending) unrelated to the requested LilyCard hover inset change.",
-      "reason": "BuildRequest constrained changes to the LilyCard hover background behavior only and did not request project state/metadata updates.",
-      "evidence": [
-        "project_state.json"
-      ]
-    },
-    {
-      "description": "Modified a large frontend summary text file describing many unrelated UI/layout features across multiple pages/components.",
-      "reason": "BuildRequest explicitly says not to adjust unrelated spacing/layout and only to change the LilyCard hover background inset behavior on desktop; updating this summary file is not requested and includes unrelated scope.",
+      "id": "REQ-1",
+      "requirement": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html -> /src/main.tsx; frontend/src/main.tsx renders frontend/src/App.tsx), fixing missing imports/broken routes/placeholder components so it compiles and renders routed pages without crashes.",
+      "reason": "The diff summary does not show any changes to (or even excerpts of) the required entry-point files (frontend/index.html, frontend/src/main.tsx) and does not provide build/TypeScript-error evidence. While frontend/src/App.tsx is referenced in frontend-file-summaries.txt, the actual file content and the entry-point wiring are not shown in the diff summary, so successful compilation and correct entry usage cannot be verified from provided evidence.",
       "evidence": [
         "frontend-file-summaries.txt"
       ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Working avatar upload flow on /settings: select image, preview before upload, client-side compression while preserving animated GIFs (skip recompression), upload bytes via existing useSaveCallerUserProfile with UserProfile.avatar set, show upload progress when available, and refresh displayed avatar after successful save with English success/error messages.",
+      "reason": "UserSettingsPage.tsx shows avatar-related state and imports (compressImageFile/revokePreviewUrl, ExternalBlob, Progress, useSaveCallerUserProfile/useGetCallerUserProfile), but the diff excerpt is truncated before any actual avatar file input handler, GIF-skip logic, mutation call setting UserProfile.avatar, progress updates, or post-save refresh/invalidation can be confirmed. No explicit evidence is shown that animated GIF recompression is skipped or that the avatar display refreshes after save.",
+      "evidence": [
+        "frontend/src/pages/UserSettingsPage.tsx"
+      ]
     }
   ],
-  "confidence": 0.74,
+  "hallucinated_features": [
+    {
+      "description": "Added/modified emoji reaction UI component with selectable reactions and hover animations.",
+      "reason": "Not requested by REQ-1 or REQ-2; BuildRequest is focused on restoring/building frontend and avatar upload flow.",
+      "evidence": [
+        "frontend/src/components/EmojiReactions.tsx"
+      ]
+    },
+    {
+      "description": "Added ribbit emoji tray popover for selecting emojis.",
+      "reason": "Not requested; unrelated to frontend build restoration or avatar upload requirements.",
+      "evidence": [
+        "frontend/src/components/RibbitEmojiTray.tsx"
+      ]
+    },
+    {
+      "description": "Implemented/updated like/unlike post functionality wiring in LilyCard (useGetPostLikeCount/useHasUserLikedPost/useLikePost/useUnlikePost) and related UI behavior.",
+      "reason": "Not requested in BuildRequest (non-goals include real-time features, but likes are simply outside the stated requirements).",
+      "evidence": [
+        "frontend/src/components/LilyCard.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "Implemented view-count increment logic with cooldown guarding on LilyPage.",
+      "reason": "Not requested by REQ-1/REQ-2; avatar upload and build restoration were the only requirements.",
+      "evidence": [
+        "frontend/src/pages/LilyPage.tsx"
+      ]
+    },
+    {
+      "description": "Introduced/updated Reddit-style PostCard with voting buttons UI (upvote/downvote).",
+      "reason": "Not requested; beyond restoring frontend build and avatar upload flow.",
+      "evidence": [
+        "frontend/src/components/PostCard.tsx"
+      ]
+    },
+    {
+      "description": "CommentItem now uses Dicebear external avatar URL generation for commenter avatars.",
+      "reason": "Not requested and potentially conflicts with the BuildRequest focus on uploading/storing avatars via backend rather than third-party avatar sources.",
+      "evidence": [
+        "frontend/src/components/CommentItem.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/src/components/CommentItem.tsx",
+    "frontend/src/components/EmojiReactions.tsx",
     "frontend/src/components/LilyCard.tsx",
+    "frontend/src/components/PostCard.tsx",
+    "frontend/src/components/RibbitEmojiTray.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CreatePostPage.tsx",
+    "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/pages/PostPage.tsx",
+    "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json"
   ]
 }

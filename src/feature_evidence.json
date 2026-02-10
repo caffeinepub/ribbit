@@ -2,10 +2,15 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lilycard-inset-hover-background-layer-so-that-on-desktop-tailwind-lg-breakpoint-and-up-it-has-no-horizontal-inset-i-e-the-hover-background-reaches-the-left-and-right-edges-of-the-card-while-preserving-the-current-vertical-inset-rounded-corners-opacity-transition-and-non-interactive-behavior-do-not-change-any-other-layout-or-spacing",
-      "featureTitle": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
+      "featureId": "feature-ensure-the-frontend-react-application-is-present-and-builds-runs-successfully-using-the-existing-entry-points-frontend-index-html-loading-src-main-tsx-and-frontend-src-main-tsx-rendering-frontend-src-app-tsx-fix-any-missing-imports-broken-routes-or-placeholder-empty-components-that-prevent-the-frontend-from-compiling",
+      "featureTitle": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
       "files": [
-        "frontend/src/components/LilyCard.tsx"
+        "frontend/src/components/CommentItem.tsx",
+        "frontend/src/components/EmojiReactions.tsx",
+        "frontend/src/components/PostCard.tsx",
+        "frontend/src/components/RibbitEmojiTray.tsx",
+        "frontend/src/pages/CreatePostPage.tsx",
+        "frontend/src/pages/PostPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -18,6 +23,27 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-provide-a-working-user-avatar-upload-flow-in-the-frontend-user-settings-page-allow-selecting-an-image-file-generate-a-preview-compress-images-client-side-while-preserving-animated-gifs-by-skipping-recompression-upload-the-bytes-to-the-backend-by-calling-the-existing-savecalleruserprofile-mutation-with-userprofile-avatar-set-and-refresh-displayed-avatar-after-a-successful-save",
+      "featureTitle": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/UserSettingsPage.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
       ],
       "confidence": "high"
     }

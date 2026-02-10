@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Remove the horizontal inset on the LilyCard hover background layer on desktop only, without changing any other spacing or layout.
+**Goal:** Restore/ensure the frontend React app builds and runs, and implement a working avatar upload flow on the Settings page.
 
 **Planned changes:**
-- Update the LilyCard hover background layer styles so that at the Tailwind `lg` breakpoint and up, the hover background spans flush to the left/right edges of the card while keeping the existing vertical inset.
-- Preserve the current rounded corners, opacity transition, and non-interactive behavior of the hover background layer.
-- Keep the hover background unchanged on viewports below `lg` (still inset on all sides).
+- Ensure the existing frontend entry points and routing compile and render by fixing missing imports, broken routes, and placeholder/empty components that prevent the app from building.
+- Implement avatar upload in `/settings`: image file selection, pre-upload preview, client-side compression for non-animated images (skip recompression for animated GIFs), upload via the existing `useSaveCallerUserProfile` / `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh the displayed avatar after successful save.
+- Add English user-facing success/error messaging and show upload progress when available.
 
-**User-visible outcome:** On desktop, hovering a lily card shows a hover background that reaches the card’s left and right edges (no horizontal inset), while the mobile/tablet hover appearance remains the same.
+**User-visible outcome:** The app loads and navigates without crashes, and users can select, preview, and save an avatar on the Settings page (including animated GIFs remaining animated), with clear success/error feedback.

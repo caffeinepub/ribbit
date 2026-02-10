@@ -1,39 +1,72 @@
 {
   "kind": "build_request",
-  "title": "Remove horizontal inset on LilyCard hover background on desktop only",
+  "title": "Create/restore frontend app and ensure avatar upload works",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
+      "text": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "can you remove the horizontal inset  only on lilies on desktop version. thats it nothing else."
+          "Create front end"
         ]
       },
       "acceptanceCriteria": [
-        "On viewports >= `lg`, hovering a lily card shows the hover background flush to the card's left and right edges (no horizontal inset).",
-        "On viewports >= `lg`, the hover background still keeps the existing vertical inset and rounded corners.",
-        "On viewports < `lg`, the hover background remains unchanged (still inset on all sides as it is currently).",
-        "No other page/container/layout spacing is changed outside of the LilyCard hover background layer."
+        "`frontend` builds without TypeScript errors.",
+        "App renders at least the existing routed pages defined in `frontend/src/App.tsx` without runtime crashes."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-2",
+          "msg-3"
+        ],
+        "quotes": [
+          "Create front end",
+          "User avatars are still not working why?",
+          "Add it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On `/settings` > Avatar section, selecting an image shows a preview before upload.",
+        "Saving uploads the avatar via the existing React Query hook/mutation (`useSaveCallerUserProfile`) and shows upload progress when available.",
+        "After a successful save, the current avatar display updates to the newly uploaded image (either by invalidating/refetching queries or updating local UI state).",
+        "Animated GIF avatars remain animated after upload (no recompression applied to animated GIFs).",
+        "User-facing success/error messages are displayed in English."
       ]
     }
   ],
   "constraints": [
-    "Frontend change only; no backend changes.",
-    "Do not modify any files listed in frontend immutablePaths.",
-    "Limit changes to the LilyCard hover background inset behavior on desktop only; do not adjust unrelated spacing, containers, or grid layout."
+    "Do not edit files under `frontend/src/components/ui` (compose these components instead).",
+    "Do not modify immutable hook files: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`.",
+    "Backend must remain single-actor with all logic in `backend/main.mo`; only add a migration if an upgrade requires state changes."
   ],
   "nonGoals": [
-    "Changing overall desktop page/container padding or column widths on Home/Pond/Lily pages.",
-    "Changing LilyCard content layout, typography, or interactions beyond the hover background inset."
+    "Adding new authentication providers beyond Internet Identity.",
+    "Introducing external databases or third-party storage for images.",
+    "Building real-time features (websockets, push notifications, chat)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

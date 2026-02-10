@@ -1,22 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Desktop-only LilyCard hover background flush horizontal edges",
+  "title": "Restore React frontend build and fix user avatar upload flow",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Adjust LilyCard hover background layer to remove horizontal inset at lg+ while preserving vertical inset and existing hover behavior.",
+      "summary": "Ensure the React frontend is complete, compiles, and renders all existing App.tsx routes without crashes by fixing missing/placeholder modules and broken imports.",
       "acceptanceCriteria": [
-        "On viewports >= `lg`, hovering a lily card shows the hover background flush to the card's left and right edges (no horizontal inset).",
-        "On viewports >= `lg`, the hover background still keeps the existing vertical inset and rounded corners.",
-        "On viewports < `lg`, the hover background remains unchanged (still inset on all sides as it is currently).",
-        "No other page/container/layout spacing is changed outside of the LilyCard hover background layer."
+        "`frontend` builds without TypeScript errors.",
+        "App renders at least the existing routed pages defined in `frontend/src/App.tsx` without runtime crashes."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/LilyCard.tsx",
+          "path": "frontend/src/components/CommentItem.tsx",
           "operation": "modify",
-          "description": "Update the inset hover background layer Tailwind classes to use separate x/y insets: keep the current vertical inset (e.g., inset-y-2) at all sizes, keep the current horizontal inset on <lg (e.g., inset-x-2), and override at lg+ to remove horizontal inset (e.g., lg:inset-x-0). Preserve existing rounded corners, opacity transition, pointer-events-none, and z-index; do not change any other layout or spacing."
+          "description": "Replace the empty placeholder with a minimal, typed React component export so any existing imports compile and runtime rendering is safe."
+        },
+        {
+          "path": "frontend/src/components/EmojiReactions.tsx",
+          "operation": "modify",
+          "description": "Replace the empty placeholder with a minimal React component export (and any required props typing) to prevent build failures from missing exports."
+        },
+        {
+          "path": "frontend/src/components/PostCard.tsx",
+          "operation": "modify",
+          "description": "Implement a minimal PostCard component export (or a safe placeholder wrapper around existing UI patterns) so any references compile and do not crash at runtime."
+        },
+        {
+          "path": "frontend/src/components/RibbitEmojiTray.tsx",
+          "operation": "modify",
+          "description": "Replace the empty placeholder with a minimal component export to satisfy imports used by ribbit-related pages/components."
+        },
+        {
+          "path": "frontend/src/pages/CreatePostPage.tsx",
+          "operation": "modify",
+          "description": "Implement a minimal page component (non-orphan usage only) that safely renders if referenced anywhere (e.g., via links), preventing runtime crashes even if not routed in App.tsx."
+        },
+        {
+          "path": "frontend/src/pages/PostPage.tsx",
+          "operation": "modify",
+          "description": "Implement a minimal page component export to prevent build/runtime errors from accidental imports or links to this page."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Verify all route component imports resolve to non-empty modules and that the routed pages render without runtime crashes; adjust imports/exports only as needed to restore compilation (do not change the entry points)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Provide a working avatar upload flow on /settings with preview, client-side compression (skipping recompression for animated GIFs), upload progress via ExternalBlob, saving through useSaveCallerUserProfile, and immediate avatar refresh after success.",
+      "acceptanceCriteria": [
+        "On `/settings` > Avatar section, selecting an image shows a preview before upload.",
+        "Saving uploads the avatar via the existing React Query hook/mutation (`useSaveCallerUserProfile`) and shows upload progress when available.",
+        "After a successful save, the current avatar display updates to the newly uploaded image (either by invalidating/refetching queries or updating local UI state).",
+        "Animated GIF avatars remain animated after upload (no recompression applied to animated GIFs).",
+        "User-facing success/error messages are displayed in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Ensure the avatar-related React Query hooks are present and consistent (e.g., a `useGetUserAvatarByUsername` query keyed by username) and that saving a profile invalidates both the current user profile and any cached avatar queries needed for immediate UI refresh."
+        },
+        {
+          "path": "frontend/src/pages/UserSettingsPage.tsx",
+          "operation": "modify",
+          "description": "Update the Avatar section to: (1) show selected-image preview using the existing `compressImageFile` result, (2) create uploads using the blob-storage `ExternalBlob.fromBytes(...).withUploadProgress(...)` for progress reporting (verify the component's usage instructions before implementing), (3) save via `useSaveCallerUserProfile` with `UserProfile.avatar` set, (4) refresh the displayed avatar after success by invalidating/refetching relevant queries and/or updating local state, and (5) present English success/error toasts/messages."
+        },
+        {
+          "path": "frontend/src/lib/imageCompression.ts",
+          "operation": "modify",
+          "description": "Verify the compression utility behavior required by the settings flow: keep the animated-GIF detection/skip-recompression path correct, and ensure returned preview URLs and byte arrays are suitable for uploading as an ExternalBlob."
         }
       ]
     }

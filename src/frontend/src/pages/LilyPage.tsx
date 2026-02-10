@@ -43,9 +43,9 @@ export default function LilyPage() {
   const { data: lily, isLoading: lilyLoading } = useGetLily(id);
   const { data: pond } = useGetPond(lily?.pond || '');
   const { data: ribbits, isLoading: ribbitsLoading } = useGetRibbits(id, sortBy);
-  const { data: ribbitCount = 0 } = useGetRibbitCount(id);
-  const { data: viewCount = 0 } = useGetViewCount(id);
-  const { data: likeCount = 0 } = useGetPostLikeCount(id);
+  const { data: ribbitCount = BigInt(0) } = useGetRibbitCount(id);
+  const { data: viewCount = BigInt(0) } = useGetViewCount(id);
+  const { data: likeCount = BigInt(0) } = useGetPostLikeCount(id);
   const { data: hasLiked = false } = useHasUserLikedPost(id);
   const { mutate: createRibbit, isPending: isCreatingRibbit } = useCreateRibbit();
   const { mutate: likePost, isPending: isLiking } = useLikePost();
@@ -289,15 +289,15 @@ export default function LilyPage() {
                 >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
-                <span>{formatNumber(likeCount)}</span>
+                <span>{formatNumber(Number(likeCount))}</span>
               </button>
               <div className="flex items-center gap-1.5">
                 <MessageCircle className="action-icon" />
-                <span>{formatNumber(ribbitCount)}</span>
+                <span>{formatNumber(Number(ribbitCount))}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Eye className="action-icon" />
-                <span>{formatNumber(viewCount)}</span>
+                <span>{formatNumber(Number(viewCount))}</span>
               </div>
               <button
                 onClick={handleShareClick}
@@ -309,82 +309,100 @@ export default function LilyPage() {
             </div>
           </div>
 
-          {/* Ribbits Section */}
-          <div>
-            {/* Ribbit creation form - no border on top */}
-            <div className="mb-6">
-              <div className="relative">
-                <Textarea
-                  placeholder="What are your thoughts?"
-                  value={ribbitContent}
-                  onChange={(e) => setRibbitContent(e.target.value)}
-                  className="resize-none pr-12 pb-12"
-                  rows={3}
+          {/* Inline ribbit composer */}
+          <div className="mb-6">
+            <div className="relative">
+              <Textarea
+                value={ribbitContent}
+                onChange={(e) => setRibbitContent(e.target.value)}
+                placeholder="What are your thoughts?"
+                className="min-h-[120px] pr-24 resize-none"
+                style={{ fontSize: '1rem' }}
+              />
+              
+              {/* Bottom-left image upload button */}
+              <button
+                onClick={handleImageClick}
+                className="absolute bottom-3 left-3 p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                title="Add image"
+              >
+                <Image className="h-5 w-5" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {/* Bottom-right submit button */}
+              <Button
+                onClick={handleSubmitRibbit}
+                disabled={!ribbitContent.trim() || isCreatingRibbit}
+                className="absolute bottom-3 right-3 h-9 px-4"
+                style={{ fontSize: '0.875rem' }}
+              >
+                {isCreatingRibbit ? 'Posting...' : 'Post'}
+              </Button>
+            </div>
+
+            {/* Selected image preview */}
+            {selectedImage && (
+              <div className="mt-2 relative inline-block">
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="Selected"
+                  className="max-h-32 rounded-md border"
                 />
-                {/* Image upload button - bottom left */}
                 <button
-                  onClick={handleImageClick}
-                  className="absolute bottom-3 left-3 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Upload image"
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
                 >
-                  <Image className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
-                {/* Hidden file input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                {/* Submit button - bottom right */}
-                <Button
-                  onClick={handleSubmitRibbit}
-                  disabled={!ribbitContent.trim() || isCreatingRibbit}
-                  size="sm"
-                  className="absolute bottom-3 right-3"
-                >
-                  {isCreatingRibbit ? 'Posting...' : 'Ribbit'}
-                </Button>
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Sorting toggle buttons directly below text entry */}
-            <div className="flex items-center gap-2 mb-6">
-              <button
-                onClick={() => setSortBy('newest')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  sortBy === 'newest'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Newest
-              </button>
-              <button
-                onClick={() => setSortBy('top')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  sortBy === 'top'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Top
-              </button>
-            </div>
+          {/* Top/Newest sorting toggle buttons - directly below text entry */}
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              onClick={() => setSortBy('top')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                sortBy === 'top'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+              style={{ fontSize: '0.875rem' }}
+            >
+              Top
+            </button>
+            <button
+              onClick={() => setSortBy('newest')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                sortBy === 'newest'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+              style={{ fontSize: '0.875rem' }}
+            >
+              Newest
+            </button>
+          </div>
 
-            {/* Ribbits list */}
+          {/* Ribbits list */}
+          <div className="space-y-0">
             {ribbitsLoading ? (
               <div className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-              </div>
-            ) : ribbits && ribbits.length > 0 ? (
-              <div className="space-y-0">
-                {ribbits.map((ribbit) => (
-                  <RibbitItem key={ribbit.id} ribbit={ribbit} postId={lily.id} />
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
                 ))}
               </div>
+            ) : ribbits && ribbits.length > 0 ? (
+              ribbits.map((ribbit) => (
+                <RibbitItem key={ribbit.id} ribbit={ribbit} postId={lily.id} />
+              ))
             ) : (
               <p className="text-center text-muted-foreground py-8" style={{ fontSize: '1rem' }}>
                 No ribbits yet. Be the first to ribbit!
@@ -402,15 +420,14 @@ export default function LilyPage() {
         >
           <button
             onClick={() => setLightboxOpen(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-            aria-label="Close lightbox"
+            className="absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors"
           >
-            <X className="h-8 w-8" />
+            <X className="h-6 w-6" />
           </button>
           <img
             src={lily.image.getDirectURL()}
             alt={lily.title}
-            className="max-h-full max-w-full object-contain"
+            className="max-w-full max-h-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

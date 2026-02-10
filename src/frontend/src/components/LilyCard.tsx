@@ -25,9 +25,9 @@ interface LilyCardProps {
 }
 
 export default function LilyCard({ lily, showUserAvatar = false, hideTags = false }: LilyCardProps) {
-  const { data: ribbitCount = 0 } = useGetRibbitCount(lily.id);
-  const { data: viewCount = 0 } = useGetViewCount(lily.id);
-  const { data: likeCount = 0 } = useGetPostLikeCount(lily.id);
+  const { data: ribbitCount = BigInt(0) } = useGetRibbitCount(lily.id);
+  const { data: viewCount = BigInt(0) } = useGetViewCount(lily.id);
+  const { data: likeCount = BigInt(0) } = useGetPostLikeCount(lily.id);
   const { data: hasLiked = false } = useHasUserLikedPost(lily.id);
   const { data: pond } = useGetPond(lily.pond);
   
@@ -167,15 +167,15 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-              <span>{formatNumber(likeCount)}</span>
+              <span>{formatNumber(Number(likeCount))}</span>
             </button>
             <Link to="/lily/$id" params={{ id: lily.id }} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
               <MessageCircle className="action-icon" />
-              <span>{formatNumber(ribbitCount)}</span>
+              <span>{formatNumber(Number(ribbitCount))}</span>
             </Link>
             <div className="flex items-center gap-1.5">
               <Eye className="action-icon" />
-              <span>{formatNumber(viewCount)}</span>
+              <span>{formatNumber(Number(viewCount))}</span>
             </div>
             <button
               onClick={handleShareClick}

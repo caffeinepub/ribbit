@@ -1,10 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Pond, Post, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
-import { ExternalBlob, ViewIncrementResult } from '@/backend';
-import type { Principal } from '@icp-sdk/core/principal';
+import type { Post, Pond, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
+import { ExternalBlob } from '@/backend';
 
-// Ponds
+// Pond queries
 export function useGetAllPonds() {
   const { actor, isFetching } = useActor();
 
@@ -31,32 +30,16 @@ export function useGetPond(name: string) {
   });
 }
 
-export function useGetPondAboutInfo(name: string) {
+export function useGetPondAboutInfo(pondName: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery({
-    queryKey: ['pondAbout', name],
+    queryKey: ['pondAbout', pondName],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getPondAboutInfo(name);
+      return actor.getPondAboutInfo(pondName);
     },
-    enabled: !!actor && !isFetching && !!name,
-  });
-}
-
-export function useGetUserProfiles(principals: Principal[]) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<(UserProfile | null)[]>({
-    queryKey: ['userProfiles', principals.map(p => p.toString())],
-    queryFn: async () => {
-      if (!actor || principals.length === 0) return [];
-      const profiles = await Promise.all(
-        principals.map(principal => actor.getUserProfile(principal))
-      );
-      return profiles;
-    },
-    enabled: !!actor && !isFetching && principals.length > 0,
+    enabled: !!actor && !isFetching && !!pondName,
   });
 }
 
@@ -65,46 +48,65 @@ export function useCreatePond() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      name,
-      description, 
-      image, 
-      profileImage,
-      bannerImage,
-      froggyPhrase 
-    }: { 
+    mutationFn: async (params: {
       name: string;
-      description: string; 
-      image: ExternalBlob; 
+      description: string;
+      image: ExternalBlob;
       profileImage: ExternalBlob;
       bannerImage: ExternalBlob;
       froggyPhrase: string;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.createPond(name, description, image, profileImage, bannerImage, froggyPhrase);
+      if (!actor) throw new Error('Actor not available');
+      return actor.createPond(
+        params.name,
+        params.description,
+        params.image,
+        params.profileImage,
+        params.bannerImage,
+        params.froggyPhrase
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ponds'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+export function useJoinPond() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (pondName: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.joinPond(pondName);
+    },
+    onSuccess: (_, pondName) => {
+      queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
       queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }
 
-export function useSearchPonds(searchTerm: string) {
-  const { actor, isFetching } = useActor();
+export function useLeavePond() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
 
-  return useQuery<Pond[]>({
-    queryKey: ['ponds', 'search', searchTerm],
-    queryFn: async () => {
-      if (!actor || !searchTerm) return [];
-      return actor.searchPonds(searchTerm);
+  return useMutation({
+    mutationFn: async (pondName: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.leavePond(pondName);
     },
-    enabled: !!actor && !isFetching && !!searchTerm,
+    onSuccess: (_, pondName) => {
+      queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
+      queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
   });
 }
 
-// Pond Membership
 export function useGetJoinedPonds() {
   const { actor, isFetching } = useActor();
 
@@ -118,64 +120,25 @@ export function useGetJoinedPonds() {
   });
 }
 
-export function useJoinPond() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (pondName: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.joinPond(pondName);
-    },
-    onSuccess: (_, pondName) => {
-      queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
-      queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
-      queryClient.invalidateQueries({ queryKey: ['pondAbout', pondName] });
-      queryClient.invalidateQueries({ queryKey: ['ponds'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-export function useLeavePond() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (pondName: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.leavePond(pondName);
-    },
-    onSuccess: (_, pondName) => {
-      queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
-      queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
-      queryClient.invalidateQueries({ queryKey: ['pondAbout', pondName] });
-      queryClient.invalidateQueries({ queryKey: ['ponds'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-// Check if current user is pond admin
-export function useIsPondAdmin(pondName: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['isPondAdmin', pondName],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isPondAdmin(pondName);
-    },
-    enabled: !!actor && !isFetching && !!pondName,
-  });
-}
-
-// Lilies (Posts)
+// Post/Lily queries (using "Lily" naming for frontend)
 export function useGetAllLilies() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Post[]>({
     queryKey: ['lilies'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.listPosts();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetAllPosts() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Post[]>({
+    queryKey: ['posts'],
     queryFn: async () => {
       if (!actor) return [];
       return actor.listPosts();
@@ -197,38 +160,78 @@ export function useGetLily(id: string) {
   });
 }
 
+export function useGetPost(id: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Post | null>({
+    queryKey: ['post', id],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getPost(id);
+    },
+    enabled: !!actor && !isFetching && !!id,
+  });
+}
+
 export function useCreateLily() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      title,
-      content,
-      image,
-      link,
-      pond,
-      username,
-      tag,
-    }: {
+    mutationFn: async (params: {
       title: string;
       content: string;
       image: ExternalBlob | null;
       link: string | null;
       pond: string;
       username: string;
-      tag?: string | null;
+      tag: string | null;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.createPost(title, content, image, link, pond, username, tag || null);
+      if (!actor) throw new Error('Actor not available');
+      return actor.createPost(
+        params.title,
+        params.content,
+        params.image,
+        params.link,
+        params.pond,
+        params.username,
+        params.tag
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lilies'] });
-      queryClient.invalidateQueries({ queryKey: ['tagSuggestions'] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
-      queryClient.invalidateQueries({ queryKey: ['topTags'] });
-      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
-      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+}
+
+export function useCreatePost() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      title: string;
+      content: string;
+      image: ExternalBlob | null;
+      link: string | null;
+      pond: string;
+      username: string;
+      tag: string | null;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createPost(
+        params.title,
+        params.content,
+        params.image,
+        params.link,
+        params.pond,
+        params.username,
+        params.tag
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 }
@@ -237,25 +240,37 @@ export function useSearchLilies(searchTerm: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Post[]>({
-    queryKey: ['lilies', 'search', searchTerm],
+    queryKey: ['searchLilies', searchTerm],
     queryFn: async () => {
-      if (!actor || !searchTerm) return [];
+      if (!actor) return [];
       return actor.searchPosts(searchTerm);
     },
     enabled: !!actor && !isFetching && !!searchTerm,
   });
 }
 
-// Like Functions for Posts
+export function useGetLiliesByTag(tag: string, sortBy: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Post[]>({
+    queryKey: ['liliesByTag', tag, sortBy],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getLiliesByTag(tag, sortBy);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+// Like queries for posts/lilies
 export function useGetPostLikeCount(postId: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<number>({
+  return useQuery<bigint>({
     queryKey: ['postLikeCount', postId],
     queryFn: async () => {
-      if (!actor) return 0;
-      const count = await actor.getPostLikeCount(postId);
-      return Number(count);
+      if (!actor) return BigInt(0);
+      return actor.getPostLikeCount(postId);
     },
     enabled: !!actor && !isFetching && !!postId,
   });
@@ -280,14 +295,12 @@ export function useLikePost() {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.likePost(postId);
+      if (!actor) throw new Error('Actor not available');
+      return actor.likePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
       queryClient.invalidateQueries({ queryKey: ['hasUserLikedPost', postId] });
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
     },
   });
 }
@@ -298,28 +311,104 @@ export function useUnlikePost() {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.unlikePost(postId);
+      if (!actor) throw new Error('Actor not available');
+      return actor.unlikePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
       queryClient.invalidateQueries({ queryKey: ['hasUserLikedPost', postId] });
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
     },
   });
 }
 
-// Like Functions for Ribbits
+export function useGetViewCount(postId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<bigint>({
+    queryKey: ['viewCount', postId],
+    queryFn: async () => {
+      if (!actor) return BigInt(0);
+      return actor.getViewCountForPost(postId);
+    },
+    enabled: !!actor && !isFetching && !!postId,
+  });
+}
+
+export function useGetRibbitCount(postId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<bigint>({
+    queryKey: ['ribbitCount', postId],
+    queryFn: async () => {
+      if (!actor) return BigInt(0);
+      return actor.getRibbitCountForPost(postId);
+    },
+    enabled: !!actor && !isFetching && !!postId,
+  });
+}
+
+// Ribbit queries
+export function useGetRibbits(postId: string, sortBy: string = 'top') {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Ribbit[]>({
+    queryKey: ['ribbits', postId, sortBy],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getThreadedRibbitsSorted(postId, sortBy);
+    },
+    enabled: !!actor && !isFetching && !!postId,
+  });
+}
+
+export function useGetThreadedRibbits(postId: string, sortBy: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Ribbit[]>({
+    queryKey: ['ribbits', postId, sortBy],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getThreadedRibbitsSorted(postId, sortBy);
+    },
+    enabled: !!actor && !isFetching && !!postId,
+  });
+}
+
+export function useCreateRibbit() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      postId: string;
+      parentId: string | null;
+      content: string;
+      username: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createRibbit(
+        params.postId,
+        params.parentId,
+        params.content,
+        params.username
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ['ribbitCount', variables.postId] });
+    },
+  });
+}
+
+// Like queries for ribbits
 export function useGetRibbitLikeCount(ribbitId: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<number>({
+  return useQuery<bigint>({
     queryKey: ['ribbitLikeCount', ribbitId],
     queryFn: async () => {
-      if (!actor) return 0;
-      const count = await actor.getRibbitLikeCount(ribbitId);
-      return Number(count);
+      if (!actor) return BigInt(0);
+      return actor.getRibbitLikeCount(ribbitId);
     },
     enabled: !!actor && !isFetching && !!ribbitId,
   });
@@ -344,13 +433,12 @@ export function useLikeRibbit() {
 
   return useMutation({
     mutationFn: async (ribbitId: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.likeRibbit(ribbitId);
+      if (!actor) throw new Error('Actor not available');
+      return actor.likeRibbit(ribbitId);
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
       queryClient.invalidateQueries({ queryKey: ['hasUserLikedRibbit', ribbitId] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
     },
   });
 }
@@ -361,278 +449,17 @@ export function useUnlikeRibbit() {
 
   return useMutation({
     mutationFn: async (ribbitId: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.unlikeRibbit(ribbitId);
+      if (!actor) throw new Error('Actor not available');
+      return actor.unlikeRibbit(ribbitId);
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
       queryClient.invalidateQueries({ queryKey: ['hasUserLikedRibbit', ribbitId] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
     },
   });
 }
 
-// Tag Suggestions
-export function useGetTagSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor || !prefix.trim()) return [];
-      return actor.getTagSuggestions(prefix, BigInt(limit));
-    },
-    enabled: !!actor && !isFetching && !!prefix.trim(),
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
-}
-
-// Search History Functions
-export function useGetTrendingSearches(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['trendingSearches', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      // TODO: Replace with actual backend call when available
-      // return actor.getTrendingSearches(BigInt(limit));
-      return [];
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 60 * 1000, // Cache for 1 minute
-  });
-}
-
-export function useGetSearchSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['searchSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor || !prefix.trim()) return [];
-      // TODO: Replace with actual backend call when available
-      // return actor.getSearchSuggestions(prefix, BigInt(limit));
-      return [];
-    },
-    enabled: !!actor && !isFetching && !!prefix.trim(),
-    staleTime: 30 * 1000, // Cache for 30 seconds
-  });
-}
-
-export function useRecordSearchTerm() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (term: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      // TODO: Replace with actual backend call when available
-      // await actor.recordSearchTerm(term);
-      console.log('Recording search term:', term);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trendingSearches'] });
-      queryClient.invalidateQueries({ queryKey: ['searchSuggestions'] });
-    },
-  });
-}
-
-// Tag Pages
-export function useGetLiliesByTag(tag: string, sortBy: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Post[]>({
-    queryKey: ['liliesByTag', tag, sortBy],
-    queryFn: async () => {
-      if (!actor || !tag) return [];
-      return actor.getLiliesByTag(tag, sortBy);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Get canonical tag
-export function useGetCanonicalTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string>({
-    queryKey: ['canonicalTag', tag],
-    queryFn: async () => {
-      if (!actor || !tag) return tag;
-      return actor.getCanonicalTagForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Tag Ranking Queries
-export function useGetTopTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['topTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTopTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetTrendingTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['trendingTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTrendingTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetNewestTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['newestTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getNewestTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetTagStats(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<TagStats | null>({
-    queryKey: ['tagStats', tag],
-    queryFn: async () => {
-      if (!actor || !tag) return null;
-      return actor.getTagStatsForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagRank(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string } | null>({
-    queryKey: ['tagRank', tag],
-    queryFn: async () => {
-      if (!actor || !tag) return null;
-      return actor.getTagRank(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Get tag redirects
-export function useGetTagRedirects() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, string]>>({
-    queryKey: ['tagRedirects'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagRedirects();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// Ribbits
-export function useGetRibbits(postId: string, sortBy: 'top' | 'newest' = 'top') {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Ribbit[]>({
-    queryKey: ['ribbits', postId, sortBy],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getThreadedRibbitsSorted(postId, sortBy);
-    },
-    enabled: !!actor && !isFetching && !!postId,
-  });
-}
-
-export function useCreateRibbit() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      postId,
-      parentId,
-      content,
-      username,
-    }: {
-      postId: string;
-      parentId: string | null;
-      content: string;
-      username: string;
-    }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.createRibbit(postId, parentId, content, username);
-    },
-    onSuccess: (_, { postId }) => {
-      queryClient.invalidateQueries({ queryKey: ['ribbits', postId] });
-      queryClient.invalidateQueries({ queryKey: ['ribbitCount', postId] });
-      queryClient.invalidateQueries({ queryKey: ['recentActivities'] });
-      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
-    },
-  });
-}
-
-export function useGetRibbitCount(postId: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<number>({
-    queryKey: ['ribbitCount', postId],
-    queryFn: async () => {
-      if (!actor) return 0;
-      const count = await actor.getRibbitCountForPost(postId);
-      return Number(count);
-    },
-    enabled: !!actor && !isFetching && !!postId,
-  });
-}
-
-export function useGetViewCount(postId: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<number>({
-    queryKey: ['viewCount', postId],
-    queryFn: async () => {
-      if (!actor) return 0;
-      const count = await actor.getViewCountForPost(postId);
-      return Number(count);
-    },
-    enabled: !!actor && !isFetching && !!postId,
-  });
-}
-
-export function useIncrementViewCount() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.incrementLilyViewCount(postId);
-    },
-    onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-    },
-  });
-}
-
-// User Profile
+// User profile queries
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
@@ -646,7 +473,6 @@ export function useGetCallerUserProfile() {
     retry: false,
   });
 
-  // Return custom state that properly reflects actor dependency
   return {
     ...query,
     isLoading: actorFetching || query.isLoading,
@@ -660,23 +486,37 @@ export function useSaveCallerUserProfile() {
 
   return useMutation({
     mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.saveCallerUserProfile(profile);
+      if (!actor) throw new Error('Actor not available');
+      return actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userAvatar'] });
     },
   });
 }
 
-// Username Registry
+export function useGetUserAvatarByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<ExternalBlob | null>({
+    queryKey: ['userAvatar', username],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getUserAvatarByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+// Username queries
 export function useIsUsernameAvailable(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<boolean>({
     queryKey: ['usernameAvailable', username],
     queryFn: async () => {
-      if (!actor || !username) return false;
+      if (!actor) return false;
       return actor.isUsernameAvailable(username);
     },
     enabled: !!actor && !isFetching && !!username,
@@ -685,32 +525,22 @@ export function useIsUsernameAvailable(username: string) {
 
 export function useRegisterUsername() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.registerUsername(username);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      if (!actor) throw new Error('Actor not available');
+      return actor.registerUsername(username);
     },
   });
 }
 
 export function useReleaseUsername() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.releaseUsername(username);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      if (!actor) throw new Error('Actor not available');
+      return actor.releaseUsername(username);
     },
   });
 }
@@ -721,7 +551,7 @@ export function useCanChangeUsername(username: string) {
   return useQuery<boolean>({
     queryKey: ['canChangeUsername', username],
     queryFn: async () => {
-      if (!actor || !username) return false;
+      if (!actor) return false;
       return actor.canChangeUsername(username);
     },
     enabled: !!actor && !isFetching && !!username,
@@ -730,89 +560,16 @@ export function useCanChangeUsername(username: string) {
 
 export function useRecordUsernameChange() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.recordUsernameChange(username);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      if (!actor) throw new Error('Actor not available');
+      return actor.recordUsernameChange(username);
     },
   });
 }
 
-// Get user avatar by username
-export function useGetUserAvatarByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<ExternalBlob | null>({
-    queryKey: ['userAvatar', username],
-    queryFn: async () => {
-      if (!actor || !username) return null;
-      return actor.getUserAvatarByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-// Recent Activities
-export function useGetRecentActivities(limit: number = 30) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Activity[]>({
-    queryKey: ['recentActivities', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllRecentActivities(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// Profile page queries
-export function useGetUserProfileByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<UserProfile | null>({
-    queryKey: ['userProfileByUsername', username],
-    queryFn: async () => {
-      if (!actor || !username) return null;
-      return actor.getUserProfileByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-export function useGetPostsByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Post[]>({
-    queryKey: ['postsByUsername', username],
-    queryFn: async () => {
-      if (!actor || !username) return [];
-      return actor.getPostsByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-export function useGetRibbitsByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Ribbit[]>({
-    queryKey: ['ribbitsByUsername', username],
-    queryFn: async () => {
-      if (!actor || !username) return [];
-      return actor.getRibbitsByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-// Admin functions
+// Admin queries
 export function useIsAdmin() {
   const { actor, isFetching } = useActor();
 
@@ -832,16 +589,217 @@ export function useMergeSimilarTags() {
 
   return useMutation({
     mutationFn: async () => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.mergeSimilarTags();
+      if (!actor) throw new Error('Actor not available');
+      return actor.mergeSimilarTags();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tagSuggestions'] });
-      queryClient.invalidateQueries({ queryKey: ['topTags'] });
-      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
-      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['lilies'] });
       queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
-      queryClient.invalidateQueries({ queryKey: ['canonicalTag'] });
     },
+  });
+}
+
+export function useGetTagRedirects() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<[string, string][]>({
+    queryKey: ['tagRedirects'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagRedirects();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetCanonicalTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string>({
+    queryKey: ['canonicalTag', tag],
+    queryFn: async () => {
+      if (!actor) return tag;
+      return actor.getCanonicalTagForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+// Tag queries
+export function useGetTagSuggestions(prefix: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagSuggestions(prefix, BigInt(limit));
+    },
+    enabled: !!actor && !isFetching && !!prefix,
+  });
+}
+
+export function useGetTopTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<[string, TagStats][]>({
+    queryKey: ['topTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTopTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTrendingTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<[string, TagStats][]>({
+    queryKey: ['trendingTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTrendingTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetNewestTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<[string, TagStats][]>({
+    queryKey: ['newestTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getNewestTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Activity queries
+export function useGetRecentActivities(limit: number = 30) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Activity[]>({
+    queryKey: ['recentActivities', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllRecentActivities(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// View count mutation
+export function useIncrementViewCount() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.incrementLilyViewCount(postId);
+    },
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+    },
+  });
+}
+
+// Profile page queries
+export function useGetUserProfileByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserProfile | null>({
+    queryKey: ['userProfile', username],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getUserProfileByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+export function useGetPostsByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Post[]>({
+    queryKey: ['userPosts', username],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getPostsByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+export function useGetRibbitsByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Ribbit[]>({
+    queryKey: ['userRibbits', username],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getRibbitsByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+// Search queries (placeholder implementations - backend doesn't have these yet)
+export function useGetTrendingSearches(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['trendingSearches', limit],
+    queryFn: async () => {
+      // Placeholder: return empty array since backend doesn't have this
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetSearchSuggestions(query: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['searchSuggestions', query, limit],
+    queryFn: async () => {
+      // Placeholder: return empty array since backend doesn't have this
+      return [];
+    },
+    enabled: !!actor && !isFetching && !!query,
+  });
+}
+
+export function useRecordSearchTerm() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (searchTerm: string) => {
+      // Placeholder: no-op since backend doesn't have this
+      return;
+    },
+  });
+}
+
+// Placeholder for useGetUserProfiles (not in backend, but used in components)
+// Note: This accepts Principal[] but backend doesn't have batch profile fetch
+export function useGetUserProfiles(principals: any[]) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserProfile[]>({
+    queryKey: ['userProfiles', principals],
+    queryFn: async () => {
+      // Placeholder: return empty array since backend doesn't have batch profile fetch
+      return [];
+    },
+    enabled: !!actor && !isFetching && principals.length > 0,
   });
 }

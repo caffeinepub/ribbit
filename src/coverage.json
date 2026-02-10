@@ -1,24 +1,49 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T02:08:29.787Z",
+  "generatedAt": "2026-02-10T10:14:43.237Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
+        "summary": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/LilyCard.tsx"
+          "frontend/src/components/CommentItem.tsx",
+          "frontend/src/components/EmojiReactions.tsx",
+          "frontend/src/components/PostCard.tsx",
+          "frontend/src/components/RibbitEmojiTray.tsx",
+          "frontend/src/pages/CreatePostPage.tsx",
+          "frontend/src/pages/PostPage.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/LilyCard.tsx"
+          "frontend/src/components/CommentItem.tsx",
+          "frontend/src/components/EmojiReactions.tsx",
+          "frontend/src/components/PostCard.tsx",
+          "frontend/src/components/RibbitEmojiTray.tsx",
+          "frontend/src/pages/CreatePostPage.tsx",
+          "frontend/src/pages/PostPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/UserSettingsPage.tsx",
+          "frontend/src/lib/imageCompression.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/UserSettingsPage.tsx"
         ]
       }
     ]
@@ -28,7 +53,16 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/components/CommentItem.tsx",
+    "frontend/src/components/EmojiReactions.tsx",
     "frontend/src/components/LilyCard.tsx",
+    "frontend/src/components/PostCard.tsx",
+    "frontend/src/components/RibbitEmojiTray.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CreatePostPage.tsx",
+    "frontend/src/pages/LilyPage.tsx",
+    "frontend/src/pages/PostPage.tsx",
+    "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
