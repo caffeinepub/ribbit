@@ -1,41 +1,45 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T20:07:20.745Z",
+  "generatedAt": "2026-02-10T00:31:50.471Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
+        "summary": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/RibbitMiniBlurAvatarImage.tsx",
-          "frontend/src/components/RibbitItem.tsx",
-          "frontend/src/components/ProfileRibbitItem.tsx"
+          "frontend/src/components/LilyCard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/RibbitMiniBlurAvatarImage.tsx",
-          "frontend/src/components/RibbitItem.tsx",
-          "frontend/src/components/ProfileRibbitItem.tsx"
+          "frontend/src/components/LilyCard.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/LilyCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/LilyCard.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/ProfileRibbitItem.tsx",
-    "frontend/src/components/RibbitItem.tsx",
-    "frontend/src/components/RibbitMiniBlurAvatarImage.tsx",
+    "frontend/src/components/LilyCard.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

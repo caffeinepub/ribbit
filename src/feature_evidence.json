@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-the-mini-blurred-placeholder-image-loading-optimization-for-ribbits-avatar-images-and-only-ribbits-while-preserving-the-version-214-ui-layout-styles-exactly-no-tailwind-class-changes-no-spacing-typography-changes-no-element-repositioning-apply-this-to-ribbits-rendered-on-the-lily-page-ribbits-list-and-to-ribbits-rendered-in-the-user-profile-ribbits-comments-list",
-      "featureTitle": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
+      "featureId": "feature-update-the-lilycard-hover-styling-so-the-light-gray-hover-background-appears-slightly-inset-smaller-than-the-card-container-to-better-reveal-the-rounded-borders-of-the-feed-container-on-pages-that-render-lily-lists-e-g-home-page-and-pond-page",
+      "featureTitle": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
       "files": [
-        "frontend/src/components/ProfileRibbitItem.tsx",
-        "frontend/src/components/RibbitItem.tsx",
-        "frontend/src/components/RibbitMiniBlurAvatarImage.tsx"
+        "frontend/src/components/LilyCard.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -20,6 +18,26 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-inset-hover-effect-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-including-pointer-events-and-click-targets",
+      "featureTitle": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "files": [
+        "frontend/src/components/LilyCard.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
       ],
       "confidence": "high"
     }

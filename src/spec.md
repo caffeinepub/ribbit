@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Re-implement the “mini blurred placeholder” loading for Ribbits avatar images only, while preserving the exact Version 214 UI layout and styling.
+**Goal:** Make the LilyCard hover background appear slightly inset so the feed container’s rounded borders remain visible on lily list pages.
 
 **Planned changes:**
-- Add mini blurred placeholder loading behavior for Ribbits avatar images in the Lily page ribbits list and in the user profile ribbits/comments list.
-- Ensure the avatar transitions from blurred placeholder to final image smoothly (no flicker) and retains existing fallback behavior when an avatar URL is missing/unavailable.
-- Keep the Version 214 layout/styles unchanged (no className/spacing/typography/position changes), including leaving the Lily page sorting toggle exactly where it is (directly below the composer textarea).
+- Update LilyCard hover styling so the light gray hover background is inset from the card edges by a small, consistent spacing and uses rounded corners that complement the container.
+- Ensure the hover effect does not cause layout shift and remains consistent across pages that render LilyCard lists (e.g., Home and Pond).
+- Verify hover styling does not interfere with LilyCard interactions (links and like/share/bookmark buttons), pointer events, focus/keyboard navigation, and maintains a subtle transition; touch-device behavior remains unchanged.
 
-**User-visible outcome:** Ribbit avatars briefly show a small blurred placeholder while loading, then resolve cleanly to the final avatar without flicker, with no visible UI/layout changes anywhere else.
+**User-visible outcome:** On Home, Pond, and other lily list pages, hovering a lily shows an inset light-gray highlight that better reveals rounded borders, without breaking any existing click/tap interactions.

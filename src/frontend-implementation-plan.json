@@ -1,33 +1,39 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Ribbits avatar mini blurred placeholder loading (no v214 layout/style changes)",
+  "title": "Inset LilyCard hover background to reveal rounded feed container borders",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add mini blurred placeholder loading + smooth transition for Ribbit avatar images only, preserving Version 214 layout/styles exactly on Lily ribbits list and profile comments list.",
+      "summary": "Adjust LilyCard hover styling to render an inset light-gray hover background with rounded corners (no layout shift) across lily lists (Home, Pond, etc.).",
       "acceptanceCriteria": [
-        "Ribbit avatar images show a small blurred placeholder while the full avatar loads, then transition to the final image without flicker.",
-        "No layout changes occur compared to Version 214: classNames, spacing, sizing, and positioning of existing elements in ribbit rows remain visually identical.",
-        "The optimization is applied in ribbit UI components (e.g., ribbits on LilyPage and profile ribbit items), and does not alter lily main post image rendering or other unrelated images.",
-        "If an avatar URL is missing/unavailable, the existing fallback behavior (initials/placeholder) continues to work and no broken image icon appears.",
-        "No changes are made to the ribbit sorting toggle placement/styling on the Lily page (it must remain directly below the composer textarea as currently implemented)."
+        "Hovering a lily card shows a light gray background that is inset from the card edges by a small, consistent spacing, rather than flush to the edges.",
+        "The inset hover background has rounded corners that visually complement the feed container’s rounded corners.",
+        "No layout shift occurs when hovering (card size/spacing does not change).",
+        "The change is visible and consistent on HomePage and PondPage lily lists (and any other page that uses the same LilyCard component).",
+        "On touch devices, behavior remains unchanged (no stuck hover state)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/RibbitMiniBlurAvatarImage.tsx",
-          "operation": "create",
-          "description": "Create a Ribbits-only avatar image helper that displays an inline mini blurred placeholder data URL immediately, preloads the real avatar URL, and then swaps to the final image with an opacity/blur transition (using inline styles to avoid any Tailwind/className/layout changes). Must support both AvatarImage-based rendering (for RibbitItem) and plain <img> rendering (for ProfileRibbitItem) without changing sizing/positioning."
-        },
-        {
-          "path": "frontend/src/components/RibbitItem.tsx",
+          "path": "frontend/src/components/LilyCard.tsx",
           "operation": "modify",
-          "description": "Update RibbitItem avatar rendering to use the new RibbitMiniBlurAvatarImage helper for ribbit usernames when an avatar URL is available, while keeping all existing className strings and element structure/spacing unchanged. Preserve current fallback initials behavior when avatar is missing/unavailable and ensure no broken image icon appears."
-        },
+          "description": "Replace the current flush hover background on the LilyCard root with an inset hover background layer (e.g., a pseudo-element or absolutely-positioned child) using a small inset and matching rounded corners; keep the card's layout/box model unchanged to avoid hover layout shift and ensure the effect applies everywhere LilyCard is used (HomePage, PondPage, etc.)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Ensure the inset hover layer does not block or shrink LilyCard click targets and preserves smooth hover/focus behavior.",
+      "acceptanceCriteria": [
+        "All existing LilyCard click targets (title link, pond link, username link, like/share/bookmark actions) work as before.",
+        "Hover styling does not block clicks or change focus/keyboard navigation behavior.",
+        "The hover styling still animates smoothly (keeps a subtle transition)."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/components/ProfileRibbitItem.tsx",
+          "path": "frontend/src/components/LilyCard.tsx",
           "operation": "modify",
-          "description": "Update ProfileRibbitItem avatar rendering in the profile comments list to use the new RibbitMiniBlurAvatarImage helper (replacing only the internal avatar <img> behavior) while keeping the existing Avatar wrapper and all current className strings/styles unchanged. Preserve current AvatarFallback initials when avatar URL is missing/unavailable."
+          "description": "Ensure the inset hover background layer cannot intercept pointer events (e.g., pointer-events none) and is stacked beneath interactive content (z-index layering); preserve existing event handling (stopPropagation/preventDefault) and keep a subtle transition for hover/focus-visible states without altering click target sizing."
         }
       ]
     }

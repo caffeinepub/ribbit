@@ -1,18 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Apply mini blurred placeholder image optimization for Ribbits while preserving Version 214 layout styles exactly (no layout/style changes).",
-  "architectural_notes": [
-    "Layout/style must remain identical to Version 214 when re-applying the mini blurred placeholder image optimization."
-  ],
+  "summary": "Ribbit anonymous site; UI refinement requested to adjust lily card hover background so it appears inset and better reveals rounded borders across pages (e.g., Pond page, homepage).",
+  "architectural_notes": [],
   "known_issues": [],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-implement-the-mini-blurred-placeholder-image-loading-optimization-for-ribbits-avatar-images-and-only-ribbits-while-preserving-the-version-214-ui-layout-styles-exactly-no-tailwind-class-changes-no-spacing-typography-changes-no-element-repositioning-apply-this-to-ribbits-rendered-on-the-lily-page-ribbits-list-and-to-ribbits-rendered-in-the-user-profile-ribbits-comments-list",
-      "title": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
+      "id": "feature-update-the-lilycard-hover-styling-so-the-light-gray-hover-background-appears-slightly-inset-smaller-than-the-card-container-to-better-reveal-the-rounded-borders-of-the-feed-container-on-pages-that-render-lily-lists-e-g-home-page-and-pond-page",
+      "title": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-inset-hover-effect-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-including-pointer-events-and-click-targets",
+      "title": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "reqIds": [
+        "REQ-2"
       ],
       "version": 1
     }
@@ -20,12 +26,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Redo mini blurred placeholder image optimization for Ribbits without changing any layout styles (keep Version 214 layout identical).",
+      "summary": "Make lily card hover light-gray background slightly inset/smaller than the container to better show rounded borders (across pages like Pond and homepage).",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Ribbits",
+  "projectName": "Ribbit",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

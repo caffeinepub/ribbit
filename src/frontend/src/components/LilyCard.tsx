@@ -64,8 +64,14 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
   };
 
   return (
-    <div className="bg-card py-4 px-4 transition-colors hover:bg-gray-100">
-      <div className="flex items-start gap-3">
+    <div className="bg-card py-4 px-4 relative group">
+      {/* Inset hover background layer */}
+      <div 
+        className="absolute inset-2 rounded-lg bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10"
+        aria-hidden="true"
+      />
+      
+      <div className="flex items-start gap-3 relative z-0">
         <Avatar className="h-8 w-8 bg-primary/10 flex-shrink-0 mt-0.5">
           {avatarUrl ? (
             <img

@@ -1,53 +1,59 @@
 {
   "kind": "build_request",
-  "title": "Redo Ribbits mini blurred placeholder image loading without any layout/style changes (keep v214 layout)",
+  "title": "Inset the LilyCard hover background to better reveal rounded container borders",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement the “mini blurred placeholder” image-loading optimization for Ribbits avatar images (and only Ribbits), while preserving the Version 214 UI layout/styles exactly (no Tailwind class changes, no spacing/typography changes, no element repositioning). Apply this to ribbits rendered on the Lily page ribbits list and to ribbits rendered in the user profile ribbits/comments list.",
+      "text": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-2",
-          "msg-3"
+          "recent-9",
+          "recent-11"
         ],
         "quotes": [
-          "can you redo the image optimization for ribbits again (the mini blurred placeholder) but this time dont change any layout styles whatsoever?",
-          "ok do it"
+          "the on hover effect for lilies in pages like pond page, and the homepage, etc. the light gray background that shows up, can you make it so its slighly smaller than the container/card so it looks like its inset. that way we can see the rounded borders better.",
+          "go ahead"
         ]
       },
       "acceptanceCriteria": [
-        "Ribbit avatar images show a small blurred placeholder while the full avatar loads, then transition to the final image without flicker.",
-        "No layout changes occur compared to Version 214: classNames, spacing, sizing, and positioning of existing elements in ribbit rows remain visually identical.",
-        "The optimization is applied in ribbit UI components (e.g., ribbits on LilyPage and profile ribbit items), and does not alter lily main post image rendering or other unrelated images.",
-        "If an avatar URL is missing/unavailable, the existing fallback behavior (initials/placeholder) continues to work and no broken image icon appears.",
-        "No changes are made to the ribbit sorting toggle placement/styling on the Lily page (it must remain directly below the composer textarea as currently implemented)."
+        "Hovering a lily card shows a light gray background that is inset from the card edges by a small, consistent spacing, rather than flush to the edges.",
+        "The inset hover background has rounded corners that visually complement the feed container’s rounded corners.",
+        "No layout shift occurs when hovering (card size/spacing does not change).",
+        "The change is visible and consistent on HomePage and PondPage lily lists (and any other page that uses the same LilyCard component).",
+        "On touch devices, behavior remains unchanged (no stuck hover state)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-9"
+        ],
+        "quotes": [
+          "the on hover effect for lilies in pages like pond page, and the homepage, etc. the light gray background that shows up, can you make it so its slighly smaller than the container/card so it looks like its inset."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All existing LilyCard click targets (title link, pond link, username link, like/share/bookmark actions) work as before.",
+        "Hover styling does not block clicks or change focus/keyboard navigation behavior.",
+        "The hover styling still animates smoothly (keeps a subtle transition)."
       ]
     }
   ],
   "constraints": [
-    "Do not change any layout styles whatsoever (must match Version 214 layout exactly).",
-    "Do not edit files under frontend/src/components/ui (read-only shadcn components); compose/wrap them instead if needed.",
-    "Do not introduce any backend changes (no Motoko changes) for this request."
+    "Do not modify files under frontend/src/components/ui (read-only).",
+    "Keep the change scoped to UI styling; do not alter backend logic or data models."
   ],
   "nonGoals": [
-    "Repositioning or restyling any UI elements on the Lily page or elsewhere.",
-    "Adding new ribbit features (attachments, new reactions UI, new sorting modes).",
-    "Optimizing non-ribbit images (e.g., lily post images) beyond what is required for ribbits avatar placeholders."
+    "Changing authorization/anonymous access logic.",
+    "Redesigning the feed layout, adding new features, or changing sorting behavior."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
