@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Restore the LilyCard inset hover background so it renders visibly on hover, remains smooth, preserves all interactions, and looks correct in both light and dark themes.
+**Goal:** Fix the LilyCard hover inset highlight so it consistently appears (in light/dark themes) without breaking interactions, and make right sidebar hover highlights rounded.
 
 **Planned changes:**
-- Adjust LilyCard hover overlay layering so the inset rounded hover background renders above the card base background (not behind it).
-- Ensure the hover overlay does not capture pointer events and does not affect click targets for LilyCard interactions (links, like/share/bookmark).
-- Update the hover background styling to use theme-compatible colors so it remains subtly visible in both light and dark modes without flicker.
+- Update LilyCard hover styling so the inset background highlight reliably renders behind content (not lost due to stacking context/background painting), remains inset, and respects rounded corners in both light and dark mode.
+- Ensure the LilyCard hover background layer never intercepts pointer events so all interactive elements (links, like/share/bookmark) remain fully clickable while hovered.
+- Adjust RightSidebar and TagHubRightSidebar list item hover backgrounds to use rounded corners consistent with item shapes, including cases with negative horizontal margins and sidebar overflow clipping.
 
-**User-visible outcome:** Hovering a LilyCard shows a clearly visible inset rounded hover tint with a smooth transition, while all card buttons/links remain fully clickable in both light and dark themes.
+**User-visible outcome:** Hovering any LilyCard shows a clear inset highlight without blocking clicks, and hovering items in the right column shows a rounded (not square) hover background.

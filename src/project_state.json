@@ -4,37 +4,44 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Hover background on card (\"lily\" after inset change) not visible on hover; likely covered by inset wrapper/layering."
+    "Hover background effect is still not working as expected (regression persists after deployment)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-lilycard-inset-hover-background-so-it-is-visibly-rendered-on-hover-the-inset-layer-must-not-be-placed-behind-the-lilycard-s-own-background",
-      "title": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
+      "id": "feature-fix-the-lilycard-hover-inset-background-so-it-reliably-becomes-visible-on-hover-not-hidden-by-stacking-context-background-painting-across-the-app-feed-including-in-both-light-and-dark-themes",
+      "title": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-inset-hover-background-layer-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-and-that-click-targets-work-normally-while-the-hover-effect-is-active",
-      "title": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
+      "id": "feature-ensure-the-lilycard-hover-inset-background-layer-never-blocks-or-breaks-interactions-links-like-button-share-button-bookmark-button-while-the-hover-effect-is-active",
+      "title": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-make-the-inset-hover-background-color-compatible-with-both-light-and-dark-themes-avoid-a-hard-coded-light-only-gray-that-becomes-invisible-or-visually-incorrect-in-dark-mode",
-      "title": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "id": "feature-update-the-right-column-rightsidebar-and-taghubrightsidebar-list-items-so-the-hover-background-highlight-has-visible-border-radius-rounded-corners-consistent-with-the-item-shape",
+      "title": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix LilyCard inset hover background not visible",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add border radius to the on-hover background for items in the right column",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Fix LilyCard hover inset background regression and round right sidebar hover highlights",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

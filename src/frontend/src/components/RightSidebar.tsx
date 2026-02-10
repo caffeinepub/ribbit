@@ -64,7 +64,7 @@ export default function RightSidebar() {
                   key={pond.name}
                   to="/pond/$name"
                   params={{ name: pond.name }}
-                  className="flex items-center gap-2.5 px-2 py-2 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                  className="flex items-center gap-2.5 px-2 py-2 -mx-2 rounded-md hover:bg-sidebar-accent transition-colors"
                 >
                   {pond.profileImage && (
                     <img
@@ -105,7 +105,7 @@ export default function RightSidebar() {
                   key={tag}
                   to="/tag/$tag"
                   params={{ tag }}
-                  className="flex items-center justify-between px-2 py-1.5 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                  className="flex items-center justify-between px-2 py-1.5 -mx-2 rounded-md hover:bg-sidebar-accent transition-colors"
                 >
                   <span className="text-sm text-accent font-medium">#{tag}</span>
                   <span className="text-xs text-sidebar-foreground/60">
@@ -136,7 +136,7 @@ export default function RightSidebar() {
                   key={lily.id}
                   to="/lily/$id"
                   params={{ id: lily.id }}
-                  className="block px-2 py-2 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+                  className="block px-2 py-2 -mx-2 rounded-md hover:bg-sidebar-accent transition-colors"
                 >
                   <p className="text-sm font-medium line-clamp-2 mb-1 text-sidebar-foreground">{lily.title}</p>
                   <div className="flex items-center gap-1.5 text-xs text-sidebar-foreground/60">

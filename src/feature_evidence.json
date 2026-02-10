@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-lilycard-inset-hover-background-so-it-is-visibly-rendered-on-hover-the-inset-layer-must-not-be-placed-behind-the-lilycard-s-own-background",
-      "featureTitle": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
+      "featureId": "feature-fix-the-lilycard-hover-inset-background-so-it-reliably-becomes-visible-on-hover-not-hidden-by-stacking-context-background-painting-across-the-app-feed-including-in-both-light-and-dark-themes",
+      "featureTitle": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
       "files": [
         "frontend/src/components/LilyCard.tsx"
       ],
@@ -22,8 +22,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-inset-hover-background-layer-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-and-that-click-targets-work-normally-while-the-hover-effect-is-active",
-      "featureTitle": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
+      "featureId": "feature-ensure-the-lilycard-hover-inset-background-layer-never-blocks-or-breaks-interactions-links-like-button-share-button-bookmark-button-while-the-hover-effect-is-active",
+      "featureTitle": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
       "files": [
         "frontend/src/components/LilyCard.tsx"
       ],
@@ -42,10 +42,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-make-the-inset-hover-background-color-compatible-with-both-light-and-dark-themes-avoid-a-hard-coded-light-only-gray-that-becomes-invisible-or-visually-incorrect-in-dark-mode",
-      "featureTitle": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "featureId": "feature-update-the-right-column-rightsidebar-and-taghubrightsidebar-list-items-so-the-hover-background-highlight-has-visible-border-radius-rounded-corners-consistent-with-the-item-shape",
+      "featureTitle": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
       "files": [
-        "frontend/src/components/LilyCard.tsx"
+        "frontend/src/components/RightSidebar.tsx",
+        "frontend/src/components/TagHubRightSidebar.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",

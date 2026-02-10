@@ -1,77 +1,82 @@
 {
   "kind": "build_request",
-  "title": "Fix LilyCard inset hover background not visible",
-  "priority": "normal",
+  "title": "Fix LilyCard hover inset background regression and round right sidebar hover highlights",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
+      "text": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "recent-messages-5"
         ],
         "quotes": [
-          "the on hover back ground is not visible, why? --- dont code yet",
-          "can you fix it?"
+          "its still not working. fix it."
         ]
       },
       "acceptanceCriteria": [
-        "Hovering a LilyCard shows a clearly visible inset (inset-2) rounded hover background.",
-        "The hover background remains visible regardless of the LilyCard’s base background color (e.g., bg-card).",
-        "The hover transition remains smooth (opacity transition) and does not flicker."
+        "When hovering any LilyCard, an inset background highlight is clearly visible behind the card content.",
+        "The hover highlight works in both light and dark mode (no near-invisible contrast).",
+        "The hover highlight remains inset (does not bleed outside the card) and respects rounded corners."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
+      "text": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "recent-messages-5"
         ],
         "quotes": [
-          "the on hover back ground is not visible, why? --- dont code yet",
-          "can you fix it?"
+          "its still not working. fix it."
         ]
       },
       "acceptanceCriteria": [
-        "All LilyCard interactive elements remain clickable and behave the same with and without hover.",
-        "The hover background layer does not capture pointer events.",
-        "No new layout shift is introduced when hovering."
+        "All clickable elements in LilyCard remain clickable on hover, with normal cursor/hover behavior.",
+        "No element becomes unclickable due to the hover background layer overlaying it."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "text": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "recent-messages-5"
         ],
         "quotes": [
-          "the on hover back ground is not visible, why? --- dont code yet"
+          "also can you make the onhover background for the items in the right column have border radius too."
         ]
       },
       "acceptanceCriteria": [
-        "In light theme, the inset hover background appears as a subtle tint distinct from the card background.",
-        "In dark theme, the inset hover background appears as a subtle tint distinct from the card background.",
-        "Theme switching does not break hover visibility."
+        "In RightSidebar sections (Trending Ponds, Popular Tags, Hot This Week), hovered items show a rounded hover background (no square corners).",
+        "In TagHubRightSidebar tag items, hovered items show a rounded hover background (no square corners).",
+        "The rounded hover highlight remains visually correct even with the current negative horizontal margins (-mx-2) and the sidebar container’s overflow clipping."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (read-only UI component sources).",
-    "Do not modify immutable hook files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
+    "Do not modify files under frontend/src/components/ui (read-only UI primitives).",
+    "Do not modify immutable hook/bootstrap files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
   ],
   "nonGoals": [
     "No backend/canister changes.",
-    "No redesign of LilyCard layout beyond what is necessary to restore the hover background visibility and preserve interactions."
+    "No redesign of sidebar content, ordering, or data fetching logic beyond hover/visual behavior fixes."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

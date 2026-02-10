@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T00:44:26.270Z",
+  "generatedAt": "2026-02-10T00:57:25.397Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,7 +12,7 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
+        "summary": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/LilyCard.tsx"
@@ -23,7 +23,7 @@
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
+        "summary": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/LilyCard.tsx"
@@ -34,13 +34,15 @@
       },
       {
         "id": "REQ-3",
-        "summary": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+        "summary": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/LilyCard.tsx"
+          "frontend/src/components/RightSidebar.tsx",
+          "frontend/src/components/TagHubRightSidebar.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/LilyCard.tsx"
+          "frontend/src/components/RightSidebar.tsx",
+          "frontend/src/components/TagHubRightSidebar.tsx"
         ]
       }
     ]
@@ -51,6 +53,8 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/components/LilyCard.tsx",
+    "frontend/src/components/RightSidebar.tsx",
+    "frontend/src/components/TagHubRightSidebar.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

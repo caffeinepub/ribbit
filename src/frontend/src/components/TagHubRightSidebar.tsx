@@ -11,7 +11,7 @@ function TagStatItem({ tag, stats }: { tag: string; stats: TagStats }) {
     <Link
       to="/tag/$tag"
       params={{ tag }}
-      className="flex items-center justify-between px-2 py-2 -mx-2 rounded hover:bg-sidebar-accent transition-colors"
+      className="flex items-center justify-between px-2 py-2 -mx-2 rounded-md hover:bg-sidebar-accent transition-colors"
     >
       <div className="flex-1 min-w-0">
         <span className="text-sm text-accent font-medium">#{tag}</span>
