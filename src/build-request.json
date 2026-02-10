@@ -1,39 +1,63 @@
 {
   "kind": "build_request",
-  "title": "Add pond rank to All Ponds cards",
+  "title": "Update desktop search bar logo image and set logo badge background to accent color",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the All Ponds page pond cards to display each pond’s rank on the card.",
+      "text": "In the desktop header search input, replace the decorative logo image (the badge icon shown inside the search bar on md+ screens) with the provided image URL: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "ok do the rank now"
+          "can you change the logo in desktop (the one in the search bar) to this: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png"
         ]
       },
       "acceptanceCriteria": [
-        "On /ponds (All Ponds page), each pond card shows a visible rank indicator (e.g., “#1”, “#2”, …).",
-        "Ranks are computed deterministically from the same list being rendered: sort ponds by lilyCount (descending), then memberCount (descending), then name (ascending), and assign ranks starting at 1.",
-        "The Join/Joined control remains in the top-right of the card and is not visually overlapped by the rank indicator.",
-        "No backend API changes are required to render rank (rank is derived client-side from the ponds list)."
+        "On desktop (md+), the icon displayed inside the search input uses the provided Cloudinary URL.",
+        "The change only affects the desktop search bar badge icon and does not change the mobile centered logo image."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Change the background color of the desktop search bar logo badge container div to use the app accent color (matching the text logo and the Create button styling), using the theme accent token/class rather than a hard-coded color.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also change the background color of the div the logo is in to the accent color (the same color as the text logo and create button)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On desktop (md+), the circular badge behind the search bar logo uses the theme accent color (e.g., Tailwind bg-accent / CSS variable --accent), not an inline hard-coded oklch value.",
+        "The badge remains circular, positioned inside the search input, and remains non-interactive (pointer-events-none)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn components are read-only).",
-    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional canisters/services."
+    "Do not modify any files under frontend/src/components/ui (read-only shadcn components).",
+    "Keep all changes scoped to the desktop search bar logo badge in frontend/src/components/Header.tsx."
   ],
   "nonGoals": [
-    "Do not add new sorting/filtering controls to the All Ponds page beyond what is needed to compute and display rank.",
-    "Do not change the existing lily count and member count text content or ordering, except as required for layout to accommodate the rank indicator."
+    "Do not redesign the header layout or change the mobile header logo.",
+    "Do not introduce backend changes or new assets generated/stored in the repo for the logo (use the provided external URL)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

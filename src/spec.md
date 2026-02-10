@@ -1,10 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Show each pond’s rank on the All Ponds (/ponds) pond cards.
+**Goal:** Update the desktop header search bar’s internal logo badge to use a new logo image and match the app’s accent-colored styling.
 
 **Planned changes:**
-- Compute pond ranks client-side from the rendered ponds list by sorting deterministically (lilyCount desc, then memberCount desc, then name asc) and assigning ranks starting at 1.
-- Update the All Ponds pond card UI to display a visible rank indicator (e.g., “#1”, “#2”, …) without overlapping the existing Join/Joined control in the top-right.
+- In `frontend/src/components/Header.tsx`, replace the desktop (md+) search input’s decorative badge logo image source with `https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png`.
+- Update the desktop search bar logo badge container background to use the app’s theme accent token/class (not a hard-coded color), keeping it circular and non-interactive.
 
-**User-visible outcome:** On the All Ponds page, each pond card clearly displays its rank (e.g., “#1”) while keeping the Join/Joined control unobstructed.
+**User-visible outcome:** On desktop (md+), the logo badge inside the search bar shows the new logo and sits on an accent-colored circular background, while the mobile centered logo remains unchanged.

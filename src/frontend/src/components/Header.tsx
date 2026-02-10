@@ -128,16 +128,15 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
           <div className="relative w-full" ref={searchContainerRef}>
             {/* Decorative frog badge inside search input - desktop only */}
             <div 
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none flex items-center justify-center rounded-full"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none flex items-center justify-center rounded-full bg-accent"
               style={{ 
                 width: '1.75rem', 
-                height: '1.75rem',
-                backgroundColor: 'oklch(0.67 0.17 130.09)'
+                height: '1.75rem'
               }}
               aria-hidden="true"
             >
               <img 
-                src="/assets/frog-face_1f438.png" 
+                src="https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png" 
                 alt="" 
                 className="w-5 h-5"
               />

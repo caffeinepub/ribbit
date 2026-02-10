@@ -1,27 +1,35 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add deterministic pond rank indicator to All Ponds cards",
+  "title": "Update desktop search badge logo image and badge background to theme accent",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Compute deterministic ranks from the rendered ponds list and display each pond’s rank on its /ponds card without overlapping the Join/Joined control.",
+      "summary": "Replace the desktop header search input’s decorative badge icon image with the provided Cloudinary logo URL, without affecting the mobile centered logo.",
       "acceptanceCriteria": [
-        "On /ponds (All Ponds page), each pond card shows a visible rank indicator (e.g., “#1”, “#2”, …).",
-        "Ranks are computed deterministically from the same list being rendered: sort ponds by lilyCount (descending), then memberCount (descending), then name (ascending), and assign ranks starting at 1.",
-        "The Join/Joined control remains in the top-right of the card and is not visually overlapped by the rank indicator.",
-        "No backend API changes are required to render rank (rank is derived client-side from the ponds list)."
+        "On desktop (md+), the icon displayed inside the search input uses the provided Cloudinary URL.",
+        "The change only affects the desktop search bar badge icon and does not change the mobile centered logo image."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/pondRank.ts",
-          "operation": "create",
-          "description": "Add a small utility to deterministically sort ponds by lilyCount (desc), then memberCount (desc), then name (asc), and return a stable rank mapping (pond name -> rank starting at 1) derived solely from the provided list."
-        },
-        {
-          "path": "frontend/src/pages/AllPondsPage.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Update the All Ponds grid rendering to (1) derive ranks client-side from the same ponds list being rendered using the deterministic sort rules, and (2) render a visible rank indicator (e.g., “#1”) on each pond card (e.g., absolute top-left with appropriate padding/z-index) while preserving the Join/Joined control in the existing top-right position and ensuring the two UI elements do not overlap."
+          "description": "In the desktop search input decorative badge (the absolute-positioned, pointer-events-none icon inside the input), replace the <img> src currently pointing to the local frog-face asset with https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png. Keep the mobile centered logo (<Link ... md:hidden> image) unchanged and keep the badge image decorative (empty alt)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Update the desktop search badge container background to use the app’s accent theme token/class rather than a hard-coded color, keeping the badge circular and non-interactive.",
+      "acceptanceCriteria": [
+        "On desktop (md+), the circular badge behind the search bar logo uses the theme accent color (e.g., Tailwind bg-accent / CSS variable --accent), not an inline hard-coded oklch value.",
+        "The badge remains circular, positioned inside the search input, and remains non-interactive (pointer-events-none)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Update the decorative badge container div inside the desktop search input to use the theme accent color via Tailwind (e.g., add bg-accent) instead of the current inline backgroundColor oklch value. Preserve existing absolute positioning, sizing (1.75rem square), rounded-full for circular shape, and pointer-events-none behavior; remove only the hard-coded background color while keeping width/height styling as-is (or replace with equivalent Tailwind sizing utilities if already used elsewhere in this file)."
         }
       ]
     }

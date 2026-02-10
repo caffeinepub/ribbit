@@ -1,30 +1,23 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T22:31:27.183Z",
-  "summary": "REQ-1 appears implemented: a client-side deterministic rank is computed (lilyCount desc, memberCount desc, name asc) and a visible “#<rank>” indicator is rendered on each All Ponds card with the Join/Joined control kept top-right and spaced to avoid overlap. No backend changes are shown.",
+  "generatedAt": "2026-02-10T22:43:14.714Z",
+  "summary": "REQ-1 and REQ-2 appear to be implemented for the desktop search-bar badge (Cloudinary logo URL + bg-accent). However, the change set is not fully scoped to only frontend/src/components/Header.tsx as requested, because additional non-requested files were modified.",
   "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Project metadata/state tracking updates not requested in the BuildRequest (e.g., feature request entries marked pending).",
-      "reason": "The BuildRequest only asks for adding pond rank display on All Ponds cards; updating project tracking files is not part of the requested functionality.",
+      "description": "Out-of-scope file modifications outside frontend/src/components/Header.tsx (constraint requested all changes be scoped to Header.tsx only).",
+      "reason": "BuildRequest explicitly constrained changes to the desktop search bar logo badge in Header.tsx, but the diff shows additional modified files.",
       "evidence": [
+        "frontend-file-summaries.txt",
         "project_state.json"
-      ]
-    },
-    {
-      "description": "Repository-wide frontend file summary documentation updates not requested.",
-      "reason": "The BuildRequest does not request generating/updating summary documentation files; these changes are unrelated to implementing rank display.",
-      "evidence": [
-        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/lib/pondRank.ts",
-    "frontend/src/pages/AllPondsPage.tsx",
+    "frontend/src/components/Header.tsx",
     "project_state.json"
   ]
 }
