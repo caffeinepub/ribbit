@@ -67,7 +67,7 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
     <div className="bg-card py-4 px-4 relative group isolate rounded-lg overflow-hidden">
       {/* Inset hover background layer - positioned above card background but below content */}
       <div 
-        className="absolute inset-2 rounded-lg bg-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-0"
+        className="absolute inset-y-2 inset-x-2 lg:inset-x-0 rounded-lg bg-gray-200/40 dark:bg-gray-700/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-0"
         aria-hidden="true"
       />
       

@@ -1,82 +1,39 @@
 {
   "kind": "build_request",
-  "title": "Fix LilyCard hover inset background regression and round right sidebar hover highlights",
-  "priority": "high",
+  "title": "Remove horizontal inset on LilyCard hover background on desktop only",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
+      "text": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-5"
+          "msg-1"
         ],
         "quotes": [
-          "its still not working. fix it."
+          "can you remove the horizontal inset  only on lilies on desktop version. thats it nothing else."
         ]
       },
       "acceptanceCriteria": [
-        "When hovering any LilyCard, an inset background highlight is clearly visible behind the card content.",
-        "The hover highlight works in both light and dark mode (no near-invisible contrast).",
-        "The hover highlight remains inset (does not bleed outside the card) and respects rounded corners."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages-5"
-        ],
-        "quotes": [
-          "its still not working. fix it."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All clickable elements in LilyCard remain clickable on hover, with normal cursor/hover behavior.",
-        "No element becomes unclickable due to the hover background layer overlaying it."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages-5"
-        ],
-        "quotes": [
-          "also can you make the onhover background for the items in the right column have border radius too."
-        ]
-      },
-      "acceptanceCriteria": [
-        "In RightSidebar sections (Trending Ponds, Popular Tags, Hot This Week), hovered items show a rounded hover background (no square corners).",
-        "In TagHubRightSidebar tag items, hovered items show a rounded hover background (no square corners).",
-        "The rounded hover highlight remains visually correct even with the current negative horizontal margins (-mx-2) and the sidebar container’s overflow clipping."
+        "On viewports >= `lg`, hovering a lily card shows the hover background flush to the card's left and right edges (no horizontal inset).",
+        "On viewports >= `lg`, the hover background still keeps the existing vertical inset and rounded corners.",
+        "On viewports < `lg`, the hover background remains unchanged (still inset on all sides as it is currently).",
+        "No other page/container/layout spacing is changed outside of the LilyCard hover background layer."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (read-only UI primitives).",
-    "Do not modify immutable hook/bootstrap files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
+    "Frontend change only; no backend changes.",
+    "Do not modify any files listed in frontend immutablePaths.",
+    "Limit changes to the LilyCard hover background inset behavior on desktop only; do not adjust unrelated spacing, containers, or grid layout."
   ],
   "nonGoals": [
-    "No backend/canister changes.",
-    "No redesign of sidebar content, ordering, or data fetching logic beyond hover/visual behavior fixes."
+    "Changing overall desktop page/container padding or column widths on Home/Pond/Lily pages.",
+    "Changing LilyCard content layout, typography, or interactions beyond the hover background inset."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

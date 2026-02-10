@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-lilycard-hover-inset-background-so-it-reliably-becomes-visible-on-hover-not-hidden-by-stacking-context-background-painting-across-the-app-feed-including-in-both-light-and-dark-themes",
-      "featureTitle": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
+      "featureId": "feature-update-the-lilycard-inset-hover-background-layer-so-that-on-desktop-tailwind-lg-breakpoint-and-up-it-has-no-horizontal-inset-i-e-the-hover-background-reaches-the-left-and-right-edges-of-the-card-while-preserving-the-current-vertical-inset-rounded-corners-opacity-transition-and-non-interactive-behavior-do-not-change-any-other-layout-or-spacing",
+      "featureTitle": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
       "files": [
         "frontend/src/components/LilyCard.tsx"
       ],
@@ -18,47 +18,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-lilycard-hover-inset-background-layer-never-blocks-or-breaks-interactions-links-like-button-share-button-bookmark-button-while-the-hover-effect-is-active",
-      "featureTitle": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
-      "files": [
-        "frontend/src/components/LilyCard.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-right-column-rightsidebar-and-taghubrightsidebar-list-items-so-the-hover-background-highlight-has-visible-border-radius-rounded-corners-consistent-with-the-item-shape",
-      "featureTitle": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
-      "files": [
-        "frontend/src/components/RightSidebar.tsx",
-        "frontend/src/components/TagHubRightSidebar.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

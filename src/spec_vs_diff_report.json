@@ -1,16 +1,29 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T00:57:25.395Z",
-  "summary": "Diff implements a non-interactive inset hover background layer for LilyCard using absolute positioning, z-index layering, and overflow clipping; and adds rounded corner hover backgrounds to RightSidebar and TagHubRightSidebar list items via rounded-md on hoverable links. No unrelated features are clearly introduced in the provided diff summary.",
+  "generatedAt": "2026-02-10T02:08:29.785Z",
+  "summary": "REQ-1 appears implemented in LilyCard by removing horizontal inset at `lg`+ via `lg:inset-x-0` while keeping vertical inset (`inset-y-2`), rounded corners, opacity transition, and non-interactive hover layer. However, additional unrelated file modifications are present in the diff summary (project metadata and a large frontend summary text file) that were not requested.",
   "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.78,
+  "hallucinated_features": [
+    {
+      "description": "Updated project metadata/state tracking (new_feature_requests entries marked pending) unrelated to the requested LilyCard hover inset change.",
+      "reason": "BuildRequest constrained changes to the LilyCard hover background behavior only and did not request project state/metadata updates.",
+      "evidence": [
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Modified a large frontend summary text file describing many unrelated UI/layout features across multiple pages/components.",
+      "reason": "BuildRequest explicitly says not to adjust unrelated spacing/layout and only to change the LilyCard hover background inset behavior on desktop; updating this summary file is not requested and includes unrelated scope.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
     "frontend/src/components/LilyCard.tsx",
-    "frontend/src/components/RightSidebar.tsx",
-    "frontend/src/components/TagHubRightSidebar.tsx",
     "project_state.json"
   ]
 }

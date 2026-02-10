@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the LilyCard hover inset highlight so it consistently appears (in light/dark themes) without breaking interactions, and make right sidebar hover highlights rounded.
+**Goal:** Remove the horizontal inset on the LilyCard hover background layer on desktop only, without changing any other spacing or layout.
 
 **Planned changes:**
-- Update LilyCard hover styling so the inset background highlight reliably renders behind content (not lost due to stacking context/background painting), remains inset, and respects rounded corners in both light and dark mode.
-- Ensure the LilyCard hover background layer never intercepts pointer events so all interactive elements (links, like/share/bookmark) remain fully clickable while hovered.
-- Adjust RightSidebar and TagHubRightSidebar list item hover backgrounds to use rounded corners consistent with item shapes, including cases with negative horizontal margins and sidebar overflow clipping.
+- Update the LilyCard hover background layer styles so that at the Tailwind `lg` breakpoint and up, the hover background spans flush to the left/right edges of the card while keeping the existing vertical inset.
+- Preserve the current rounded corners, opacity transition, and non-interactive behavior of the hover background layer.
+- Keep the hover background unchanged on viewports below `lg` (still inset on all sides).
 
-**User-visible outcome:** Hovering any LilyCard shows a clear inset highlight without blocking clicks, and hovering items in the right column shows a rounded (not square) hover background.
+**User-visible outcome:** On desktop, hovering a lily card shows a hover background that reaches the card’s left and right edges (no horizontal inset), while the mobile/tablet hover appearance remains the same.

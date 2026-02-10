@@ -4,31 +4,15 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Hover background effect is still not working as expected (regression persists after deployment)."
+    "Recent deployment caused a desktop layout regression requiring revert (inset/layout spacing issue)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-lilycard-hover-inset-background-so-it-reliably-becomes-visible-on-hover-not-hidden-by-stacking-context-background-painting-across-the-app-feed-including-in-both-light-and-dark-themes",
-      "title": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
+      "id": "feature-update-the-lilycard-inset-hover-background-layer-so-that-on-desktop-tailwind-lg-breakpoint-and-up-it-has-no-horizontal-inset-i-e-the-hover-background-reaches-the-left-and-right-edges-of-the-card-while-preserving-the-current-vertical-inset-rounded-corners-opacity-transition-and-non-interactive-behavior-do-not-change-any-other-layout-or-spacing",
+      "title": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-lilycard-hover-inset-background-layer-never-blocks-or-breaks-interactions-links-like-button-share-button-bookmark-button-while-the-hover-effect-is-active",
-      "title": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-right-column-rightsidebar-and-taghubrightsidebar-list-items-so-the-hover-background-highlight-has-visible-border-radius-rounded-corners-consistent-with-the-item-shape",
-      "title": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
-      "reqIds": [
-        "REQ-3"
       ],
       "version": 1
     }
@@ -36,12 +20,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add border radius to the on-hover background for items in the right column",
+      "summary": "Remove horizontal inset on Lilies section/page for desktop only (no other layout changes)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix LilyCard hover inset background regression and round right sidebar hover highlights",
+  "projectName": "Remove horizontal inset on LilyCard hover background on desktop only",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,57 +1,22 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix LilyCard hover inset highlight layering and round right sidebar hover highlights",
+  "title": "Desktop-only LilyCard hover background flush horizontal edges",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Make LilyCard inset hover highlight reliably visible (correct stacking/painting) in both light and dark themes while staying inset and respecting rounded corners.",
+      "summary": "Adjust LilyCard hover background layer to remove horizontal inset at lg+ while preserving vertical inset and existing hover behavior.",
       "acceptanceCriteria": [
-        "When hovering any LilyCard, an inset background highlight is clearly visible behind the card content.",
-        "The hover highlight works in both light and dark mode (no near-invisible contrast).",
-        "The hover highlight remains inset (does not bleed outside the card) and respects rounded corners."
+        "On viewports >= `lg`, hovering a lily card shows the hover background flush to the card's left and right edges (no horizontal inset).",
+        "On viewports >= `lg`, the hover background still keeps the existing vertical inset and rounded corners.",
+        "On viewports < `lg`, the hover background remains unchanged (still inset on all sides as it is currently).",
+        "No other page/container/layout spacing is changed outside of the LilyCard hover background layer."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/LilyCard.tsx",
           "operation": "modify",
-          "description": "Rework the LilyCard hover highlight layer to avoid being hidden by stacking context/background painting: give the card a clipping/rounding context (e.g., rounded + overflow-hidden and/or isolate), render the inset highlight as a dedicated under-content layer (e.g., pseudo-element or child) that sits above the card background but below content, and tune highlight color/opacity for sufficient contrast in both light/dark themes while keeping it inset."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Ensure LilyCard hover highlight never interferes with any interactions while active.",
-      "acceptanceCriteria": [
-        "All clickable elements in LilyCard remain clickable on hover, with normal cursor/hover behavior.",
-        "No element becomes unclickable due to the hover background layer overlaying it."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/LilyCard.tsx",
-          "operation": "modify",
-          "description": "Ensure the hover highlight layer is non-interactive and cannot capture pointer events (e.g., keep pointer-events-none on the highlight layer/pseudo-element) while preserving correct z-order so all LilyCard links and action buttons remain fully clickable during hover."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Round the hover background highlights for all right-column list items (RightSidebar and TagHubRightSidebar), including when using -mx-2 inside an overflow-hidden sidebar container.",
-      "acceptanceCriteria": [
-        "In RightSidebar sections (Trending Ponds, Popular Tags, Hot This Week), hovered items show a rounded hover background (no square corners).",
-        "In TagHubRightSidebar tag items, hovered items show a rounded hover background (no square corners).",
-        "The rounded hover highlight remains visually correct even with the current negative horizontal margins (-mx-2) and the sidebar container’s overflow clipping."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/RightSidebar.tsx",
-          "operation": "modify",
-          "description": "Update all RightSidebar item Links to use a rounded hover highlight that remains visibly rounded despite -mx-2 and the container’s overflow-hidden (e.g., implement the hover background as an inset, rounded underlay using a pseudo-element/absolute layer with inset-x and rounded corners, replacing the current direct hover:bg-sidebar-accent)."
-        },
-        {
-          "path": "frontend/src/components/TagHubRightSidebar.tsx",
-          "operation": "modify",
-          "description": "Update TagHubRightSidebar TagStatItem Link styling to use the same rounded, inset hover highlight approach (not a full-bleed square hover background), so hovered tag items show rounded corners correctly within the sidebar’s overflow clipping and existing -mx-2 layout."
+          "description": "Update the inset hover background layer Tailwind classes to use separate x/y insets: keep the current vertical inset (e.g., inset-y-2) at all sizes, keep the current horizontal inset on <lg (e.g., inset-x-2), and override at lg+ to remove horizontal inset (e.g., lg:inset-x-0). Preserve existing rounded corners, opacity transition, pointer-events-none, and z-index; do not change any other layout or spacing."
         }
       ]
     }

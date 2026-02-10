@@ -1,48 +1,24 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T00:57:25.397Z",
+  "generatedAt": "2026-02-10T02:08:29.787Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the LilyCard hover inset background so it reliably becomes visible on hover (not hidden by stacking context/background painting) across the app feed, including in both light and dark themes.",
+        "summary": "Update the LilyCard inset hover background layer so that on desktop (Tailwind `lg` breakpoint and up) it has no horizontal inset (i.e., the hover background reaches the left and right edges of the card), while preserving the current vertical inset, rounded corners, opacity transition, and non-interactive behavior. Do not change any other layout or spacing.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/LilyCard.tsx"
         ],
         "matchedFiles": [
           "frontend/src/components/LilyCard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Ensure the LilyCard hover inset background layer never blocks or breaks interactions (links, like button, share button, bookmark button) while the hover effect is active.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/LilyCard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/LilyCard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Update the right column (RightSidebar and TagHubRightSidebar) list items so the hover background highlight has visible border radius (rounded corners) consistent with the item shape.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/RightSidebar.tsx",
-          "frontend/src/components/TagHubRightSidebar.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/RightSidebar.tsx",
-          "frontend/src/components/TagHubRightSidebar.tsx"
         ]
       }
     ]
@@ -53,8 +29,6 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/components/LilyCard.tsx",
-    "frontend/src/components/RightSidebar.tsx",
-    "frontend/src/components/TagHubRightSidebar.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
