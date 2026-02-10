@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Restore/ensure the frontend React app builds and runs, and implement a working avatar upload flow on the Settings page.
+**Goal:** Let users join a pond directly from the All Ponds page pond cards without opening the pond page.
 
 **Planned changes:**
-- Ensure the existing frontend entry points and routing compile and render by fixing missing imports, broken routes, and placeholder/empty components that prevent the app from building.
-- Implement avatar upload in `/settings`: image file selection, pre-upload preview, client-side compression for non-animated images (skip recompression for animated GIFs), upload via the existing `useSaveCallerUserProfile` / `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh the displayed avatar after successful save.
-- Add English user-facing success/error messaging and show upload progress when available.
+- Add a compact Join control to each pond card in `frontend/src/pages/AllPondsPage.tsx` that appears only when the user is not already a member.
+- Wire the Join control to the existing join mutation (`useJoinPond`), ensuring the click does not trigger the card’s Link navigation.
+- Show loading/disabled state while joining, and switch to a non-interactive (or disabled) “Joined” state on success.
+- Show an error toast (sonner) on join failure and keep the card in the not-joined state.
+- Refresh/invalidate the joined-ponds query (`useGetJoinedPonds`) after a successful join so membership indicators update immediately without a full page refresh.
 
-**User-visible outcome:** The app loads and navigates without crashes, and users can select, preview, and save an avatar on the Settings page (including animated GIFs remaining animated), with clear success/error feedback.
+**User-visible outcome:** On the All Ponds page, users can click “Join” on a pond card to join instantly, see immediate “Joined” feedback, and get a toast error if the join fails.

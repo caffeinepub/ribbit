@@ -2,15 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-frontend-react-application-is-present-and-builds-runs-successfully-using-the-existing-entry-points-frontend-index-html-loading-src-main-tsx-and-frontend-src-main-tsx-rendering-frontend-src-app-tsx-fix-any-missing-imports-broken-routes-or-placeholder-empty-components-that-prevent-the-frontend-from-compiling",
-      "featureTitle": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
+      "featureId": "feature-add-a-compact-join-control-on-each-pond-card-in-the-all-ponds-page-grid-that-allows-the-user-to-join-the-pond-directly-from-the-card-without-navigating-to-the-pond-page",
+      "featureTitle": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
       "files": [
-        "frontend/src/components/CommentItem.tsx",
-        "frontend/src/components/EmojiReactions.tsx",
-        "frontend/src/components/PostCard.tsx",
-        "frontend/src/components/RibbitEmojiTray.tsx",
-        "frontend/src/pages/CreatePostPage.tsx",
-        "frontend/src/pages/PostPage.tsx"
+        "frontend/src/components/PondCardJoinControl.tsx",
+        "frontend/src/pages/AllPondsPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -27,11 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-provide-a-working-user-avatar-upload-flow-in-the-frontend-user-settings-page-allow-selecting-an-image-file-generate-a-preview-compress-images-client-side-while-preserving-animated-gifs-by-skipping-recompression-upload-the-bytes-to-the-backend-by-calling-the-existing-savecalleruserprofile-mutation-with-userprofile-avatar-set-and-refresh-displayed-avatar-after-a-successful-save",
-      "featureTitle": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+      "featureId": "feature-ensure-the-all-ponds-page-membership-indicator-stays-consistent-with-the-join-action-by-refreshing-the-joined-ponds-query-state-after-a-join-from-a-pond-card",
+      "featureTitle": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/UserSettingsPage.tsx"
+        "frontend/src/components/PondCardJoinControl.tsx",
+        "frontend/src/pages/AllPondsPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",

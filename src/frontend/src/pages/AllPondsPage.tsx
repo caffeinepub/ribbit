@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useGetAllPonds, useGetJoinedPonds } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
+import PondCardJoinControl from '@/components/PondCardJoinControl';
 
 export default function AllPondsPage() {
   const { data: ponds, isLoading } = useGetAllPonds();
@@ -53,10 +53,8 @@ export default function AllPondsPage() {
                           <h3 className="text-xl font-bold line-clamp-2">{pond.name}</h3>
                         </div>
                       </div>
-                      {isMember && !isLoadingJoined && (
-                        <Badge variant="secondary" className="bg-primary/10 text-primary w-fit">
-                          Joined
-                        </Badge>
+                      {!isLoadingJoined && (
+                        <PondCardJoinControl pondName={pond.name} isMember={isMember} />
                       )}
                     </div>
                     <div>

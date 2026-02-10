@@ -1,78 +1,48 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Restore React frontend build and fix user avatar upload flow",
+  "title": "Add Join button to pond cards on All Ponds page",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure the React frontend is complete, compiles, and renders all existing App.tsx routes without crashes by fixing missing/placeholder modules and broken imports.",
+      "summary": "Add an in-card compact Join control for each pond card on the All Ponds grid that triggers the existing join flow without navigating.",
       "acceptanceCriteria": [
-        "`frontend` builds without TypeScript errors.",
-        "App renders at least the existing routed pages defined in `frontend/src/App.tsx` without runtime crashes."
+        "Each pond card in frontend/src/pages/AllPondsPage.tsx renders a Join button when the user is not a member.",
+        "Clicking the Join button triggers the existing join flow via the existing React Query mutation (useJoinPond) and does not trigger the card Link navigation (e.g., click is stopped/prevented).",
+        "While the join mutation is pending, the Join button is disabled and shows a loading label (e.g., \"Joining...\").",
+        "On successful join, the card reflects membership status (button switches to a non-interactive \"Joined\" state or a disabled Joined button, consistent with existing UI patterns).",
+        "On join failure, an error toast is shown using the existing toast system (sonner), and the UI remains in the not-joined state."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/CommentItem.tsx",
-          "operation": "modify",
-          "description": "Replace the empty placeholder with a minimal, typed React component export so any existing imports compile and runtime rendering is safe."
+          "path": "frontend/src/components/PondCardJoinControl.tsx",
+          "operation": "create",
+          "description": "Create a small, reusable pond-card join control that uses the existing useJoinPond mutation and sonner toast to handle join, pending/disabled states, success \"Joined\" state, and error messaging; ensure the control prevents/stops click events so it does not trigger the parent card navigation."
         },
         {
-          "path": "frontend/src/components/EmojiReactions.tsx",
+          "path": "frontend/src/pages/AllPondsPage.tsx",
           "operation": "modify",
-          "description": "Replace the empty placeholder with a minimal React component export (and any required props typing) to prevent build failures from missing exports."
-        },
-        {
-          "path": "frontend/src/components/PostCard.tsx",
-          "operation": "modify",
-          "description": "Implement a minimal PostCard component export (or a safe placeholder wrapper around existing UI patterns) so any references compile and do not crash at runtime."
-        },
-        {
-          "path": "frontend/src/components/RibbitEmojiTray.tsx",
-          "operation": "modify",
-          "description": "Replace the empty placeholder with a minimal component export to satisfy imports used by ribbit-related pages/components."
-        },
-        {
-          "path": "frontend/src/pages/CreatePostPage.tsx",
-          "operation": "modify",
-          "description": "Implement a minimal page component (non-orphan usage only) that safely renders if referenced anywhere (e.g., via links), preventing runtime crashes even if not routed in App.tsx."
-        },
-        {
-          "path": "frontend/src/pages/PostPage.tsx",
-          "operation": "modify",
-          "description": "Implement a minimal page component export to prevent build/runtime errors from accidental imports or links to this page."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify all route component imports resolve to non-empty modules and that the routed pages render without runtime crashes; adjust imports/exports only as needed to restore compilation (do not change the entry points)."
+          "description": "Render the new compact join control on each pond card when the user is not a member, and show a non-interactive \"Joined\" state when they are; ensure the control is placed within the card UI while the card remains wrapped by the existing Link for navigation."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Provide a working avatar upload flow on /settings with preview, client-side compression (skipping recompression for animated GIFs), upload progress via ExternalBlob, saving through useSaveCallerUserProfile, and immediate avatar refresh after success.",
+      "summary": "Keep pond membership indicators in sync after joining from a pond card by refreshing joined-ponds query state.",
       "acceptanceCriteria": [
-        "On `/settings` > Avatar section, selecting an image shows a preview before upload.",
-        "Saving uploads the avatar via the existing React Query hook/mutation (`useSaveCallerUserProfile`) and shows upload progress when available.",
-        "After a successful save, the current avatar display updates to the newly uploaded image (either by invalidating/refetching queries or updating local UI state).",
-        "Animated GIF avatars remain animated after upload (no recompression applied to animated GIFs).",
-        "User-facing success/error messages are displayed in English."
+        "After joining from a pond card, the joined status displayed on that same card updates without a full page refresh.",
+        "The All Ponds page continues to correctly show membership status for all ponds based on the joined ponds list query (useGetJoinedPonds)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/PondCardJoinControl.tsx",
           "operation": "modify",
-          "description": "Ensure the avatar-related React Query hooks are present and consistent (e.g., a `useGetUserAvatarByUsername` query keyed by username) and that saving a profile invalidates both the current user profile and any cached avatar queries needed for immediate UI refresh."
+          "description": "After a successful join, update/refresh React Query cache so the joined ponds list state reflects the new membership (leveraging the existing invalidation in useJoinPond and/or explicitly updating the ['joinedPonds'] query cache), ensuring the card’s joined indicator updates immediately without a full page reload."
         },
         {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
+          "path": "frontend/src/pages/AllPondsPage.tsx",
           "operation": "modify",
-          "description": "Update the Avatar section to: (1) show selected-image preview using the existing `compressImageFile` result, (2) create uploads using the blob-storage `ExternalBlob.fromBytes(...).withUploadProgress(...)` for progress reporting (verify the component's usage instructions before implementing), (3) save via `useSaveCallerUserProfile` with `UserProfile.avatar` set, (4) refresh the displayed avatar after success by invalidating/refetching relevant queries and/or updating local state, and (5) present English success/error toasts/messages."
-        },
-        {
-          "path": "frontend/src/lib/imageCompression.ts",
-          "operation": "modify",
-          "description": "Verify the compression utility behavior required by the settings flow: keep the animated-GIF detection/skip-recompression path correct, and ensure returned preview URLs and byte arrays are suitable for uploading as an ExternalBlob."
+          "description": "Ensure membership rendering stays derived from the joined ponds list query (useGetJoinedPonds) so that post-join cache refresh causes the correct joined state to display across the grid."
         }
       ]
     }

@@ -1,28 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project is now focused on restoring/creating the missing frontend so core UI features (notably avatar uploads and image upload behavior) can function.",
-  "architectural_notes": [
-    "Backend expects avatar blobs stored in UserProfile.avatar via saveCallerUserProfile (usernameAvatars map is obsolete).",
-    "Current build failures stem from missing/renamed frontend directory structure (e.g., frontend/src not found), so frontend features cannot be implemented until frontend exists."
-  ],
-  "known_issues": [
-    "Users cannot upload avatars because the frontend/avatar upload implementation is missing (and possibly the entire frontend directory is absent).",
-    "Image upload/compression pipeline may be blocking uploads; GIFs should bypass compression."
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-ensure-the-frontend-react-application-is-present-and-builds-runs-successfully-using-the-existing-entry-points-frontend-index-html-loading-src-main-tsx-and-frontend-src-main-tsx-rendering-frontend-src-app-tsx-fix-any-missing-imports-broken-routes-or-placeholder-empty-components-that-prevent-the-frontend-from-compiling",
-      "title": "Ensure the frontend React application is present and builds/runs successfully using the existing entry points (frontend/index.html loading /src/main.tsx, and frontend/src/main.tsx rendering frontend/src/App.tsx). Fix any missing imports, broken routes, or placeholder/empty components that prevent the frontend from compiling.",
+      "id": "feature-add-a-compact-join-control-on-each-pond-card-in-the-all-ponds-page-grid-that-allows-the-user-to-join-the-pond-directly-from-the-card-without-navigating-to-the-pond-page",
+      "title": "Add a compact Join control on each pond card in the All Ponds page grid that allows the user to join the pond directly from the card without navigating to the pond page.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-provide-a-working-user-avatar-upload-flow-in-the-frontend-user-settings-page-allow-selecting-an-image-file-generate-a-preview-compress-images-client-side-while-preserving-animated-gifs-by-skipping-recompression-upload-the-bytes-to-the-backend-by-calling-the-existing-savecalleruserprofile-mutation-with-userprofile-avatar-set-and-refresh-displayed-avatar-after-a-successful-save",
-      "title": "Provide a working user avatar upload flow in the frontend User Settings page: allow selecting an image file, generate a preview, compress images client-side (while preserving animated GIFs by skipping recompression), upload the bytes to the backend by calling the existing `saveCallerUserProfile` mutation with `UserProfile.avatar` set, and refresh displayed avatar after a successful save.",
+      "id": "feature-ensure-the-all-ponds-page-membership-indicator-stays-consistent-with-the-join-action-by-refreshing-the-joined-ponds-query-state-after-a-join-from-a-pond-card",
+      "title": "Ensure the All Ponds page membership indicator stays consistent with the join action by refreshing the joined-ponds query state after a join from a pond card.",
       "reqIds": [
         "REQ-2"
       ],
@@ -32,24 +26,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Create/restore the frontend app folder and basic structure so UI code can be added and built",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Implement working user avatar upload flow (frontend UI + call backend saveCallerUserProfile to store UserProfile.avatar)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Adjust image compression behavior to skip compression for GIF files during uploads",
+      "summary": "Add a Join button on each pond card in the All Ponds page that toggles to Joined after joining",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Create/restore frontend app and ensure avatar upload works",
+  "projectName": "Add Join button to pond cards on All Ponds page",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
