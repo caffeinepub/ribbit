@@ -1,18 +1,18 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T00:31:50.471Z",
+  "generatedAt": "2026-02-10T00:44:26.270Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
+        "summary": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/LilyCard.tsx"
@@ -23,7 +23,18 @@
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+        "summary": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/LilyCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/LilyCard.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/LilyCard.tsx"

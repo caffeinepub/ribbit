@@ -1,39 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Inset LilyCard hover background to reveal rounded feed container borders",
+  "title": "Fix LilyCard inset hover background layering and theme visibility",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Adjust LilyCard hover styling to render an inset light-gray hover background with rounded corners (no layout shift) across lily lists (Home, Pond, etc.).",
+      "summary": "Make LilyCard inset hover background render above the card background so it is visible on hover.",
       "acceptanceCriteria": [
-        "Hovering a lily card shows a light gray background that is inset from the card edges by a small, consistent spacing, rather than flush to the edges.",
-        "The inset hover background has rounded corners that visually complement the feed container’s rounded corners.",
-        "No layout shift occurs when hovering (card size/spacing does not change).",
-        "The change is visible and consistent on HomePage and PondPage lily lists (and any other page that uses the same LilyCard component).",
-        "On touch devices, behavior remains unchanged (no stuck hover state)."
+        "Hovering a LilyCard shows a clearly visible inset (inset-2) rounded hover background.",
+        "The hover background remains visible regardless of the LilyCard’s base background color (e.g., bg-card).",
+        "The hover transition remains smooth (opacity transition) and does not flicker."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/LilyCard.tsx",
           "operation": "modify",
-          "description": "Replace the current flush hover background on the LilyCard root with an inset hover background layer (e.g., a pseudo-element or absolutely-positioned child) using a small inset and matching rounded corners; keep the card's layout/box model unchanged to avoid hover layout shift and ensure the effect applies everywhere LilyCard is used (HomePage, PondPage, etc.)."
+          "description": "Fix the hover inset layer stacking so it is not behind the card’s own background (remove the negative z-index usage and establish a clear stacking context where the inset sits above the card background but below the content). Ensure the inset is still inset-2 and rounded, and keep the existing opacity transition smooth."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Ensure the inset hover layer does not block or shrink LilyCard click targets and preserves smooth hover/focus behavior.",
+      "summary": "Ensure LilyCard hover background layer never blocks pointer interactions with card actions and links.",
       "acceptanceCriteria": [
-        "All existing LilyCard click targets (title link, pond link, username link, like/share/bookmark actions) work as before.",
-        "Hover styling does not block clicks or change focus/keyboard navigation behavior.",
-        "The hover styling still animates smoothly (keeps a subtle transition)."
+        "All LilyCard interactive elements remain clickable and behave the same with and without hover.",
+        "The hover background layer does not capture pointer events.",
+        "No new layout shift is introduced when hovering."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/LilyCard.tsx",
           "operation": "modify",
-          "description": "Ensure the inset hover background layer cannot intercept pointer events (e.g., pointer-events none) and is stacked beneath interactive content (z-index layering); preserve existing event handling (stopPropagation/preventDefault) and keep a subtle transition for hover/focus-visible states without altering click target sizing."
+          "description": "Keep the inset hover background layer non-interactive (pointer-events-none) and ensure interactive content (links/buttons like like/share/bookmark) remains above it via appropriate z-index on content wrappers. Confirm the hover effect is purely visual (no DOM/layout changes that could cause hover layout shift)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Use theme-aware inset hover background color so it remains visible in light and dark mode.",
+      "acceptanceCriteria": [
+        "In light theme, the inset hover background appears as a subtle tint distinct from the card background.",
+        "In dark theme, the inset hover background appears as a subtle tint distinct from the card background.",
+        "Theme switching does not break hover visibility."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/LilyCard.tsx",
+          "operation": "modify",
+          "description": "Replace the hard-coded hover layer background color (currently a light-only gray) with a theme-compatible Tailwind color tied to the design tokens (e.g., muted/foreground-based tint) so it remains distinct from bg-card in both light and dark themes."
         }
       ]
     }

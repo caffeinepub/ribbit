@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Make the LilyCard hover background appear slightly inset so the feed container’s rounded borders remain visible on lily list pages.
+**Goal:** Restore the LilyCard inset hover background so it renders visibly on hover, remains smooth, preserves all interactions, and looks correct in both light and dark themes.
 
 **Planned changes:**
-- Update LilyCard hover styling so the light gray hover background is inset from the card edges by a small, consistent spacing and uses rounded corners that complement the container.
-- Ensure the hover effect does not cause layout shift and remains consistent across pages that render LilyCard lists (e.g., Home and Pond).
-- Verify hover styling does not interfere with LilyCard interactions (links and like/share/bookmark buttons), pointer events, focus/keyboard navigation, and maintains a subtle transition; touch-device behavior remains unchanged.
+- Adjust LilyCard hover overlay layering so the inset rounded hover background renders above the card base background (not behind it).
+- Ensure the hover overlay does not capture pointer events and does not affect click targets for LilyCard interactions (links, like/share/bookmark).
+- Update the hover background styling to use theme-compatible colors so it remains subtly visible in both light and dark modes without flicker.
 
-**User-visible outcome:** On Home, Pond, and other lily list pages, hovering a lily shows an inset light-gray highlight that better reveals rounded borders, without breaking any existing click/tap interactions.
+**User-visible outcome:** Hovering a LilyCard shows a clearly visible inset rounded hover tint with a smooth transition, while all card buttons/links remain fully clickable in both light and dark themes.

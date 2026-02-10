@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-lilycard-hover-styling-so-the-light-gray-hover-background-appears-slightly-inset-smaller-than-the-card-container-to-better-reveal-the-rounded-borders-of-the-feed-container-on-pages-that-render-lily-lists-e-g-home-page-and-pond-page",
-      "featureTitle": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
+      "featureId": "feature-fix-the-lilycard-inset-hover-background-so-it-is-visibly-rendered-on-hover-the-inset-layer-must-not-be-placed-behind-the-lilycard-s-own-background",
+      "featureTitle": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
       "files": [
         "frontend/src/components/LilyCard.tsx"
       ],
@@ -22,8 +22,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-inset-hover-effect-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-including-pointer-events-and-click-targets",
-      "featureTitle": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "featureId": "feature-ensure-the-inset-hover-background-layer-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-and-that-click-targets-work-normally-while-the-hover-effect-is-active",
+      "featureTitle": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
       "files": [
         "frontend/src/components/LilyCard.tsx"
       ],
@@ -38,6 +38,26 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-the-inset-hover-background-color-compatible-with-both-light-and-dark-themes-avoid-a-hard-coded-light-only-gray-that-becomes-invisible-or-visually-incorrect-in-dark-mode",
+      "featureTitle": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "files": [
+        "frontend/src/components/LilyCard.tsx"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

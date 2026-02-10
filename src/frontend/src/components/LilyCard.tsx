@@ -65,13 +65,13 @@ export default function LilyCard({ lily, showUserAvatar = false, hideTags = fals
 
   return (
     <div className="bg-card py-4 px-4 relative group">
-      {/* Inset hover background layer */}
+      {/* Inset hover background layer - positioned above card background but below content */}
       <div 
-        className="absolute inset-2 rounded-lg bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10"
+        className="absolute inset-2 rounded-lg bg-muted/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0"
         aria-hidden="true"
       />
       
-      <div className="flex items-start gap-3 relative z-0">
+      <div className="flex items-start gap-3 relative z-10">
         <Avatar className="h-8 w-8 bg-primary/10 flex-shrink-0 mt-0.5">
           {avatarUrl ? (
             <img

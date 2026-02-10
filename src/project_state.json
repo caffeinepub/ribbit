@@ -1,37 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Ribbit anonymous site; UI refinement requested to adjust lily card hover background so it appears inset and better reveals rounded borders across pages (e.g., Pond page, homepage).",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Hover background on card (\"lily\" after inset change) not visible on hover; likely covered by inset wrapper/layering."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-lilycard-hover-styling-so-the-light-gray-hover-background-appears-slightly-inset-smaller-than-the-card-container-to-better-reveal-the-rounded-borders-of-the-feed-container-on-pages-that-render-lily-lists-e-g-home-page-and-pond-page",
-      "title": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
+      "id": "feature-fix-the-lilycard-inset-hover-background-so-it-is-visibly-rendered-on-hover-the-inset-layer-must-not-be-placed-behind-the-lilycard-s-own-background",
+      "title": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-inset-hover-effect-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-including-pointer-events-and-click-targets",
-      "title": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "id": "feature-ensure-the-inset-hover-background-layer-does-not-interfere-with-lilycard-interactions-links-like-button-share-button-bookmark-button-and-that-click-targets-work-normally-while-the-hover-effect-is-active",
+      "title": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    }
-  ],
-  "new_feature_requests": [
+    },
     {
-      "id": "AR-1",
-      "summary": "Make lily card hover light-gray background slightly inset/smaller than the container to better show rounded borders (across pages like Pond and homepage).",
-      "reqIds": [],
-      "status": "pending"
+      "id": "feature-make-the-inset-hover-background-color-compatible-with-both-light-and-dark-themes-avoid-a-hard-coded-light-only-gray-that-becomes-invisible-or-visually-incorrect-in-dark-mode",
+      "title": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
     }
   ],
-  "projectName": "Ribbit",
+  "new_feature_requests": [],
+  "projectName": "Fix LilyCard inset hover background not visible",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

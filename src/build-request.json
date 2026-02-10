@@ -1,56 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Inset the LilyCard hover background to better reveal rounded container borders",
+  "title": "Fix LilyCard inset hover background not visible",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the LilyCard hover styling so the light gray hover background appears slightly inset (smaller than the card/container) to better reveal the rounded borders of the feed container on pages that render lily lists (e.g., Home page and Pond page).",
+      "text": "Fix the LilyCard inset hover background so it is visibly rendered on hover (the inset layer must not be placed behind the LilyCard’s own background).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-9",
-          "recent-11"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "the on hover effect for lilies in pages like pond page, and the homepage, etc. the light gray background that shows up, can you make it so its slighly smaller than the container/card so it looks like its inset. that way we can see the rounded borders better.",
-          "go ahead"
+          "the on hover back ground is not visible, why? --- dont code yet",
+          "can you fix it?"
         ]
       },
       "acceptanceCriteria": [
-        "Hovering a lily card shows a light gray background that is inset from the card edges by a small, consistent spacing, rather than flush to the edges.",
-        "The inset hover background has rounded corners that visually complement the feed container’s rounded corners.",
-        "No layout shift occurs when hovering (card size/spacing does not change).",
-        "The change is visible and consistent on HomePage and PondPage lily lists (and any other page that uses the same LilyCard component).",
-        "On touch devices, behavior remains unchanged (no stuck hover state)."
+        "Hovering a LilyCard shows a clearly visible inset (inset-2) rounded hover background.",
+        "The hover background remains visible regardless of the LilyCard’s base background color (e.g., bg-card).",
+        "The hover transition remains smooth (opacity transition) and does not flicker."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the inset hover effect does not interfere with LilyCard interactions (links, like button, share button, bookmark button), including pointer events and click targets.",
+      "text": "Ensure the inset hover background layer does not interfere with LilyCard interactions (links, like button, share button, bookmark button) and that click targets work normally while the hover effect is active.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-9"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "the on hover effect for lilies in pages like pond page, and the homepage, etc. the light gray background that shows up, can you make it so its slighly smaller than the container/card so it looks like its inset."
+          "the on hover back ground is not visible, why? --- dont code yet",
+          "can you fix it?"
         ]
       },
       "acceptanceCriteria": [
-        "All existing LilyCard click targets (title link, pond link, username link, like/share/bookmark actions) work as before.",
-        "Hover styling does not block clicks or change focus/keyboard navigation behavior.",
-        "The hover styling still animates smoothly (keeps a subtle transition)."
+        "All LilyCard interactive elements remain clickable and behave the same with and without hover.",
+        "The hover background layer does not capture pointer events.",
+        "No new layout shift is introduced when hovering."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Make the inset hover background color compatible with both light and dark themes (avoid a hard-coded light-only gray that becomes invisible or visually incorrect in dark mode).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "the on hover back ground is not visible, why? --- dont code yet"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In light theme, the inset hover background appears as a subtle tint distinct from the card background.",
+        "In dark theme, the inset hover background appears as a subtle tint distinct from the card background.",
+        "Theme switching does not break hover visibility."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (read-only).",
-    "Keep the change scoped to UI styling; do not alter backend logic or data models."
+    "Do not edit files under frontend/src/components/ui (read-only UI component sources).",
+    "Do not modify immutable hook files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
   ],
   "nonGoals": [
-    "Changing authorization/anonymous access logic.",
-    "Redesigning the feed layout, adding new features, or changing sorting behavior."
+    "No backend/canister changes.",
+    "No redesign of LilyCard layout beyond what is necessary to restore the hover background visibility and preserve interactions."
   ],
   "imageRequirements": {
     "required": [],
