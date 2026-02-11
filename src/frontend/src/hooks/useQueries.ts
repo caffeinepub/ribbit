@@ -3,6 +3,7 @@ import { useActor } from './useActor';
 import type { Post, Pond, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
 import { ExternalBlob } from '@/backend';
 import type { Principal } from '@icp-sdk/core/principal';
+import { getPhraseHashUserId } from '@/lib/user';
 
 // Pond queries
 export function useGetAllPonds() {
@@ -81,7 +82,13 @@ export function useJoinPond() {
   return useMutation({
     mutationFn: async (pondName: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.joinPond(pondName);
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.joinPondByPhraseHash(userId, pondName);
+      } else {
+        return actor.joinPond(pondName);
+      }
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
@@ -98,7 +105,13 @@ export function useLeavePond() {
   return useMutation({
     mutationFn: async (pondName: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.leavePond(pondName);
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.leavePondByPhraseHash(userId, pondName);
+      } else {
+        return actor.leavePond(pondName);
+      }
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
@@ -488,272 +501,25 @@ export function useSaveCallerUserProfile() {
   return useMutation({
     mutationFn: async (profile: UserProfile) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.saveCallerUserProfile(profile);
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.saveUserProfileByPhraseHash(userId, profile);
+      } else {
+        return actor.saveCallerUserProfile(profile);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['userAvatar'] });
     },
   });
 }
 
-export function useGetUserAvatarByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<ExternalBlob | null>({
-    queryKey: ['userAvatar', username],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getUserAvatarByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-// Placeholder hook for fetching multiple user profiles by principals
-// Backend doesn't have this method, so we return empty array
-export function useGetUserProfiles(principals: Principal[]) {
-  return useQuery<(UserProfile | null)[]>({
-    queryKey: ['userProfiles', principals],
-    queryFn: async () => {
-      // Placeholder: backend doesn't support batch profile fetching
-      // Return empty array to prevent errors
-      return [];
-    },
-    enabled: principals.length > 0,
-  });
-}
-
-// Username queries
-export function useIsUsernameAvailable(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['usernameAvailable', username],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isUsernameAvailable(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-export function useRegisterUsername() {
-  const { actor } = useActor();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.registerUsername(username);
-    },
-  });
-}
-
-export function useReleaseUsername() {
-  const { actor } = useActor();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.releaseUsername(username);
-    },
-  });
-}
-
-export function useCanChangeUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['canChangeUsername', username],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.canChangeUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
-export function useRecordUsernameChange() {
-  const { actor } = useActor();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.recordUsernameChange(username);
-    },
-  });
-}
-
-// Admin queries
-export function useIsAdmin() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['isAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useMergeSimilarTags() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.mergeSimilarTags();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['lilies'] });
-      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
-    },
-  });
-}
-
-export function useGetTagRedirects() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<[string, string][]>({
-    queryKey: ['tagRedirects'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagRedirects();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetCanonicalTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string>({
-    queryKey: ['canonicalTag', tag],
-    queryFn: async () => {
-      if (!actor) return tag;
-      return actor.getCanonicalTagForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Tag queries
-export function useGetTagSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagSuggestions(prefix, BigInt(limit));
-    },
-    enabled: !!actor && !isFetching && !!prefix,
-  });
-}
-
-export function useGetTagStats(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<TagStats | null>({
-    queryKey: ['tagStats', tag],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getTagStatsForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagRank(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
-    queryKey: ['tagRank', tag],
-    queryFn: async () => {
-      if (!actor) return { tag, rank: undefined, canonicalTag: tag };
-      return actor.getTagRank(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTopTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<[string, TagStats][]>({
-    queryKey: ['topTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTopTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetTrendingTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<[string, TagStats][]>({
-    queryKey: ['trendingTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTrendingTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetNewestTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<[string, TagStats][]>({
-    queryKey: ['newestTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getNewestTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// Tag subcategories query
-export function useGetTagSubcategories(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSubcategories', tag],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getSubcategoriesForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Activity queries
-export function useGetRecentActivities(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Activity[]>({
-    queryKey: ['recentActivities', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllRecentActivities(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// Profile queries
 export function useGetUserProfileByUsername(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<UserProfile | null>({
-    queryKey: ['userProfileByUsername', username],
+    queryKey: ['userProfile', username],
     queryFn: async () => {
       if (!actor) return null;
       return actor.getUserProfileByUsername(username);
@@ -788,7 +554,143 @@ export function useGetRibbitsByUsername(username: string) {
   });
 }
 
-// View increment mutation
+// Stub hook for getting multiple user profiles (not in backend)
+export function useGetUserProfiles(principals: Principal[]) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<UserProfile | null>>({
+    queryKey: ['userProfiles', principals.map(p => p.toString())],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Fetch profiles for each principal
+      const profiles = await Promise.all(
+        principals.map(p => actor.getUserProfile(p))
+      );
+      return profiles;
+    },
+    enabled: !!actor && !isFetching && principals.length > 0,
+  });
+}
+
+export function useGetUserAvatarByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<ExternalBlob | null>({
+    queryKey: ['userAvatar', username],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getUserAvatarByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+// Username management
+export function useIsUsernameAvailable(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['usernameAvailable', username],
+    queryFn: async () => {
+      if (!actor) return false;
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.isUsernameAvailableByPhraseHash(userId, username);
+      } else {
+        return actor.isUsernameAvailable(username);
+      }
+    },
+    enabled: !!actor && !isFetching && !!username && username.length > 0,
+  });
+}
+
+export function useCanChangeUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['canChangeUsername', username],
+    queryFn: async () => {
+      if (!actor) return false;
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.canChangeUsernameByPhraseHash(userId, username);
+      } else {
+        return actor.canChangeUsername(username);
+      }
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+export function useRegisterUsername() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.registerUsernameWithPhraseHash(userId, username);
+      } else {
+        return actor.registerUsername(username);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
+      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+export function useReleaseUsername() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.releaseUsernameWithPhraseHash(userId, username);
+      } else {
+        return actor.releaseUsername(username);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+export function useRecordUsernameChange() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.recordUsernameChangeByPhraseHash(userId, username);
+      } else {
+        return actor.recordUsernameChange(username);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
+    },
+  });
+}
+
+// View count increment
 export function useIncrementLilyViewCount() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -806,33 +708,214 @@ export function useIncrementLilyViewCount() {
   });
 }
 
-// Placeholder hooks for search features (backend not yet implemented)
-export function useGetTrendingSearches() {
-  return useQuery<string[]>({
-    queryKey: ['trendingSearches'],
+// Tag queries
+export function useGetCanonicalTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string>({
+    queryKey: ['canonicalTag', tag],
     queryFn: async () => {
-      // Placeholder: backend doesn't support trending searches yet
-      return [];
+      if (!actor) return tag;
+      return actor.getCanonicalTagForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagRedirects() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, string]>>({
+    queryKey: ['tagRedirects'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagRedirects();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTagStats(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<TagStats | null>({
+    queryKey: ['tagStats', tag],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getTagStatsForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagRank(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
+    queryKey: ['tagRank', tag],
+    queryFn: async () => {
+      if (!actor) return { tag, canonicalTag: tag };
+      return actor.getTagRank(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTopTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['topTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTopTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTrendingTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['trendingTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTrendingTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetNewestTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['newestTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getNewestTags(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetSubcategoriesForTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['subcategories', tag],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getSubcategoriesForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+// Alias for compatibility
+export const useGetTagSubcategories = useGetSubcategoriesForTag;
+
+export function useGetTagSuggestions(prefix: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagSuggestions(prefix, BigInt(limit));
+    },
+    enabled: !!actor && !isFetching && !!prefix,
+  });
+}
+
+// Admin functions
+export function useIsAdmin() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useMergeSimilarTags() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.mergeSimilarTags();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['topTags'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
+      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
+      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
+      queryClient.invalidateQueries({ queryKey: ['lilies'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 }
 
-export function useGetSearchSuggestions(query: string) {
+// Activity tracking
+export function useGetRecentActivities(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Activity[]>({
+    queryKey: ['recentActivities', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllRecentActivities(BigInt(limit));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Search suggestions (placeholder - backend doesn't have this yet)
+export function useGetSearchSuggestions(query?: string) {
+  const { actor, isFetching } = useActor();
+
   return useQuery<string[]>({
     queryKey: ['searchSuggestions', query],
     queryFn: async () => {
-      // Placeholder: backend doesn't support search suggestions yet
+      if (!actor) return [];
+      // Placeholder: return empty array until backend implements this
       return [];
     },
-    enabled: !!query,
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Trending searches (placeholder - backend doesn't have this yet)
+export function useGetTrendingSearches(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['trendingSearches', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Placeholder: return empty array until backend implements this
+      return [];
+    },
+    enabled: !!actor && !isFetching,
   });
 }
 
 export function useRecordSearchTerm() {
+  const { actor } = useActor();
+
   return useMutation({
-    mutationFn: async (term: string) => {
-      // Placeholder: backend doesn't support recording search terms yet
-      return;
+    mutationFn: async (searchTerm: string) => {
+      if (!actor) throw new Error('Actor not available');
+      // Placeholder: no-op until backend implements this
+      return Promise.resolve();
     },
   });
 }

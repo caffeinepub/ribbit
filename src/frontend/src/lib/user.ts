@@ -148,3 +148,26 @@ export function clearFroggyPhrase(): void {
   localStorage.removeItem(`${FROGGY_PHRASE_KEY}_original`);
   localStorage.removeItem(SETTINGS_BACKUP_KEY);
 }
+
+/**
+ * Compute SHA-256 hash of the Froggy Phrase as lowercase hex string.
+ * Returns empty string if no phrase is set (anonymous mode).
+ */
+export async function getPhraseHashUserId(): Promise<string> {
+  const phrase = getFroggyPhrase();
+  if (!phrase) {
+    return '';
+  }
+
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(phrase);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  } catch (error) {
+    console.error('Failed to compute phrase hash:', error);
+    return '';
+  }
+}

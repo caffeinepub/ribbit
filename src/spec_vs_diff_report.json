@@ -1,38 +1,64 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T12:26:32.413Z",
-  "summary": "Diff shows work starting toward anonymous mode (access control state marked “present but not enforced” and a section for access-control stub methods), but the backend/main.mo change is truncated and does not provide evidence that all authorization enforcement was removed across all methods. Diff also introduces tag subcategories which were not requested.",
+  "generatedAt": "2026-02-11T18:28:35.289Z",
+  "summary": "Diff shows initial additive phrase-hash (UserId) storage fields added to backend/main.mo and frontend join/leave pond hooks updated to pass a computed phrase-hash userId by calling new phrase-hash-specific backend methods. However, most Step 3 requirements (linkage semantics, dual-read/dual-write across profiles/usernames/likes, and new/updated query APIs) are not evidenced in the truncated diff summary. Several unrelated frontend/UI changes and a new tag subcategories backend map appear in the diff summary without being requested.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Remove/disable all backend authorization enforcement so anonymous callers have full access to all canister functionality (no role/permission denials; no “Unauthorized:” traps).",
-      "reason": "The shown diff only includes an “Access control state (present but not enforced)” comment and the beginning of “ACCESS CONTROL STUB METHODS” but does not show removal/neutralization of existing authorization checks across all backend methods (e.g., those listed in AC) or elimination of “Unauthorized:” trap messages. Because backend/main.mo is truncated, there is insufficient evidence that permission-guarded operations were updated to succeed for anonymous callers.",
+      "id": "REQ-2",
+      "requirement": "Implement linkage mapping between msg.caller : Principal and provided userId : Text when userId != \"\", and use it to prefer UserId-keyed lookups with Principal fallback.",
+      "reason": "backend/main.mo shows `userIdLinkage : OrderedMap.Map<Text, Principal>` but there is no evidence of shared methods updating linkage on calls with non-empty userId, nor evidence of using linkage to prefer UserId reads with Principal fallback. Also the mapping direction shown (Text -> Principal) does not match the requirement’s Principal -> Text association.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Preserve frontend compatibility by keeping access-control-related Candid methods (initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin) while ensuring they do not gate functionality or trap.",
-      "reason": "The diff shows a section header for “ACCESS CONTROL STUB METHODS (NON-FUNCTIONAL, FOR FRONTEND COMPATIBILITY)” and a partial comment about initialize auth being a stub, but the actual method implementations and return values are not visible due to truncation. There is not enough evidence that all required methods remain present in the Candid interface and return UI-safe values without gating/trapping.",
+      "id": "REQ-3",
+      "requirement": "Dual-write and fallback-read for identity-affecting features (at minimum: user profile save/fetch, username register/release, post & ribbit like/unlike) using UserId when provided while keeping Principal behavior intact and anonymous-callable.",
+      "reason": "Only new parallel maps are shown; there is no evidence of updated read/write logic in the relevant update/query methods for profiles, usernames, and likes (dual-write + UserId-first reads with Principal fallback). Frontend diff only shows join/leave pond changes, not the required like/unlike/username/profile behavior.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Expose backend query methods for Step 3 so frontend can retrieve profile and like state via userId while keeping existing Principal-based queries intact.",
+      "reason": "No new or enhanced query method signatures for userId-based profile/like state are shown in the truncated backend diff; only storage variables are evidenced.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Update frontend React Query hooks/mutations in frontend/src/hooks/useQueries.ts to pass computed getPhraseHashUserId() to backend methods that accept it for join/leave pond, create post/lily, create ribbit, like/unlike post, like/unlike ribbit, and username-related mutations; preserve behavior when userId is empty.",
+      "reason": "Diff evidence shows join/leave pond updated to call `joinPondByPhraseHash` / `leavePondByPhraseHash` when userId != \"\". There is no evidence that create post/lily, create ribbit, like/unlike post, like/unlike ribbit, or username-related mutations were updated to pass userId.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added tag subcategories data structure (\"New: Subcategories for tags\").",
-      "reason": "BuildRequest is limited to disabling/removing authorization enforcement and preserving access-control-related Candid methods for compatibility; tag subcategories are a new product feature unrelated to authorization removal.",
+      "description": "Backend tag subcategories storage added (`tagSubcategories`).",
+      "reason": "Not part of Step 3 migration requirements (REQ-1..REQ-5) and described as \"New\" in backend/main.mo.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Frontend routing/UI additions including a new FrogProfilePage route at `/f/$username` and multiple layout/header/footer/page redesign changes.",
+      "reason": "Not requested by BuildRequest (scope is Step 3 identity storage migration + hook parameter passing). The diff summary indicates broad UI/route changes unrelated to the requirements.",
+      "evidence": [
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.6,
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json"
   ]
 }

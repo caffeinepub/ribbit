@@ -48,8 +48,22 @@ actor Ribbit {
   // === New: Subcategories for tags ===
   var tagSubcategories : OrderedMap.Map<Text, [Text]> = textMap.empty();
 
-  // Access control state (present but not enforced)
+  // Access control state
   let accessControlState = AccessControl.initState();
+
+  // New: Phrase-hash enabled storage
+  var userIdLinkage : OrderedMap.Map<Text, Principal> = textMap.empty();
+  var userIdUsernameLinkage : OrderedMap.Map<Text, Text> = textMap.empty();
+
+  // Parallel like mappings
+  var userIdPostLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
+  var userIdRibbitLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
+
+  // Store userId-mapped user profiles
+  var userIdUserProfiles : OrderedMap.Map<Text, UserProfile> = textMap.empty();
+
+  // Username linkage between userId and username
+  var userIdUsernameRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
   // Activity tracking data type
   type Activity = {
@@ -120,9 +134,9 @@ actor Ribbit {
 
   // View increment result type
   public type ViewIncrementResult = {
-    #success; // View count incremented successfully
-    #notFound; // Lily (post) not found
-    #error; // Some error occurred
+    #success;
+    #notFound;
+    #error;
   };
 
   // Updated tag stats type with IDs
@@ -134,47 +148,99 @@ actor Ribbit {
     lastActivityAt : Int;
   };
 
-  // ===== ACCESS CONTROL STUB METHODS (NON-FUNCTIONAL, FOR FRONTEND COMPATIBILITY) =====
-  
-  // Initialize auth (stub - does nothing in anonymous mode)
+  // ===== ACCESS CONTROL METHODS =====
+
   public shared ({ caller }) func initializeAccessControl() : async () {
-    // No-op: Authorization is disabled
+    AccessControl.initialize(accessControlState, caller);
   };
 
-  // Get caller's user role (stub - always returns guest)
+  public shared ({ caller }) func initializeFroggyPhrase(userId : Text) : async () {
+    // Record linkage between userId and caller
+    userIdLinkage := textMap.put(userIdLinkage, userId, caller);
+    AccessControl.initialize(accessControlState, caller);
+  };
+
   public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
-    #guest
+    AccessControl.getUserRole(accessControlState, caller);
   };
 
-  // Assign user role (stub - does nothing in anonymous mode)
+  public query func getUserRoleByPhraseHash(userId : Text) : async AccessControl.UserRole {
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { AccessControl.getUserRole(accessControlState, principal) };
+      case (null) { #guest };
+    };
+  };
+
   public shared ({ caller }) func assignCallerUserRole(user : Principal, role : AccessControl.UserRole) : async () {
-    // No-op: Authorization is disabled
+    AccessControl.assignRole(accessControlState, caller, user, role);
   };
 
-  // Check if caller is admin (stub - always returns false)
+  public shared ({ caller }) func assignUserRoleByPhraseHash(userId : Text, role : AccessControl.UserRole) : async () {
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { AccessControl.assignRole(accessControlState, caller, principal, role) };
+      case (null) { Debug.trap("User ID not found") };
+    };
+  };
+
   public query ({ caller }) func isCallerAdmin() : async Bool {
-    false
+    AccessControl.isAdmin(accessControlState, caller);
   };
 
-  // Get caller's user profile
+  public query func isUserAdminByPhraseHash(userId : Text) : async Bool {
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { AccessControl.isAdmin(accessControlState, principal) };
+      case (null) { false };
+    };
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    principalMap.get(userProfiles, caller)
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can access profiles");
+    };
+    principalMap.get(userProfiles, caller);
   };
 
-  // Get any user's profile (no ownership check in anonymous mode)
-  public query ({ caller }) func getUserProfile(user: Principal) : async ?UserProfile {
-    principalMap.get(userProfiles, user)
+  public query func getUserProfileByPhraseHash(userId : Text) : async ?UserProfile {
+    let profileByPhraseHash = textMap.get(userIdUserProfiles, userId);
+    switch (profileByPhraseHash) {
+      case (?profile) { ?profile };
+      case (null) {
+        switch (textMap.get(userIdLinkage, userId)) {
+          case (?principal) { principalMap.get(userProfiles, principal) };
+          case (null) { null };
+        };
+      };
+    };
   };
 
-  // Save caller's user profile
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Debug.trap("Unauthorized: Can only view your own profile");
+    };
+    principalMap.get(userProfiles, user);
+  };
+
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can save profiles");
+    };
     userProfiles := principalMap.put(userProfiles, caller, profile);
   };
 
-  // ===== END ACCESS CONTROL STUBS =====
+  public shared func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
+    userIdUserProfiles := textMap.put(userIdUserProfiles, userId, profile);
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { userProfiles := principalMap.put(userProfiles, principal, profile) };
+      case (null) {};
+    };
+  };
 
-  // Function to increment view count for a Lily (post) - Users only
-  public shared func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
+  // ===== END ACCESS CONTROL =====
+
+  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can increment view counts");
+    };
     switch (textMap.get(posts, postId)) {
       case (null) { #notFound };
       case (?post) {
@@ -188,7 +254,6 @@ actor Ribbit {
     };
   };
 
-  // Helper function to check if caller is a member of a pond
   func isMemberOfPond(caller : Principal, pondName : Text) : Bool {
     switch (textMap.get(ponds, pondName)) {
       case (null) { false };
@@ -198,7 +263,6 @@ actor Ribbit {
     };
   };
 
-  // Helper function to check if caller is a moderator of a pond
   func isModeratorOfPond(caller : Principal, pondName : Text) : Bool {
     switch (textMap.get(ponds, pondName)) {
       case (null) { false };
@@ -208,7 +272,6 @@ actor Ribbit {
     };
   };
 
-  // Helper function to check if caller is the admin of a pond
   func isAdminOfPond(caller : Principal, pondName : Text) : Bool {
     switch (textMap.get(ponds, pondName)) {
       case (null) { false };
@@ -216,7 +279,6 @@ actor Ribbit {
     };
   };
 
-  // Helper function to normalize tags
   func normalizeTag(input : Text) : Text {
     let lower = Text.map(input, func(c : Char) : Char { if (c >= 'A' and c <= 'Z') { Char.fromNat32(Char.toNat32(c) + 32) } else { c } });
     let trimmed = Text.trim(lower, #char ' ');
@@ -243,7 +305,6 @@ actor Ribbit {
     result;
   };
 
-  // Helper function to check if a tag is canonical
   func getCanonicalTag(tag : Text) : Text {
     switch (textMap.get(tagMergeRegistry, tag)) {
       case (null) { tag };
@@ -251,17 +312,14 @@ actor Ribbit {
     };
   };
 
-  // Helper function to check if two tags are similar
   func areTagsSimilar(tag1 : Text, tag2 : Text) : Bool {
     let norm1 = normalizeTag(tag1);
     let norm2 = normalizeTag(tag2);
 
-    // Case-insensitive comparison
     if (norm1 == norm2) {
       return true;
     };
 
-    // Plural/singular detection
     if (Text.endsWith(norm1, #text "s") and Text.trimEnd(norm1, #text "s") == norm2) {
       return true;
     };
@@ -269,14 +327,12 @@ actor Ribbit {
       return true;
     };
 
-    // Hyphen/underscore normalization
     let norm1NoHyphens = Text.replace(norm1, #text "-", "");
     let norm2NoHyphens = Text.replace(norm2, #text "-", "");
     if (norm1NoHyphens == norm2NoHyphens) {
       return true;
     };
 
-    // Collapsing repeated letters
     func collapseRepeatedLetters(tag : Text) : Text {
       let chars = Text.toIter(tag);
       var result = "";
@@ -306,8 +362,11 @@ actor Ribbit {
     false;
   };
 
-  // Function to merge similar tags - Admin only
-  public shared func mergeSimilarTags() : async () {
+  public shared ({ caller }) func mergeSimilarTags() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Debug.trap("Unauthorized: Only admins can merge tags");
+    };
+
     let tags = Iter.toArray(textMap.keys(tagUsageCount));
     let tagCount = tags.size();
 
@@ -316,7 +375,6 @@ actor Ribbit {
       for (j in Iter.range(i + 1, tagCount - 1)) {
         let tag2 = tags[j];
         if (areTagsSimilar(tag1, tag2)) {
-          // Determine canonical tag (highest usage count)
           let count1 = switch (textMap.get(tagUsageCount, tag1)) {
             case (null) { 0 };
             case (?count) { count };
@@ -329,10 +387,8 @@ actor Ribbit {
           let canonical = if (count1 >= count2) { tag1 } else { tag2 };
           let nonCanonical = if (count1 >= count2) { tag2 } else { tag1 };
 
-          // Update tag merge registry
           tagMergeRegistry := textMap.put(tagMergeRegistry, nonCanonical, canonical);
 
-          // Update all posts using the non-canonical tag
           posts := textMap.map<Post, Post>(
             posts,
             func(_id, post) {
@@ -349,10 +405,8 @@ actor Ribbit {
             },
           );
 
-          // Remove non-canonical tag from usage count
           tagUsageCount := textMap.delete(tagUsageCount, nonCanonical);
 
-          // Consolidate TagStats under canonical tag
           let canonicalStats = switch (textMap.get(tagStats, canonical)) {
             case (null) {
               let defaultStats : TagStats = {
@@ -396,32 +450,23 @@ actor Ribbit {
     };
   };
 
-  // Function to get canonical tag for a given tag - Public query (guests allowed)
   public query func getCanonicalTagForTag(tag : Text) : async Text {
     getCanonicalTag(tag);
   };
 
-  // Function to get all tag redirects - Public query (guests allowed)
   public query func getTagRedirects() : async [(Text, Text)] {
     Iter.toArray(textMap.entries(tagMergeRegistry));
   };
 
-  // New query to fetch user profile by username (public profile page) - Public query (guests allowed)
   public query func getUserProfileByUsername(username : Text) : async ?UserProfile {
-    // Step 1: Find the principal associated with the username
     switch (textMap.get(usernameOwnership, username)) {
-      case (null) {
-        // Username not found in registry
-        null;
-      };
+      case (null) { null };
       case (?profilePrincipal) {
-        // Found - look up user profile by principal
         principalMap.get(userProfiles, profilePrincipal);
       };
     };
   };
 
-  // New query to fetch posts by username (public profile page) - Public query (guests allowed)
   public query func getPostsByUsername(username : Text) : async [Post] {
     let filteredPosts = Array.filter<Post>(
       Iter.toArray(textMap.vals(posts)),
@@ -432,7 +477,6 @@ actor Ribbit {
     filteredPosts;
   };
 
-  // New query to fetch ribbits by username (public profile page) - Public query (guests allowed)
   public query func getRibbitsByUsername(username : Text) : async [Ribbit] {
     let filteredRibbits = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -443,24 +487,27 @@ actor Ribbit {
     filteredRibbits;
   };
 
-  // Username Registry Functions - Require user permission
   public query func isUsernameAvailable(username : Text) : async Bool {
-    // Public query - no authorization required for checking availability (guests allowed)
+    not textMap.contains(usernameRegistry, username);
+  };
+
+  public query func isUsernameAvailableByPhraseHash(_userId : Text, username : Text) : async Bool {
     not textMap.contains(usernameRegistry, username);
   };
 
   public shared ({ caller }) func registerUsername(username : Text) : async () {
-    // Check if username is already taken
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can register usernames");
+    };
+
     if (textMap.contains(usernameRegistry, username)) {
       Debug.trap("Username already taken");
     };
 
-    // Check if caller already has a username registered
     switch (principalMap.get(principalToUsername, caller)) {
       case (?existingUsername) {
-        // User is changing username - verify cooldown
         let currentTime = Time.now();
-        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
+        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
 
         switch (textMap.get(usernameChangeHistory, existingUsername)) {
           case (?lastChangeTime) {
@@ -468,25 +515,34 @@ actor Ribbit {
               Debug.trap("You can only change your username once every 24 hours.");
             };
           };
-          case (null) { /* First change, no cooldown */ };
+          case (null) {};
         };
 
-        // Release old username
         usernameRegistry := textMap.delete(usernameRegistry, existingUsername);
         usernameOwnership := textMap.delete(usernameOwnership, existingUsername);
       };
-      case (null) { /* First time registration */ };
+      case (null) {};
     };
 
-    // Register new username with bidirectional mapping
     usernameRegistry := textMap.put(usernameRegistry, username, true);
     usernameOwnership := textMap.put(usernameOwnership, username, caller);
     principalToUsername := principalMap.put(principalToUsername, caller, username);
     usernameChangeHistory := textMap.put(usernameChangeHistory, username, Time.now());
   };
 
+  public shared func registerUsernameWithPhraseHash(userId : Text, username : Text) : async () {
+    if (textMap.contains(usernameRegistry, username)) {
+      Debug.trap("Username already taken");
+    };
+    userIdUsernameRegistry := textMap.put(userIdUsernameRegistry, userId, username);
+    usernameRegistry := textMap.put(usernameRegistry, username, true);
+  };
+
   public shared ({ caller }) func releaseUsername(username : Text) : async () {
-    // Verify ownership
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can release usernames");
+    };
+
     switch (textMap.get(usernameOwnership, username)) {
       case (null) {
         Debug.trap("Username not registered");
@@ -496,7 +552,6 @@ actor Ribbit {
           Debug.trap("Unauthorized: Can only release your own username");
         };
 
-        // Clean up all username-related data
         usernameRegistry := textMap.delete(usernameRegistry, username);
         usernameOwnership := textMap.delete(usernameOwnership, username);
         usernameChangeHistory := textMap.delete(usernameChangeHistory, username);
@@ -505,24 +560,33 @@ actor Ribbit {
     };
   };
 
-  // Username Change Cooldown Functions - Require user permission
+  public shared func releaseUsernameWithPhraseHash(userId : Text, username : Text) : async () {
+    switch (textMap.get(userIdUsernameRegistry, userId)) {
+      case (?registeredUsername) {
+        if (registeredUsername != username) {
+          Debug.trap("Unauthorized: Can only release your own username");
+        };
+        userIdUsernameRegistry := textMap.delete(userIdUsernameRegistry, userId);
+        usernameRegistry := textMap.delete(usernameRegistry, username);
+      };
+      case (null) { Debug.trap("Username not registered") };
+    };
+  };
+
   public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
-    // Check if username is available (not taken by someone else)
     switch (textMap.get(usernameOwnership, username)) {
       case (?owner) {
-        // Username is taken - only allow if it's the caller's own username
         if (owner != caller) {
           return false;
         };
       };
-      case (null) { /* Username available */ };
+      case (null) {};
     };
 
-    // Check cooldown for caller's current username
     switch (principalMap.get(principalToUsername, caller)) {
       case (?currentUsername) {
         let currentTime = Time.now();
-        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
+        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
 
         switch (textMap.get(usernameChangeHistory, currentUsername)) {
           case (?lastChangeTime) {
@@ -531,12 +595,27 @@ actor Ribbit {
           case (null) { return true };
         };
       };
-      case (null) { return true }; // No current username, can register
+      case (null) { return true };
+    };
+  };
+
+  public query func canChangeUsernameByPhraseHash(userId : Text, username : Text) : async Bool {
+    switch (textMap.get(userIdUsernameRegistry, userId)) {
+      case (?currentUsername) {
+        if (currentUsername == username) {
+          return true;
+        };
+        return not textMap.contains(usernameRegistry, username);
+      };
+      case (null) { return not textMap.contains(usernameRegistry, username) };
     };
   };
 
   public shared ({ caller }) func recordUsernameChange(username : Text) : async () {
-    // Verify ownership
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can record username changes");
+    };
+
     switch (textMap.get(usernameOwnership, username)) {
       case (null) {
         Debug.trap("Username not registered");
@@ -549,7 +628,7 @@ actor Ribbit {
     };
 
     let currentTime = Time.now();
-    let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000; // 24 hours in nanoseconds
+    let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
 
     switch (textMap.get(usernameChangeHistory, username)) {
       case (null) {
@@ -565,8 +644,18 @@ actor Ribbit {
     };
   };
 
+  public shared func recordUsernameChangeByPhraseHash(userId : Text, username : Text) : async () {
+    switch (textMap.get(userIdUsernameRegistry, userId)) {
+      case (?registeredUsername) {
+        if (registeredUsername != username) {
+          Debug.trap("Unauthorized: Can only change your own username");
+        };
+      };
+      case (null) { Debug.trap("Username not registered") };
+    };
+  };
+
   func isAlphanumeric(text : Text) : Bool {
-    // Convert Text to iterable and check each character
     let chars = Text.toIter(text);
     var result = true;
     for (c in chars) {
@@ -578,8 +667,11 @@ actor Ribbit {
     result;
   };
 
-  // Pond Functions - Users only
   public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can create ponds");
+    };
+
     if (not isAlphanumeric(name)) {
       Debug.trap("Pond name must contain only letters and numbers. ");
     };
@@ -588,7 +680,6 @@ actor Ribbit {
       Debug.trap("Pond already exists");
     };
 
-    // Validate Froggy Phrase (must contain at least 5 words)
     let wordCount = Array.size(Iter.toArray(Text.split(froggyPhrase, #char ' ')));
     if (wordCount < 5) {
       Debug.trap("Froggy Phrase must contain at least five words");
@@ -601,7 +692,7 @@ actor Ribbit {
       profileImage = ?profileImage;
       bannerImage = ?bannerImage;
       createdAt = Time.now();
-      memberCount = 1; // Creator is the first and only initial member
+      memberCount = 1;
       members = [caller];
       moderators = [caller];
       admin = caller;
@@ -613,7 +704,6 @@ actor Ribbit {
 
     ponds := textMap.put(ponds, name, pond);
 
-    // Update only the creator's joined ponds in their user profile
     switch (principalMap.get(userProfiles, caller)) {
       case (null) {
         let newProfile : UserProfile = {
@@ -633,17 +723,14 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func getPond(name : Text) : async ?Pond {
     textMap.get(ponds, name);
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func listPonds() : async [Pond] {
     Iter.toArray(textMap.vals(ponds));
   };
 
-  // Pond Admin Functions - Only pond admin can perform these operations
   public shared ({ caller }) func editPondSettings(pondName : Text, title : ?Text, description : ?Text, visibility : ?Visibility) : async () {
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can edit pond settings");
@@ -670,7 +757,6 @@ actor Ribbit {
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
-        // Check if moderator already exists
         if (Array.find<Principal>(pond.moderators, func(m) { m == moderator }) != null) {
           Debug.trap("Moderator already exists");
         };
@@ -702,7 +788,6 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func getPondModerators(pondName : Text) : async [Principal] {
     switch (textMap.get(ponds, pondName)) {
       case (null) { [] };
@@ -714,7 +799,6 @@ actor Ribbit {
     isAdminOfPond(Principal.fromActor(Ribbit), pondName);
   };
 
-  // Pond Rules Functions - Admin only
   public shared ({ caller }) func addPondRule(pondName : Text, rule : Text) : async () {
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can add rules");
@@ -750,7 +834,6 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func getPondRules(pondName : Text) : async [Text] {
     switch (textMap.get(ponds, pondName)) {
       case (null) { [] };
@@ -758,7 +841,6 @@ actor Ribbit {
     };
   };
 
-  // Admin function to delete a Lily (post) in their pond
   public shared ({ caller }) func deleteLily(postId : Text) : async () {
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
@@ -772,12 +854,10 @@ actor Ribbit {
     };
   };
 
-  // Admin function to delete a Ribbit in their pond
   public shared ({ caller }) func deleteRibbit(ribbitId : Text) : async () {
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?ribbit) {
-        // Get the post to check pond ownership
         switch (textMap.get(posts, ribbit.postId)) {
           case (null) { Debug.trap("Associated post not found") };
           case (?post) {
@@ -792,7 +872,6 @@ actor Ribbit {
     };
   };
 
-  // Admin function to remove a member from the pond
   public shared ({ caller }) func removeMemberFromPond(pondName : Text, member : Principal) : async () {
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can remove members");
@@ -801,12 +880,10 @@ actor Ribbit {
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
-        // Check if member exists
         if (not isMemberOfPond(member, pondName)) {
           Debug.trap("User is not a member of this pond");
         };
 
-        // Remove member from pond
         let updatedMembers = Array.filter<Principal>(pond.members, func(m) { m != member });
         let updatedPond = {
           pond with
@@ -815,9 +892,8 @@ actor Ribbit {
         };
         ponds := textMap.put(ponds, pondName, updatedPond);
 
-        // Update member's joined ponds
         switch (principalMap.get(userProfiles, member)) {
-          case (null) { /* No profile to update */ };
+          case (null) {};
           case (?profile) {
             let updatedJoinedPonds = Array.filter<Text>(profile.joinedPonds, func(p) { p != pondName });
             let updatedProfile = {
@@ -831,9 +907,11 @@ actor Ribbit {
     };
   };
 
-  // Post Functions - Users only
   public shared ({ caller }) func createPost(title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
-    // Check if pond exists and caller is a member
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can create posts");
+    };
+
     switch (textMap.get(ponds, pond)) {
       case (null) {
         Debug.trap("Pond not found");
@@ -845,10 +923,6 @@ actor Ribbit {
       };
     };
 
-    // Maintain username-principal bidirectional mappings for the lily author
-    // This ensures getUserAvatarByUsername can resolve: username → principal → avatar
-
-    // Always update the mappings to ensure consistency
     usernameOwnership := textMap.put(usernameOwnership, username, caller);
     principalToUsername := principalMap.put(principalToUsername, caller, username);
 
@@ -858,7 +932,6 @@ actor Ribbit {
       case (null) { null };
       case (?t) {
         let norm = normalizeTag(t);
-        // Update tag usage count
         switch (textMap.get(tagUsageCount, norm)) {
           case (null) {
             tagUsageCount := textMap.put(tagUsageCount, norm, 1);
@@ -868,11 +941,9 @@ actor Ribbit {
           };
         };
 
-        // Update pond's associated tags
         switch (textMap.get(ponds, pond)) {
-          case (null) { /* Pond not found, should not happen */ };
+          case (null) {};
           case (?pondData) {
-            // Check if tag already exists in associatedTags
             let tagExists = Array.find<Text>(pondData.associatedTags, func(existingTag) { existingTag == norm }) != null;
             if (not tagExists) {
               let updatedPond = {
@@ -884,10 +955,8 @@ actor Ribbit {
           };
         };
 
-        // Maintain TagStats for canonicalized tag
         let canonicalTag = getCanonicalTag(norm);
 
-        // Retrieve existing or default TagStats
         let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
           case (null) {
             let defaultStats : TagStats = {
@@ -902,14 +971,12 @@ actor Ribbit {
           case (?stats) { stats };
         };
 
-        // Update stats for canonical tag
         let updatedStats = {
           currentStats with
           postsTotal = currentStats.postsTotal + 1;
           lastActivityAt = Time.now();
         };
 
-        // If it's the first sighting, set firstUsedAt
         let finalStats = if (currentStats.postsTotal == 0) {
           {
             updatedStats with
@@ -917,7 +984,6 @@ actor Ribbit {
           };
         } else { updatedStats };
 
-        // Store updated stats for the canonical tag
         tagStats := textMap.put(tagStats, canonicalTag, finalStats);
 
         ?norm;
@@ -939,9 +1005,8 @@ actor Ribbit {
 
     posts := textMap.put(posts, postId, post);
 
-    // Increment lily count in the pond
     switch (textMap.get(ponds, pond)) {
-      case (null) { /* Pond not found, should not happen */ };
+      case (null) {};
       case (?pondData) {
         let updatedPond = {
           pondData with
@@ -954,37 +1019,37 @@ actor Ribbit {
     postId;
   };
 
-  // Like Functions (Posts) - Users only
   public shared ({ caller }) func likePost(postId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can like posts");
+    };
+
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
-        // Initialize post likes if not present
         var currentLikes = switch (textMap.get(postLikes, postId)) {
           case (null) { principalMap.empty<Bool>() };
           case (?likes) { likes };
         };
 
-        // Update like status for the caller
         currentLikes := principalMap.put(currentLikes, caller, true);
-
-        // Save updated likes for the post
         postLikes := textMap.put(postLikes, postId, currentLikes);
-
-        // Log like activity
         logActivity(#like, postId, "", "");
       };
     };
   };
 
   public shared ({ caller }) func unlikePost(postId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can unlike posts");
+    };
+
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
         switch (textMap.get(postLikes, postId)) {
-          case (null) { /* No likes to unlike */ };
+          case (null) {};
           case (?likes) {
-            // Remove like from the post
             let updatedLikes = principalMap.delete(likes, caller);
             postLikes := textMap.put(postLikes, postId, updatedLikes);
           };
@@ -993,34 +1058,36 @@ actor Ribbit {
     };
   };
 
-  // Like Functions (Ribbits) - Users only
   public shared ({ caller }) func likeRibbit(ribbitId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can like ribbits");
+    };
+
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
-        // Initialize ribbit likes if not present
         var currentLikes = switch (textMap.get(ribbitLikes, ribbitId)) {
           case (null) { principalMap.empty<Bool>() };
           case (?likes) { likes };
         };
 
-        // Update like status for the caller
         currentLikes := principalMap.put(currentLikes, caller, true);
-
-        // Save updated likes for the ribbit
         ribbitLikes := textMap.put(ribbitLikes, ribbitId, currentLikes);
       };
     };
   };
 
   public shared ({ caller }) func unlikeRibbit(ribbitId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can unlike ribbits");
+    };
+
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
         switch (textMap.get(ribbitLikes, ribbitId)) {
-          case (null) { /* No likes to unlike */ };
+          case (null) {};
           case (?likes) {
-            // Remove like from the ribbit
             let updatedLikes = principalMap.delete(likes, caller);
             ribbitLikes := textMap.put(ribbitLikes, ribbitId, updatedLikes);
           };
@@ -1029,7 +1096,6 @@ actor Ribbit {
     };
   };
 
-  // Public functions to get like counts, like status, and all likes for posts (guests allowed)
   public query func getPostLikeCount(postId : Text) : async Nat {
     switch (textMap.get(postLikes, postId)) {
       case (null) { 0 };
@@ -1038,7 +1104,6 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedPost(postId : Text) : async Bool {
-    // Allow any user including guests to check if they liked a post
     switch (textMap.get(postLikes, postId)) {
       case (null) { false };
       case (?likes) {
@@ -1050,11 +1115,13 @@ actor Ribbit {
     };
   };
 
-  public shared func clearPostLikes(postId : Text) : async () {
+  public shared ({ caller }) func clearPostLikes(postId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Debug.trap("Unauthorized: Only admins can clear post likes");
+    };
     postLikes := textMap.delete(postLikes, postId);
   };
 
-  // Public functions to get like counts and like status for ribbits (guests allowed)
   public query func getRibbitLikeCount(ribbitId : Text) : async Nat {
     switch (textMap.get(ribbitLikes, ribbitId)) {
       case (null) { 0 };
@@ -1063,7 +1130,6 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedRibbit(ribbitId : Text) : async Bool {
-    // Allow any user including guests to check if they liked a ribbit
     switch (textMap.get(ribbitLikes, ribbitId)) {
       case (null) { false };
       case (?likes) {
@@ -1075,7 +1141,6 @@ actor Ribbit {
     };
   };
 
-  // New function to get like count for a post - Public query (guests allowed)
   public query func getLikeCountForPost(postId : Text) : async Nat {
     switch (textMap.get(postLikes, postId)) {
       case (null) { 0 };
@@ -1083,21 +1148,17 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func getPost(id : Text) : async ?Post {
     textMap.get(posts, id);
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func listPosts() : async [Post] {
     Iter.toArray(textMap.vals(posts));
   };
 
-  // Tag Suggestion Function - Public query (guests allowed)
   public query func getTagSuggestions(prefix : Text, limit : Nat) : async [Text] {
     let normalizedPrefix = normalizeTag(prefix);
 
-    // Filter tags by prefix
     let filteredTags = Array.filter<(Text, Nat)>(
       Iter.toArray(textMap.entries(tagUsageCount)),
       func((tag, _) : (Text, Nat)) : Bool {
@@ -1105,7 +1166,6 @@ actor Ribbit {
       },
     );
 
-    // Sort tags by usage count (descending)
     let sortedTags = Array.sort<(Text, Nat)>(
       filteredTags,
       func(a : (Text, Nat), b : (Text, Nat)) : { #less; #equal; #greater } {
@@ -1113,18 +1173,19 @@ actor Ribbit {
       },
     );
 
-    // Take up to 'limit' tags
     let limitedTags = Array.tabulate<(Text, Nat)>(
       Nat.min(limit, sortedTags.size()),
       func(i : Nat) : (Text, Nat) { sortedTags[i] },
     );
 
-    // Extract tag names
     Array.map<(Text, Nat), Text>(limitedTags, func((tag, _) : (Text, Nat)) : Text { tag });
   };
 
-  // Ribbit Functions - Users only
-  public shared func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
+  public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can create ribbits");
+    };
+
     let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
 
     let ribbit : Ribbit = {
@@ -1138,17 +1199,14 @@ actor Ribbit {
 
     ribbits := textMap.put(ribbits, ribbitId, ribbit);
 
-    // Track user view of ribbit for generating dynamic activity feed
     trackViewRibbitActivity(ribbitId, username);
 
-    // If the target post has a canonical tag, update reply count and last activity for that tag
     switch (textMap.get(posts, postId)) {
       case (?post) {
         switch (post.tag) {
           case (?tag) {
             let canonicalTag = getCanonicalTag(tag);
 
-            // Retrieve existing or default TagStats
             let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
               case (null) {
                 let defaultStats : TagStats = {
@@ -1163,27 +1221,24 @@ actor Ribbit {
               case (?stats) { stats };
             };
 
-            // Update reply count and last activity
             let updatedStats = {
               currentStats with
               repliesTotal = currentStats.repliesTotal + 1;
               lastActivityAt = Time.now();
             };
 
-            // Store updated stats for the canonical tag
             tagStats := textMap.put(tagStats, canonicalTag, updatedStats);
           };
-          case (null) { /* No tag for this post */ };
+          case (null) {};
         };
       };
-      case (null) { /* Post not found */ };
+      case (null) {};
     };
 
     ribbitId;
   };
 
   func trackViewRibbitActivity(ribbitId : Text, username : Text) {
-    // Track only if the same user hasn't viewed this ribbit before
     let hasViewedBefore = Array.find<Activity>(
       Iter.toArray(textMap.vals(ribbitActivity)),
       func(activity) {
@@ -1192,24 +1247,20 @@ actor Ribbit {
     ) != null;
 
     if (not hasViewedBefore) {
-      // Create new activity record for the view action
       let activity : Activity = {
         id = ribbitId # "_view_" # Int.toText(Time.now());
         type_ = #viewRibbit;
         targetId = ribbitId;
         timestamp = Time.now();
         username;
-        pond = ""; // Pond could be fetched if needed for filtering
+        pond = "";
       };
 
-      // Add to existing ribbitActivity map
       ribbitActivity := textMap.put(ribbitActivity, activity.id, activity);
     };
   };
 
-  // New query function for dynamic activity tracking (recently viewed ribbits) - Users only
   public query func getRecentRibbitViews(username : Text, limit : Nat) : async [Activity] {
-    // Filter only strictly #viewRibbit activities
     let viewActivities = Array.filter<Activity>(
       Iter.toArray(textMap.vals(ribbitActivity)),
       func(activity) {
@@ -1217,7 +1268,6 @@ actor Ribbit {
       },
     );
 
-    // Get activities from the last 30 days (1 month)
     let now = Time.now();
     let lastDay = 24 * 60 * 60 * 1_000_000_000;
 
@@ -1228,7 +1278,6 @@ actor Ribbit {
       },
     );
 
-    // Sort by most recent first
     let sortedViews = Array.sort<Activity>(
       recentViews,
       func(a, b) {
@@ -1236,7 +1285,6 @@ actor Ribbit {
       },
     );
 
-    // Return up to 30 most recent views
     let resultSize = Nat.min(sortedViews.size(), limit);
     if (resultSize == 0) {
       return [];
@@ -1250,12 +1298,10 @@ actor Ribbit {
     limitedResult;
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func getRibbit(id : Text) : async ?Ribbit {
     textMap.get(ribbits, id);
   };
 
-  // Public query - no authorization required (guests allowed)
   public query func listRibbits(postId : Text) : async [Ribbit] {
     let filtered = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -1264,7 +1310,6 @@ actor Ribbit {
     filtered;
   };
 
-  // New query function for threaded ribbits with sorting support (guests allowed)
   public query func getThreadedRibbitsSorted(postId : Text, sortBy : Text) : async [Ribbit] {
     let allRibbits = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -1276,7 +1321,6 @@ actor Ribbit {
       func(r : Ribbit) : Bool { switch (r.parentId) { case (null) { true }; case (?_) { false } } },
     );
 
-    // Sorting root ribbits based on sortBy parameter
     let sortedRootRibbits = switch (sortBy) {
       case ("top") {
         Array.sort<Ribbit>(
@@ -1302,7 +1346,7 @@ actor Ribbit {
           },
         );
       };
-      case (_) { rootRibbits }; // default order
+      case (_) { rootRibbits };
     };
 
     func buildThread(ribbit : Ribbit) : [Ribbit] {
@@ -1331,7 +1375,6 @@ actor Ribbit {
     threadedRibbits;
   };
 
-  // New function to get ribbit count for a post - Public query (guests allowed)
   public query func getRibbitCountForPost(postId : Text) : async Nat {
     var count = 0;
     for ((_, ribbit) in textMap.entries(ribbits)) {
@@ -1342,7 +1385,6 @@ actor Ribbit {
     count;
   };
 
-  // New function to get view count for a post - Public query (guests allowed)
   public query func getViewCountForPost(postId : Text) : async Nat {
     switch (textMap.get(posts, postId)) {
       case (null) { 0 };
@@ -1350,7 +1392,6 @@ actor Ribbit {
     };
   };
 
-  // Search Functions - Public access (no authorization required, guests allowed)
   public query func searchPonds(searchTerm : Text) : async [Pond] {
     let filtered = Array.filter<Pond>(
       Iter.toArray(textMap.vals(ponds)),
@@ -1371,17 +1412,18 @@ actor Ribbit {
     filtered;
   };
 
-  // Pond Membership Functions - Users only
   public shared ({ caller }) func joinPond(pondName : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can join ponds");
+    };
+
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
-        // Check if user is already a member
         if (isMemberOfPond(caller, pondName)) {
           Debug.trap("Already a member of this pond");
         };
 
-        // Add user to pond members
         let updatedPond = {
           pond with
           members = Array.append(pond.members, [caller]);
@@ -1389,10 +1431,8 @@ actor Ribbit {
         };
         ponds := textMap.put(ponds, pondName, updatedPond);
 
-        // Update user's joined ponds in their profile
         switch (principalMap.get(userProfiles, caller)) {
           case (null) {
-            // Create new profile with this pond
             let newProfile : UserProfile = {
               name = "Frog_" # Nat.toText(Int.abs(Time.now()) % 10000);
               joinedPonds = [pondName];
@@ -1401,7 +1441,6 @@ actor Ribbit {
             userProfiles := principalMap.put(userProfiles, caller, newProfile);
           };
           case (?profile) {
-            // Update existing profile
             let updatedProfile = {
               profile with
               joinedPonds = Array.append(profile.joinedPonds, [pondName]);
@@ -1413,16 +1452,41 @@ actor Ribbit {
     };
   };
 
+  public shared func joinPondByPhraseHash(userId : Text, pondName : Text) : async () {
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) {
+        switch (textMap.get(ponds, pondName)) {
+          case (null) { Debug.trap("Pond not found") };
+          case (?pond) {
+            if (isMemberOfPond(principal, pondName)) {
+              Debug.trap("Already a member of this pond");
+            };
+
+            let updatedPond = {
+              pond with
+              members = Array.append(pond.members, [principal]);
+              memberCount = pond.memberCount + 1;
+            };
+            ponds := textMap.put(ponds, pondName, updatedPond);
+          };
+        };
+      };
+      case (null) { Debug.trap("User ID not found") };
+    };
+  };
+
   public shared ({ caller }) func leavePond(pondName : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can leave ponds");
+    };
+
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
-        // Check if user is a member
         if (not isMemberOfPond(caller, pondName)) {
           Debug.trap("Not a member of this pond");
         };
 
-        // Remove user from pond members
         let updatedMembers = Array.filter<Principal>(pond.members, func(member) { member != caller });
         let updatedPond = {
           pond with
@@ -1431,9 +1495,8 @@ actor Ribbit {
         };
         ponds := textMap.put(ponds, pondName, updatedPond);
 
-        // Update user's joined ponds
         switch (principalMap.get(userProfiles, caller)) {
-          case (null) { /* No profile to update */ };
+          case (null) {};
           case (?profile) {
             let updatedJoinedPonds = Array.filter<Text>(profile.joinedPonds, func(p) { p != pondName });
             let updatedProfile = {
@@ -1447,6 +1510,30 @@ actor Ribbit {
     };
   };
 
+  public shared func leavePondByPhraseHash(userId : Text, pondName : Text) : async () {
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) {
+        switch (textMap.get(ponds, pondName)) {
+          case (null) { Debug.trap("Pond not found") };
+          case (?pond) {
+            if (not isMemberOfPond(principal, pondName)) {
+              Debug.trap("Not a member of this pond");
+            };
+
+            let updatedMembers = Array.filter<Principal>(pond.members, func(member) { member != principal });
+            let updatedPond = {
+              pond with
+              members = updatedMembers;
+              memberCount = Nat.sub(pond.memberCount, 1);
+            };
+            ponds := textMap.put(ponds, pondName, updatedPond);
+          };
+        };
+      };
+      case (null) { Debug.trap("User ID not found") };
+    };
+  };
+
   public query func getJoinedPonds() : async [Text] {
     switch (principalMap.get(userProfiles, Principal.fromActor(Ribbit))) {
       case (null) { [] };
@@ -1454,7 +1541,6 @@ actor Ribbit {
     };
   };
 
-  // Pond About Page Functions - Public query (guests allowed)
   public query func getPondAboutInfo(pondName : Text) : async ?{
     name : Text;
     title : Text;
@@ -1475,7 +1561,7 @@ actor Ribbit {
       case (?pond) {
         ?{
           name = pond.name;
-          title = pond.name; // Use name as title since title was removed
+          title = pond.name;
           description = pond.description;
           profileImage = pond.profileImage;
           bannerImage = pond.bannerImage;
@@ -1492,11 +1578,9 @@ actor Ribbit {
     };
   };
 
-  // Tag Page Functions - Public query (guests allowed)
   public query func getLiliesByTag(tag : Text, sortBy : Text) : async [Post] {
     let canonicalTag = getCanonicalTag(tag);
 
-    // Filter posts by tag
     let filteredPosts = Array.filter<Post>(
       Iter.toArray(textMap.vals(posts)),
       func(p : Post) : Bool {
@@ -1507,7 +1591,6 @@ actor Ribbit {
       },
     );
 
-    // Sort posts based on sortBy parameter
     let sortedPosts = switch (sortBy) {
       case ("newest") {
         Array.sort<Post>(
@@ -1541,7 +1624,6 @@ actor Ribbit {
     sortedPosts;
   };
 
-  // Helper function to get ribbit count for a post (synchronous)
   func getRibbitCountForPostSync(postId : Text) : Nat {
     var count = 0;
     for ((_, ribbit) in textMap.entries(ribbits)) {
@@ -1552,7 +1634,6 @@ actor Ribbit {
     count;
   };
 
-  // New query function to get tag rank based on usage - using a while loop for compatibility (guests allowed)
   public query func getTagRank(tag : Text) : async {
     tag : Text;
     rank : ?Nat;
@@ -1570,13 +1651,12 @@ actor Ribbit {
     var position = 1;
     var found = false;
 
-    // Using a while loop instead of Array.iter for compatibility
     var i = 0;
     while (i < sorted.size()) {
       let (currentTag, _) = sorted[i];
       if (currentTag == canonicalTag) {
         found := true;
-        i := sorted.size(); // Exit the loop
+        i := sorted.size();
       } else {
         position += 1;
         i += 1;
@@ -1590,12 +1670,10 @@ actor Ribbit {
     };
   };
 
-  // New: Unrestricted read access for retrieving avatars! (guests allowed)
   public query func getUserAvatarByUsername(username : Text) : async ?Storage.ExternalBlob {
     textMap.get(usernameAvatars, username);
   };
 
-  // Function to log an activity
   func logActivity(activityType : ActivityType, targetId : Text, username : Text, pond : Text) {
     let activity : Activity = {
       id = Text.concat("activity_", Nat.toText(textMap.size(postActivity) + textMap.size(ribbitActivity) + textMap.size(likeActivity)));
@@ -1622,7 +1700,6 @@ actor Ribbit {
     };
   };
 
-  // Function to get recent posts (guests allowed)
   public query func getRecentPosts(limit : Nat) : async [Activity] {
     let allPosts = Iter.toArray(textMap.vals(postActivity));
     let sortedPosts = Array.sort<Activity>(
@@ -1638,7 +1715,6 @@ actor Ribbit {
     limitedPosts;
   };
 
-  // Function to get recent ribbits (guests allowed)
   public query func getRecentRibbits(limit : Nat) : async [Activity] {
     let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
     let sortedRibbits = Array.sort<Activity>(
@@ -1654,7 +1730,6 @@ actor Ribbit {
     limitedRibbits;
   };
 
-  // Function to get recently liked posts (guests allowed)
   public query func getRecentlyLikedPosts(limit : Nat) : async [Activity] {
     let allLikes = Iter.toArray(textMap.vals(likeActivity));
     let sortedLikes = Array.sort<Activity>(
@@ -1670,7 +1745,6 @@ actor Ribbit {
     limitedLikes;
   };
 
-  // Function to get all recent activities (guests allowed)
   public query func getAllRecentActivities(limit : Nat) : async [Activity] {
     let allPosts = Iter.toArray(textMap.vals(postActivity));
     let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
@@ -1695,8 +1769,6 @@ actor Ribbit {
     limitedActivities;
   };
 
-  // Tag Ranking Query Endpoints (guests allowed)
-
   public query func getTopTags(limit : Nat) : async [(Text, TagStats)] {
     let entries = Iter.toArray(textMap.entries(tagStats));
     let sorted = Array.sort<(Text, TagStats)>(
@@ -1711,7 +1783,7 @@ actor Ribbit {
 
   public query func getTrendingTags(limit : Nat) : async [(Text, TagStats)] {
     let entries = Iter.toArray(textMap.entries(tagStats));
-    let radius = 25_000_000_000_000; // 25K billion nanoseconds = 25K seconds = 6.9 hours
+    let radius = 25_000_000_000_000;
     let now = Time.now();
 
     let sorted = Array.sort<(Text, TagStats)>(
@@ -1738,7 +1810,6 @@ actor Ribbit {
     Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
   };
 
-  // Helper function to compute trending score with custom decay using windowing
   func computeTrendingScore(stats : TagStats, now : Int, radius : Int) : Int {
     let activityAge = now - stats.lastActivityAt;
     let window = activityAge / radius;
@@ -1747,13 +1818,12 @@ actor Ribbit {
     let adjustedAge = if (remaining < 0) { -remaining } else { remaining };
     let baseScore = stats.postsTotal + stats.repliesTotal;
 
-    // Apply additional boost for fresh content within the current window instead of 0 when new
     let recalculateScore = switch (window) {
-      case (0) { baseScore * 10 }; // Fresh content within current window gets big boost
-      case (1) { baseScore * 3 }; // Still quite recent - lesser boost
-      case (2) { baseScore * 2 }; // Very recent - moderate boost
-      case (3) { baseScore * 1 }; // Slightly less recent - minimal boost
-      case (_) { baseScore }; // No adjustment for older content
+      case (0) { baseScore * 10 };
+      case (1) { baseScore * 3 };
+      case (2) { baseScore * 2 };
+      case (3) { baseScore * 1 };
+      case (_) { baseScore };
     };
     recalculateScore / (adjustedAge / radius + 1);
   };
@@ -1763,23 +1833,18 @@ actor Ribbit {
     textMap.get(tagStats, canonicalTag);
   };
 
-  // ===== SUBCATEGORIES SYSTEM =====
-
-  // Public query - no authorization required (guests allowed)
   public query func getSubcategoriesForTag(tag : Text) : async [Text] {
     let canonicalTag = getCanonicalTag(tag);
 
-    // Handle explicit canonical tag mappings and empty subcategories
     let subcategories = switch (textMap.get(tagSubcategories, canonicalTag)) {
       case (?subs) { subs };
       case null {
-        // Fallback: try to retrieve by original tag if different
         if (canonicalTag != tag) {
           switch (textMap.get(tagSubcategories, tag)) {
             case (?subs) { subs };
-            case null { [] }; // No explicit subcategories found
+            case null { [] };
           };
-        } else { [] }; // No explicit subcategories found for canonical tag
+        } else { [] };
       };
     };
     subcategories;

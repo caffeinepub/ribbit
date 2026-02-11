@@ -186,7 +186,9 @@ export interface backendInterface {
     addModerator(pondName: string, moderator: Principal): Promise<void>;
     addPondRule(pondName: string, rule: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
     canChangeUsername(username: string): Promise<boolean>;
+    canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
@@ -245,17 +247,24 @@ export interface backendInterface {
     getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUserProfileByPhraseHash(userId: string): Promise<UserProfile | null>;
     getUserProfileByUsername(username: string): Promise<UserProfile | null>;
+    getUserRoleByPhraseHash(userId: string): Promise<UserRole>;
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
     incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
+    initializeFroggyPhrase(userId: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isPondAdmin(pondName: string): Promise<boolean>;
+    isUserAdminByPhraseHash(userId: string): Promise<boolean>;
     isUsernameAvailable(username: string): Promise<boolean>;
+    isUsernameAvailableByPhraseHash(_userId: string, username: string): Promise<boolean>;
     joinPond(pondName: string): Promise<void>;
+    joinPondByPhraseHash(userId: string, pondName: string): Promise<void>;
     leavePond(pondName: string): Promise<void>;
+    leavePondByPhraseHash(userId: string, pondName: string): Promise<void>;
     likePost(postId: string): Promise<void>;
     likeRibbit(ribbitId: string): Promise<void>;
     listPonds(): Promise<Array<Pond>>;
@@ -263,12 +272,16 @@ export interface backendInterface {
     listRibbits(postId: string): Promise<Array<Ribbit>>;
     mergeSimilarTags(): Promise<void>;
     recordUsernameChange(username: string): Promise<void>;
+    recordUsernameChangeByPhraseHash(userId: string, username: string): Promise<void>;
     registerUsername(username: string): Promise<void>;
+    registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     releaseUsername(username: string): Promise<void>;
+    releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
     removePondRule(pondName: string, rule: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveUserProfileByPhraseHash(userId: string, profile: UserProfile): Promise<void>;
     searchPonds(searchTerm: string): Promise<Array<Pond>>;
     searchPosts(searchTerm: string): Promise<Array<Post>>;
     unlikePost(postId: string): Promise<void>;
@@ -403,6 +416,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async assignUserRoleByPhraseHash(arg0: string, arg1: UserRole): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.assignUserRoleByPhraseHash(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.assignUserRoleByPhraseHash(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
     async canChangeUsername(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -414,6 +441,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.canChangeUsername(arg0);
+            return result;
+        }
+    }
+    async canChangeUsernameByPhraseHash(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.canChangeUsernameByPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.canChangeUsernameByPhraseHash(arg0, arg1);
             return result;
         }
     }
@@ -995,6 +1036,20 @@ export class Backend implements backendInterface {
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getUserProfileByPhraseHash(arg0: string): Promise<UserProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserProfileByPhraseHash(arg0);
+                return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserProfileByPhraseHash(arg0);
+            return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getUserProfileByUsername(arg0: string): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -1007,6 +1062,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getUserProfileByUsername(arg0);
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getUserRoleByPhraseHash(arg0: string): Promise<UserRole> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserRoleByPhraseHash(arg0);
+                return from_candid_UserRole_n26(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserRoleByPhraseHash(arg0);
+            return from_candid_UserRole_n26(this._uploadFile, this._downloadFile, result);
         }
     }
     async getViewCountForPost(arg0: string): Promise<bigint> {
@@ -1079,6 +1148,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async initializeFroggyPhrase(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.initializeFroggyPhrase(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.initializeFroggyPhrase(arg0);
+            return result;
+        }
+    }
     async isCallerAdmin(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -1107,6 +1190,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async isUserAdminByPhraseHash(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isUserAdminByPhraseHash(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isUserAdminByPhraseHash(arg0);
+            return result;
+        }
+    }
     async isUsernameAvailable(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -1118,6 +1215,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isUsernameAvailable(arg0);
+            return result;
+        }
+    }
+    async isUsernameAvailableByPhraseHash(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isUsernameAvailableByPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isUsernameAvailableByPhraseHash(arg0, arg1);
             return result;
         }
     }
@@ -1135,6 +1246,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async joinPondByPhraseHash(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.joinPondByPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.joinPondByPhraseHash(arg0, arg1);
+            return result;
+        }
+    }
     async leavePond(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1146,6 +1271,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.leavePond(arg0);
+            return result;
+        }
+    }
+    async leavePondByPhraseHash(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.leavePondByPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.leavePondByPhraseHash(arg0, arg1);
             return result;
         }
     }
@@ -1247,6 +1386,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async recordUsernameChangeByPhraseHash(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.recordUsernameChangeByPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.recordUsernameChangeByPhraseHash(arg0, arg1);
+            return result;
+        }
+    }
     async registerUsername(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1261,6 +1414,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async registerUsernameWithPhraseHash(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.registerUsernameWithPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.registerUsernameWithPhraseHash(arg0, arg1);
+            return result;
+        }
+    }
     async releaseUsername(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1272,6 +1439,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.releaseUsername(arg0);
+            return result;
+        }
+    }
+    async releaseUsernameWithPhraseHash(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.releaseUsernameWithPhraseHash(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.releaseUsernameWithPhraseHash(arg0, arg1);
             return result;
         }
     }
@@ -1328,6 +1509,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async saveUserProfileByPhraseHash(arg0: string, arg1: UserProfile): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveUserProfileByPhraseHash(arg0, await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveUserProfileByPhraseHash(arg0, await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }

@@ -1,4 +1,25 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-update-the-frontend-react-query-hooks-mutations-that-already-compute-getphrasehashuserid-so-they-actually-pass-the-phrase-hash-userid-into-the-backend-methods-that-accept-it-and-keep-working-when-the-userid-is-empty",
+      "featureTitle": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+      "files": [
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "blob-storage@2.0.3",
+        "authorization@1.0.1",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

@@ -1,28 +1,53 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T12:26:32.415Z",
+  "generatedAt": "2026-02-11T18:28:35.292Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 0,
+    "total": 5,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
+        "summary": "Add UserId (phrase-hash) parallel storage to the backend canister so identity-linked data can be keyed by `UserId = Text` while retaining all existing Principal-keyed storage unchanged.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
+        "summary": "Implement a backend linkage mechanism that records an association between `msg.caller : Principal` and a provided `userId : Text` (phrase-hash) whenever a phrase-hash-enabled method is called with a non-empty `userId`, and use this linkage to support gradual migration.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update backend read/write paths for identity-affecting actions to dual-write (UserId + Principal) where possible, and to read with a safe fallback order (UserId first when available, otherwise Principal), without introducing new authorization gating.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Expose backend query methods needed for Step 3 so the frontend can retrieve user/profile and like state via phrase-hash (`userId`) while still supporting legacy Principal-based queries as fallback.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts"
+        ]
       }
     ]
   },
@@ -30,11 +55,11 @@
     "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
+    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

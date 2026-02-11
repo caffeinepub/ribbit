@@ -1,73 +1,111 @@
 {
   "kind": "build_request",
-  "title": "Disable backend authorization so Ribbit is fully anonymous with full access",
-  "priority": "high",
+  "title": "Step 3: Begin parallel migration from Principal-keyed storage to phrase-hash UserId (keep Principal data intact)",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
+      "text": "Add UserId (phrase-hash) parallel storage to the backend canister so identity-linked data can be keyed by `UserId = Text` while retaining all existing Principal-keyed storage unchanged.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6",
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "its supposed to be an anonymous site. everyone should have full access/authorization",
-          "yes remove them.",
-          "Try it again idiot"
+          "ok do it"
         ]
       },
       "acceptanceCriteria": [
-        "No backend method traps or denies requests due to role/permission checks for anonymous callers.",
-        "Calls that previously required #user or #admin (e.g., getCallerUserProfile, saveCallerUserProfile, incrementLilyViewCount, registerUsername, releaseUsername, canChangeUsername, mergeSimilarTags, and any other permission-guarded operations in backend/main.mo) succeed for anonymous callers when given otherwise-valid inputs.",
-        "The canister no longer produces \"Unauthorized:\" trap messages during normal site usage by anonymous visitors."
+        "Backend compiles and deploys with no breaking changes to existing Principal-keyed maps/records.",
+        "New UserId-keyed maps exist for at least: user profiles, username ownership/mapping, and like state (post + ribbit likes).",
+        "No existing stable/state data is deleted or overwritten in a way that prevents Principal-based users from continuing to use the app."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
+      "text": "Implement a backend linkage mechanism that records an association between `msg.caller : Principal` and a provided `userId : Text` (phrase-hash) whenever a phrase-hash-enabled method is called with a non-empty `userId`, and use this linkage to support gradual migration.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "why are authorization checks showing up again? i thought you removed them long time ago? its supposed to be an anonymous site.",
-          "yes remove them."
+          "ok do it"
         ]
       },
       "acceptanceCriteria": [
-        "Frontend calls to initializeAccessControl (triggered by frontend/src/hooks/useActor.ts) do not introduce any authorization requirements and do not cause traps for either authenticated or anonymous actors.",
-        "isCallerAdmin and getCallerUserRole return values that do not prevent the UI from operating for anonymous users (e.g., avoid triggering admin/user-only blocking flows in the app)."
+        "When a shared method that receives `userId` is invoked with `userId != \"\"`, the canister stores/updates a mapping between the caller Principal and that userId.",
+        "If `userId == \"\"`, behavior remains unchanged and no linkage is required (anonymous/legacy mode continues to work).",
+        "The linkage is used to prefer UserId-keyed lookups when possible while preserving Principal fallback."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update backend read/write paths for identity-affecting actions to dual-write (UserId + Principal) where possible, and to read with a safe fallback order (UserId first when available, otherwise Principal), without introducing new authorization gating.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "For each supported identity-affecting feature (at minimum: saving/fetching user profile, registering/releasing usernames, liking/unliking posts and ribbits), the backend writes UserId-keyed state when `userId != \"\"` and continues to write/maintain Principal-keyed state as it does today.",
+        "Queries that return the current user’s state return consistent results for (a) users with only Principal history, (b) users with only UserId history, and (c) users with both (UserId takes precedence when present).",
+        "All core actions remain callable in anonymous mode; no new role/admin/authorization checks are added beyond existing behavior/stubs."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Expose backend query methods needed for Step 3 so the frontend can retrieve user/profile and like state via phrase-hash (`userId`) while still supporting legacy Principal-based queries as fallback.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend provides phrase-hash equivalents (or enhanced existing methods) for querying user profile and like state using `userId : Text`, while keeping existing Principal-based query methods intact.",
+        "Candid/API generation succeeds and the frontend bindings can be regenerated without manual edits."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "ok do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In `frontend/src/hooks/useQueries.ts`, mutations such as join/leave pond, create post/lily, create ribbit, like/unlike post, like/unlike ribbit, and username-related mutations pass the computed `userId` to the backend method when the backend signature expects it.",
+        "If `getPhraseHashUserId()` returns an empty string, the frontend still calls the backend in a way that preserves existing anonymous/Principal-based behavior (no crashes).",
+        "TypeScript builds cleanly after regenerating backend bindings (no mismatched parameter lists)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
-    "Do not modify any files under frontend immutablePaths (per SYSTEM_CONTEXT).",
-    "Use English for any user-facing text surfaced by the app or traps; avoid introducing new non-English strings."
+    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
+    "Do not remove or rewrite existing Principal-keyed storage in this step; migration must be additive and reversible.",
+    "Do not introduce new authorization gating; core actions must remain callable in anonymous mode.",
+    "Do not edit frontend files under `frontend/src/components/ui`, `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx`."
   ],
   "nonGoals": [
-    "Implementing a new authentication system (Internet Identity remains optional but must not be required).",
-    "Adding new product features unrelated to removing/disabling authorization checks."
+    "Completing the full cutover to phrase-hash-only identity (i.e., deleting Principal-keyed data) is out of scope for this step.",
+    "Adding third-party authentication providers or non-Internet-Identity auth is out of scope.",
+    "Introducing external databases or additional canisters/services is out of scope."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [
-      "Keep Ribbit fully anonymous: everyone has full access and no authorization checks are enforced."
-    ],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

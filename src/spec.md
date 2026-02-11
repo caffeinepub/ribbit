@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Make Ribbit fully anonymous by disabling all backend authorization enforcement so unauthenticated callers have full access to all canister functionality.
+**Goal:** Begin a parallel, additive migration from Principal-keyed backend storage to phrase-hash `UserId : Text` storage, keeping all existing Principal data intact and maintaining anonymous/legacy behavior.
 
 **Planned changes:**
-- Remove/disable all role/permission checks in backend canister methods so anonymous callers can perform all actions (pond/post/ribbit creation, likes, join/leave ponds, username management, profile read/write, view count increments, and previously admin-only utilities).
-- Keep existing access-control-related Candid methods in the backend interface for frontend compatibility, but ensure they do not gate functionality or cause traps in anonymous mode.
-- Eliminate “Unauthorized:” traps during normal anonymous site usage by removing or bypassing authorization enforcement paths in `backend/main.mo`.
+- Add new UserId-keyed backend maps for identity-linked data (at minimum: user profiles, username ownership/mapping, and like state for posts and ribbits) while leaving existing Principal-keyed storage unchanged.
+- Implement a linkage mapping that associates `msg.caller : Principal` with a provided `userId : Text` whenever phrase-hash-enabled methods are called with `userId != ""`.
+- Update backend read/write paths for key identity-affecting actions to dual-write (UserId + Principal when `userId != ""`) and to read with safe fallback (prefer UserId when available, otherwise Principal), without adding new authorization gating.
+- Expose/extend backend query methods so the frontend can fetch profile and like state by `userId` while preserving existing Principal-based query methods.
+- Update existing frontend React Query hooks/mutations (that already compute `getPhraseHashUserId()`) to pass `userId` into backend methods that accept it, and continue working when `userId` is empty.
 
-**User-visible outcome:** Visitors can use the full Ribbit app anonymously (without authenticating) and no features fail due to authorization/role checks.
+**User-visible outcome:** Users can continue using the app as before, while accounts/actions can also be stored and retrieved via phrase-hash `userId` when available, enabling a gradual migration without breaking legacy Principal-based users.

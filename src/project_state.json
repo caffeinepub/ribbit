@@ -1,25 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Anonymous site where all users have full access (no authorization checks enforced).",
+  "summary": "Project involves a multi-step process; next planned work (Step 3) is to begin migrating storage from Principals to UserId (phrase-hash) while retaining existing principal data as a transitional safety step.",
   "architectural_notes": [
-    "Project requirement: site is anonymous; backend should not enforce user roles/authorization checks for core actions."
+    "Use a staged migration approach for identity storage: introduce UserId (phrase-hash) alongside existing Principal-based storage; do not remove principal data during Step 3."
   ],
-  "known_issues": [
-    "Authorization checks are currently (re)appearing/enforced, blocking anonymous full access."
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-update-the-frontend-react-query-hooks-mutations-that-already-compute-getphrasehashuserid-so-they-actually-pass-the-phrase-hash-userid-into-the-backend-methods-that-accept-it-and-keep-working-when-the-userid-is-empty",
+      "title": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    }
   ],
-  "isFixRequest": true,
-  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove/disable backend authorization checks so the site is fully anonymous with full access for everyone.",
+      "summary": "Implement Step 3: start migrating storage from Principals to UserId (phrase-hash) without removing principal-based data yet (safe transitional migration).",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
+      "summary": "Add UserId (phrase-hash) parallel storage to the backend canister so identity-linked data can be keyed by `UserId = Text` while retaining all existing Principal-keyed storage unchanged.",
       "reqIds": [
         "REQ-1"
       ],
@@ -27,14 +34,30 @@
     },
     {
       "id": "AR-3",
-      "summary": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
+      "summary": "Implement a backend linkage mechanism that records an association between `msg.caller : Principal` and a provided `userId : Text` (phrase-hash) whenever a phrase-hash-enabled method is called with a non-empty `userId`, and use this linkage to support gradual migration.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Update backend read/write paths for identity-affecting actions to dual-write (UserId + Principal) where possible, and to read with a safe fallback order (UserId first when available, otherwise Principal), without introducing new authorization gating.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Expose backend query methods needed for Step 3 so the frontend can retrieve user/profile and like state via phrase-hash (`userId`) while still supporting legacy Principal-based queries as fallback.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Disable backend authorization so Ribbit is fully anonymous with full access",
+  "projectName": "Step 3: Begin parallel migration from Principal-keyed storage to phrase-hash UserId (keep Principal data intact)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
