@@ -1,38 +1,41 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T01:18:37.656Z",
-  "summary": "The diff does not show any changes to pond-creation logic or user-profile update logic; only type/variable context from `backend/main.mo` is visible (truncated) and `project_state.json` was updated with additional request metadata. Based on the provided diff summary, the core backend bugfix requirements (REQ-3/REQ-4) are not evidenced as implemented.",
+  "generatedAt": "2026-02-11T01:30:02.432Z",
+  "summary": "The diff clearly adds join/leave mutation wiring (including toasts) to PondAboutPage and indicates the mobile Join CTA was removed from PondPage, but the truncated diff does not provide enough visible evidence that the Join button is actually rendered in the About page membership-controls section with mobile-only (lg:hidden) behavior, nor that member-state preserves the existing Leave button behavior.",
   "missing_requirements": [
     {
-      "id": "REQ-3",
-      "requirement": "Update pond creation so a new Pond is initialized with exactly one member: the creating principal (`caller`), without using/copying any global principal list (e.g., `initializedUsers`), and set `memberCount` to match (1).",
-      "reason": "The diff excerpt for `backend/main.mo` only shows imports, state variables, and type definitions; it does not include or evidence any updated pond-creation function/logic that sets `members = [caller]` and `memberCount = 1`, nor removal of any use of `initializedUsers` during pond creation.",
+      "id": "REQ-5",
+      "requirement": "On mobile (lg:hidden) in frontend/src/pages/PondAboutPage.tsx, when the user is not a member, a Join Pond button is displayed in the same section where the Leave Pond button is displayed for members (membership controls section).",
+      "reason": "PondAboutPage.tsx shows new join/leave handlers and membership detection, but the provided truncated diff does not include any JSX demonstrating a Join button rendered conditionally for non-members, its placement in the membership controls section, or that it is mobile-only via responsive classes like lg:hidden.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/pages/PondAboutPage.tsx (truncated)"
       ]
     },
     {
-      "id": "REQ-4",
-      "requirement": "Ensure pond creation updates membership-related user state only for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not modify any other users’ profiles or iterate over global user lists during pond creation.",
-      "reason": "No pond-creation/user-profile update code is shown in the provided diff excerpt; there is no evidence of limiting profile updates to only `caller` or removing any iteration over `initializedUsers` during pond creation.",
+      "id": "REQ-5",
+      "requirement": "On mobile in PondAboutPage, when the user is a member, the existing Leave Pond button behavior remains unchanged (including loading/disabled state).",
+      "reason": "The diff shows a new leave handler and mutations, but the truncated content does not show the Leave button JSX or confirm that its existing loading/disabled behavior is preserved.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/pages/PondAboutPage.tsx (truncated)"
       ]
-    }
-  ],
-  "hallucinated_features": [
+    },
     {
-      "description": "Added/maintained extra project-state feature requests (AR-1/AR-2) referencing REQ-1/REQ-2, which are not part of the BuildRequest (only REQ-3 and REQ-4 are requested).",
-      "reason": "The BuildRequest only specifies REQ-3 and REQ-4. The diff updates `project_state.json` to include items that map to REQ-1/REQ-2, which are not requested requirements.",
+      "id": "REQ-5",
+      "requirement": "Desktop behavior is unchanged: the feed’s desktop right sidebar join/leave control (frontend/src/components/PondAboutSidebar.tsx) continues to work as before, and no new desktop-only Join button is introduced on the About page unless it already existed.",
+      "reason": "No diff content is shown for frontend/src/components/PondAboutSidebar.tsx, and the truncated PondAboutPage.tsx does not show whether any desktop-visible Join control was added or modified.",
       "evidence": [
-        "project_state.json"
+        "frontend/src/pages/PondAboutPage.tsx (truncated)",
+        "frontend/src/pages/PondPage.tsx (truncated)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "hallucinated_features": [],
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/pages/PondAboutPage.tsx",
+    "frontend/src/pages/PondPage.tsx",
     "project_state.json"
   ]
 }

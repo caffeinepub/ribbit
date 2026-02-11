@@ -1,6 +1,30 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend scope review for pond creation auto-membership fix",
-  "requirements": []
+  "title": "Mobile-only relocation of “Join Pond” from Pond Feed to Pond About membership controls",
+  "requirements": [
+    {
+      "id": "REQ-5",
+      "summary": "On mobile only, remove Join Pond from Pond Feed and show Join Pond within Pond About membership controls where Leave Pond appears for members, reusing existing join mutation and toast patterns without changing desktop behavior.",
+      "acceptanceCriteria": [
+        "On mobile (lg:hidden) in frontend/src/pages/PondPage.tsx, the Join Pond button is no longer displayed.",
+        "On mobile (lg:hidden) in frontend/src/pages/PondAboutPage.tsx, when the user is not a member, a Join Pond button is displayed in the same section where the Leave Pond button is displayed for members.",
+        "On mobile in PondAboutPage, when the user is a member, the existing Leave Pond button behavior remains unchanged (including loading/disabled state).",
+        "Joining from the About page triggers the existing join mutation and displays the existing success/error toast messaging consistent with the current app patterns (e.g., “Successfully joined the pond!” / “Failed to join pond”).",
+        "Desktop behavior is unchanged: the feed’s desktop right sidebar join/leave control (frontend/src/components/PondAboutSidebar.tsx) continues to work as before, and no new desktop-only Join button is introduced on the About page unless it already existed."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/PondPage.tsx",
+          "operation": "modify",
+          "description": "Remove the mobile-only (lg:hidden) Join Pond CTA section from the feed page and clean up any now-unused join/membership query/mutation code so the feed no longer renders Join Pond on mobile while leaving desktop sidebar behavior unchanged."
+        },
+        {
+          "path": "frontend/src/pages/PondAboutPage.tsx",
+          "operation": "modify",
+          "description": "Add a mobile-only (lg:hidden) Join Pond button within the existing membership controls area (same location as Leave Pond) when the user is not a member. Wire it to the existing useJoinPond mutation and use the same toast success/error messages already used elsewhere (e.g., “Successfully joined the pond!” / “Failed to join pond”), without altering the current Leave Pond behavior and its loading/disabled state for members."
+        }
+      ]
+    }
+  ]
 }

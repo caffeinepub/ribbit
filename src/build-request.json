@@ -1,56 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Fix pond creation so only the creator joins the new pond",
-  "priority": "high",
+  "title": "Mobile-only: Move “Join Pond” button from Pond Feed to Pond About page",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-3",
-      "text": "Update the backend pond-creation logic so that when a new pond is created, the new Pond record’s membership is initialized with exactly one member: the creating principal (the shared update call `caller`). Do not use or copy any global principal list (e.g., `initializedUsers`) when populating `Pond.members`, and set `memberCount` to match the initialized membership.",
-      "target": "backend",
+      "id": "REQ-5",
+      "text": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-5",
-          "recent-6"
+          "msg-6"
         ],
         "quotes": [
-          "its still not working. all users are autojoining ponds. why is this happening still? dont code yet",
-          "apply the correction now"
+          "this is just for mobile version, can you relocate the join pond button from the feed page to the about page. put it in the same place the leave pond button shows up."
         ]
       },
       "acceptanceCriteria": [
-        "Creating a new pond results in `pond.members == [caller]` (order not important but only one element).",
-        "Creating a new pond sets `pond.memberCount == 1`.",
-        "No principals other than `caller` are added to the new pond’s `members` list during pond creation (including any principals present in `initializedUsers`).",
-        "A second, different principal viewing the newly created pond is not considered a member until they explicitly join."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Ensure pond creation updates membership-related user state only for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not append the new pond to any other user profile or any global per-user membership list for other principals.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "recent-6"
-        ],
-        "quotes": [
-          "apply the correction now"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After pond creation, only the creator’s `UserProfile.joinedPonds` (if maintained by the canister) is updated to include the new pond.",
-        "No other principals’ `UserProfile.joinedPonds` values change as a result of pond creation.",
-        "There is no code path in pond creation that iterates over `initializedUsers` (or any global set of users) to modify user profiles or pond membership."
+        "On mobile (lg:hidden) in frontend/src/pages/PondPage.tsx, the Join Pond button is no longer displayed.",
+        "On mobile (lg:hidden) in frontend/src/pages/PondAboutPage.tsx, when the user is not a member, a Join Pond button is displayed in the same section where the Leave Pond button is displayed for members.",
+        "On mobile in PondAboutPage, when the user is a member, the existing Leave Pond button behavior remains unchanged (including loading/disabled state).",
+        "Joining from the About page triggers the existing join mutation and displays the existing success/error toast messaging consistent with the current app patterns (e.g., “Successfully joined the pond!” / “Failed to join pond”).",
+        "Desktop behavior is unchanged: the feed’s desktop right sidebar join/leave control (frontend/src/components/PondAboutSidebar.tsx) continues to work as before, and no new desktop-only Join button is introduced on the About page unless it already existed."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit any frontend files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT."
+    "Frontend change must be mobile-only (use existing responsive patterns such as lg:hidden).",
+    "Do not edit any files under frontend/src/components/ui or any other immutable paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not change join/leave behavior beyond fixing the incorrect auto-membership caused by pond creation.",
-    "Do not introduce new authentication mechanisms beyond the existing identity model.",
-    "Do not redesign pond data models beyond what is necessary to correct initial membership and profile updates."
+    "Fixing or changing backend pond-creation/membership logic.",
+    "Changing desktop layout or relocating desktop join/leave controls.",
+    "Changing the text labels beyond the existing English strings already used for Join/Leave toasts and buttons."
   ],
   "imageRequirements": {
     "required": [],

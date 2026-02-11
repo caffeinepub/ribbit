@@ -7,9 +7,8 @@ import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import PondAboutSidebar from '@/components/PondAboutSidebar';
 import PondMobileHeader from '@/components/PondMobileHeader';
-import { useGetPond, useGetAllLilies, useGetJoinedPonds, useJoinPond } from '@/hooks/useQueries';
+import { useGetPond, useGetAllLilies } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
 
 type SortOption = 'new';
 
@@ -19,27 +18,12 @@ export default function PondPage() {
 
   const { data: pond, isLoading: isLoadingPond } = useGetPond(name);
   const { data: allLilies, isLoading: isLoadingLilies } = useGetAllLilies();
-  const { data: joinedPonds, isLoading: isLoadingJoined } = useGetJoinedPonds();
-  
-  const joinPondMutation = useJoinPond();
 
   const pondLilies = allLilies?.filter((lily) => lily.pond === name) || [];
 
   const sortedLilies = [...pondLilies].sort((a, b) => {
     return Number(b.timestamp) - Number(a.timestamp);
   });
-
-  const isMember = joinedPonds?.includes(name) || false;
-  const isProcessing = joinPondMutation.isPending;
-
-  const handleJoinPond = async () => {
-    try {
-      await joinPondMutation.mutateAsync(name);
-      toast.success('Successfully joined the pond!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to join pond');
-    }
-  };
 
   if (isLoadingPond) {
     return (
@@ -161,20 +145,6 @@ export default function PondPage() {
           {/* Main Content - max-width 44rem */}
           <main className="lg:col-span-6">
             <div style={{ maxWidth: '44rem' }}>
-              {/* Join button - only show on mobile if not a member */}
-              {!isMember && !isLoadingJoined && (
-                <div className="py-4 px-4 lg:hidden">
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={handleJoinPond}
-                    disabled={isProcessing}
-                  >
-                    {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
-                  </Button>
-                </div>
-              )}
-
               {/* Desktop: No tabs, just sorting */}
               <div className="py-4 px-4 lg:px-0 lg:py-0">
                 <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>

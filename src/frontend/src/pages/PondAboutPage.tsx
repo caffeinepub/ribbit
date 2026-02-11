@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Globe, Calendar, Users, Tag, ArrowLeft } from 'lucide-react';
 import PondMobileHeader from '@/components/PondMobileHeader';
-import { useGetPond, useGetPondAboutInfo, useGetUserProfiles, useGetUserAvatarByUsername, useGetJoinedPonds, useLeavePond } from '@/hooks/useQueries';
+import { useGetPond, useGetPondAboutInfo, useGetUserProfiles, useGetUserAvatarByUsername, useGetJoinedPonds, useLeavePond, useJoinPond } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Visibility } from '@/backend';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ export default function PondAboutPage() {
   const { data: moderatorProfiles, isLoading: isLoadingModerators } = useGetUserProfiles(pondInfo?.moderators || []);
   const { data: joinedPonds, isLoading: isLoadingJoined } = useGetJoinedPonds();
   const leavePondMutation = useLeavePond();
+  const joinPondMutation = useJoinPond();
 
   const isMember = joinedPonds?.includes(name) || false;
 
@@ -28,6 +29,15 @@ export default function PondAboutPage() {
       toast.success('Successfully left the pond');
     } catch (error: any) {
       toast.error(error.message || 'Failed to leave pond');
+    }
+  };
+
+  const handleJoinPond = async () => {
+    try {
+      await joinPondMutation.mutateAsync(name);
+      toast.success('Successfully joined the pond!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to join pond');
     }
   };
 
@@ -143,19 +153,28 @@ export default function PondAboutPage() {
 
                 <Separator />
 
-                {/* Leave Pond Button */}
+                {/* Join/Leave Pond Button - Mobile only (lg:hidden) */}
                 {isLoadingJoined ? (
-                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full lg:hidden" />
                 ) : isMember ? (
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full lg:hidden"
                     onClick={handleLeavePond}
                     disabled={leavePondMutation.isPending}
                   >
                     {leavePondMutation.isPending ? 'Leaving...' : 'Leave Pond'}
                   </Button>
-                ) : null}
+                ) : (
+                  <Button 
+                    variant="secondary" 
+                    className="w-full lg:hidden"
+                    onClick={handleJoinPond}
+                    disabled={joinPondMutation.isPending}
+                  >
+                    {joinPondMutation.isPending ? 'Joining...' : 'Join Pond'}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -239,7 +258,7 @@ export default function PondAboutPage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No moderators listed.</p>
+                  <p className="text-sm text-muted-foreground italic">No moderators assigned yet.</p>
                 )}
               </CardContent>
             </Card>
@@ -254,17 +273,22 @@ function ModeratorItem({ username }: { username: string }) {
   const { data: avatar } = useGetUserAvatarByUsername(username);
 
   return (
-    <div className="flex items-center gap-3">
-      <Avatar className="h-8 w-8 bg-primary/10">
+    <Link
+      to="/f/$username"
+      params={{ username }}
+      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+    >
+      <Avatar className="h-10 w-10">
         {avatar ? (
           <AvatarImage src={avatar.getDirectURL()} alt={username} />
-        ) : (
-          <AvatarFallback className="text-sm">
-            {username.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        )}
+        ) : null}
+        <AvatarFallback className="bg-primary/10 text-primary">
+          {username.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
       </Avatar>
-      <span className="text-sm font-medium">{username}</span>
-    </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">f/{username}</p>
+      </div>
+    </Link>
   );
 }

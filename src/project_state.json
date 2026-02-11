@@ -1,15 +1,24 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "New project",
+  "projectStateVersion": 7,
+  "summary": "Fix pond creation so only the creator joins the new pond, and adjust mobile UI to relocate the Join Pond button to the About page.",
   "architectural_notes": [
     "Root cause hypothesis: pond creation is (directly or indirectly) initializing new pond `members` from a global list like `initializedUsers : [Principal]`, causing all known principals to be added to every newly created pond. Correct behavior is `members = [caller]` and `memberCount = 1`, with no other principals added on creation."
   ],
   "known_issues": [
     "Bug: On pond creation, all users are automatically added as members instead of only the pond creator."
   ],
-  "isFixRequest": true,
-  "existing_features": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-for-mobile-layouts-only-remove-the-join-pond-button-from-the-pond-feed-page-and-instead-render-a-join-pond-button-on-the-pond-about-page-in-the-same-ui-location-where-the-leave-pond-button-appears-i-e-within-the-about-page-s-membership-controls-section",
+      "title": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
@@ -41,6 +50,12 @@
       "reqIds": [
         "REQ-4"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Mobile-only UI change: relocate the \"Join Pond\" button from the Feed page to the About page, placing it in the same location where the \"Leave Pond\" button appears.",
+      "reqIds": [],
       "status": "pending"
     }
   ],

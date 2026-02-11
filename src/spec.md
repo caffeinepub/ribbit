@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix backend pond creation so that only the creating principal is added as an initial member, and only the creator’s profile is updated.
+**Goal:** For mobile layouts only, move the “Join Pond” action from the Pond Feed page to the Pond About page, aligning it with the existing membership controls placement.
 
 **Planned changes:**
-- Update pond-creation logic to initialize `Pond.members` with exactly `[caller]` and set `memberCount` to `1`, without referencing or copying any global user/principal list (e.g., `initializedUsers`).
-- Ensure pond creation updates membership-related user state (e.g., `UserProfile.joinedPonds`) only for the creating principal and does not modify any other users’ profiles or any global per-user membership lists.
+- Remove the mobile-only (lg:hidden) “Join Pond” button from `frontend/src/pages/PondPage.tsx`.
+- Add a mobile-only (lg:hidden) “Join Pond” button to `frontend/src/pages/PondAboutPage.tsx` in the membership controls section where “Leave Pond” appears for members.
+- Wire the new About-page Join button to the existing join mutation and existing success/error toast messaging; keep the member “Leave Pond” behavior unchanged.
+- Leave desktop behavior unchanged, including the existing desktop sidebar join/leave control in `frontend/src/components/PondAboutSidebar.tsx`.
 
-**User-visible outcome:** When a user creates a new pond, only they are a member by default; other users do not appear as members and are not treated as joined until they explicitly join.
+**User-visible outcome:** On mobile, users join a pond from the Pond About page (in the same area as the Leave control), and the Pond Feed page no longer shows a Join button; desktop behavior remains the same.
