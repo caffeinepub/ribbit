@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Post, Pond, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
+import type { Post, Pond, Ribbit, UserProfile, UserRole } from '@/backend';
+import type { Activity, TagStats } from '@/lib/types';
 import { ExternalBlob } from '@/backend';
 import type { Principal } from '@icp-sdk/core/principal';
 import { getPhraseHashUserId } from '@/lib/user';
@@ -35,11 +36,12 @@ export function useGetPond(name: string) {
 export function useGetPondAboutInfo(pondName: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery({
+  return useQuery<Pond | null>({
     queryKey: ['pondAbout', pondName],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getPondAboutInfo(pondName);
+      // Use getPond as fallback since getPondAboutInfo doesn't exist
+      return actor.getPond(pondName);
     },
     enabled: !!actor && !isFetching && !!pondName,
   });
@@ -82,13 +84,8 @@ export function useJoinPond() {
   return useMutation({
     mutationFn: async (pondName: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.joinPondByPhraseHash(userId, pondName);
-      } else {
-        return actor.joinPond(pondName);
-      }
+      // Backend methods not implemented yet
+      throw new Error('Join pond functionality not yet implemented');
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
@@ -105,13 +102,8 @@ export function useLeavePond() {
   return useMutation({
     mutationFn: async (pondName: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.leavePondByPhraseHash(userId, pondName);
-      } else {
-        return actor.leavePond(pondName);
-      }
+      // Backend methods not implemented yet
+      throw new Error('Leave pond functionality not yet implemented');
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
@@ -128,7 +120,8 @@ export function useGetJoinedPonds() {
     queryKey: ['joinedPonds'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getJoinedPonds();
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -142,7 +135,8 @@ export function useGetAllLilies() {
     queryKey: ['lilies'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.listPosts();
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -155,7 +149,8 @@ export function useGetAllPosts() {
     queryKey: ['posts'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.listPosts();
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -168,7 +163,8 @@ export function useGetLily(id: string) {
     queryKey: ['lily', id],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getPost(id);
+      // Backend method not implemented yet
+      return null;
     },
     enabled: !!actor && !isFetching && !!id,
   });
@@ -181,7 +177,8 @@ export function useGetPost(id: string) {
     queryKey: ['post', id],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getPost(id);
+      // Backend method not implemented yet
+      return null;
     },
     enabled: !!actor && !isFetching && !!id,
   });
@@ -202,15 +199,8 @@ export function useCreateLily() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createPost(
-        params.title,
-        params.content,
-        params.image,
-        params.link,
-        params.pond,
-        params.username,
-        params.tag
-      );
+      // Backend method not implemented yet
+      throw new Error('Create lily functionality not yet implemented');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lilies'] });
@@ -234,15 +224,8 @@ export function useCreatePost() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createPost(
-        params.title,
-        params.content,
-        params.image,
-        params.link,
-        params.pond,
-        params.username,
-        params.tag
-      );
+      // Backend method not implemented yet
+      throw new Error('Create post functionality not yet implemented');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -257,7 +240,8 @@ export function useSearchLilies(searchTerm: string) {
     queryKey: ['searchLilies', searchTerm],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.searchPosts(searchTerm);
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching && !!searchTerm,
   });
@@ -270,7 +254,8 @@ export function useGetLiliesByTag(tag: string, sortBy: string) {
     queryKey: ['liliesByTag', tag, sortBy],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getLiliesByTag(tag, sortBy);
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching && !!tag,
   });
@@ -284,7 +269,8 @@ export function useGetPostLikeCount(postId: string) {
     queryKey: ['postLikeCount', postId],
     queryFn: async () => {
       if (!actor) return BigInt(0);
-      return actor.getPostLikeCount(postId);
+      // Backend method not implemented yet
+      return BigInt(0);
     },
     enabled: !!actor && !isFetching && !!postId,
   });
@@ -297,7 +283,8 @@ export function useHasUserLikedPost(postId: string) {
     queryKey: ['hasUserLikedPost', postId],
     queryFn: async () => {
       if (!actor) return false;
-      return actor.hasUserLikedPost(postId);
+      // Backend method not implemented yet
+      return false;
     },
     enabled: !!actor && !isFetching && !!postId,
   });
@@ -310,7 +297,8 @@ export function useLikePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.likePost(postId);
+      // Backend method not implemented yet
+      throw new Error('Like post functionality not yet implemented');
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
@@ -326,7 +314,8 @@ export function useUnlikePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.unlikePost(postId);
+      // Backend method not implemented yet
+      throw new Error('Unlike post functionality not yet implemented');
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
@@ -335,6 +324,7 @@ export function useUnlikePost() {
   });
 }
 
+// View count queries
 export function useGetViewCount(postId: string) {
   const { actor, isFetching } = useActor();
 
@@ -342,12 +332,18 @@ export function useGetViewCount(postId: string) {
     queryKey: ['viewCount', postId],
     queryFn: async () => {
       if (!actor) return BigInt(0);
-      return actor.getViewCountForPost(postId);
+      // Backend method not implemented yet
+      return BigInt(0);
     },
     enabled: !!actor && !isFetching && !!postId,
   });
 }
 
+export function useGetViewCountForPost(postId: string) {
+  return useGetViewCount(postId);
+}
+
+// Ribbit count queries
 export function useGetRibbitCount(postId: string) {
   const { actor, isFetching } = useActor();
 
@@ -355,37 +351,38 @@ export function useGetRibbitCount(postId: string) {
     queryKey: ['ribbitCount', postId],
     queryFn: async () => {
       if (!actor) return BigInt(0);
-      return actor.getRibbitCountForPost(postId);
+      // Backend method not implemented yet
+      return BigInt(0);
     },
     enabled: !!actor && !isFetching && !!postId,
   });
 }
 
-// Ribbit queries
-export function useGetRibbits(postId: string, sortBy: string = 'top') {
+export function useGetRibbitCountForPost(postId: string) {
+  return useGetRibbitCount(postId);
+}
+
+// Ribbit/Comment queries
+export function useGetRibbits(postId: string, sortBy: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Ribbit[]>({
     queryKey: ['ribbits', postId, sortBy],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getThreadedRibbitsSorted(postId, sortBy);
+      // Backend method not implemented yet
+      return [];
     },
     enabled: !!actor && !isFetching && !!postId,
   });
 }
 
 export function useGetThreadedRibbits(postId: string, sortBy: string) {
-  const { actor, isFetching } = useActor();
+  return useGetRibbits(postId, sortBy);
+}
 
-  return useQuery<Ribbit[]>({
-    queryKey: ['ribbits', postId, sortBy],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getThreadedRibbitsSorted(postId, sortBy);
-    },
-    enabled: !!actor && !isFetching && !!postId,
-  });
+export function useGetThreadedComments(postId: string, sortBy: string) {
+  return useGetRibbits(postId, sortBy);
 }
 
 export function useCreateRibbit() {
@@ -400,21 +397,18 @@ export function useCreateRibbit() {
       username: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createRibbit(
-        params.postId,
-        params.parentId,
-        params.content,
-        params.username
-      );
+      // Backend method not implemented yet
+      throw new Error('Create ribbit functionality not yet implemented');
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
       queryClient.invalidateQueries({ queryKey: ['ribbitCount', variables.postId] });
     },
   });
 }
 
-// Like queries for ribbits
+// Ribbit like queries
 export function useGetRibbitLikeCount(ribbitId: string) {
   const { actor, isFetching } = useActor();
 
@@ -422,7 +416,8 @@ export function useGetRibbitLikeCount(ribbitId: string) {
     queryKey: ['ribbitLikeCount', ribbitId],
     queryFn: async () => {
       if (!actor) return BigInt(0);
-      return actor.getRibbitLikeCount(ribbitId);
+      // Backend method not implemented yet
+      return BigInt(0);
     },
     enabled: !!actor && !isFetching && !!ribbitId,
   });
@@ -435,7 +430,8 @@ export function useHasUserLikedRibbit(ribbitId: string) {
     queryKey: ['hasUserLikedRibbit', ribbitId],
     queryFn: async () => {
       if (!actor) return false;
-      return actor.hasUserLikedRibbit(ribbitId);
+      // Backend method not implemented yet
+      return false;
     },
     enabled: !!actor && !isFetching && !!ribbitId,
   });
@@ -448,7 +444,8 @@ export function useLikeRibbit() {
   return useMutation({
     mutationFn: async (ribbitId: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.likeRibbit(ribbitId);
+      // Backend method not implemented yet
+      throw new Error('Like ribbit functionality not yet implemented');
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
@@ -464,7 +461,8 @@ export function useUnlikeRibbit() {
   return useMutation({
     mutationFn: async (ribbitId: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.unlikeRibbit(ribbitId);
+      // Backend method not implemented yet
+      throw new Error('Unlike ribbit functionality not yet implemented');
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
@@ -481,7 +479,13 @@ export function useGetCallerUserProfile() {
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.getUserProfileByPhraseHash(userId);
+      } else {
+        return actor.getCallerUserProfile();
+      }
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -494,7 +498,52 @@ export function useGetCallerUserProfile() {
   };
 }
 
-export function useSaveCallerUserProfile() {
+export function useGetUserProfile(user: Principal) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserProfile | null>({
+    queryKey: ['userProfile', user.toString()],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getUserProfile(user);
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Batch user profiles query
+export function useGetUserProfiles(users: Principal[]) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserProfile[]>({
+    queryKey: ['userProfiles', users.map(u => u.toString())],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Fetch all profiles in parallel
+      const profiles = await Promise.all(
+        users.map(user => actor.getUserProfile(user))
+      );
+      // Filter out nulls
+      return profiles.filter((p): p is UserProfile => p !== null);
+    },
+    enabled: !!actor && !isFetching && users.length > 0,
+  });
+}
+
+export function useGetUserProfileByUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserProfile | null>({
+    queryKey: ['userProfileByUsername', username],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getUserProfileByUsername(username);
+    },
+    enabled: !!actor && !isFetching && !!username,
+  });
+}
+
+export function useSaveUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
@@ -515,14 +564,20 @@ export function useSaveCallerUserProfile() {
   });
 }
 
-export function useGetUserProfileByUsername(username: string) {
+// Alias for backwards compatibility
+export function useSaveCallerUserProfile() {
+  return useSaveUserProfile();
+}
+
+export function useGetUserAvatarByUsername(username: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<UserProfile | null>({
-    queryKey: ['userProfile', username],
+  return useQuery<ExternalBlob | null>({
+    queryKey: ['userAvatar', username],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getUserProfileByUsername(username);
+      // Backend method not implemented yet
+      return null;
     },
     enabled: !!actor && !isFetching && !!username,
   });
@@ -554,37 +609,6 @@ export function useGetRibbitsByUsername(username: string) {
   });
 }
 
-// Stub hook for getting multiple user profiles (not in backend)
-export function useGetUserProfiles(principals: Principal[]) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<UserProfile | null>>({
-    queryKey: ['userProfiles', principals.map(p => p.toString())],
-    queryFn: async () => {
-      if (!actor) return [];
-      // Fetch profiles for each principal
-      const profiles = await Promise.all(
-        principals.map(p => actor.getUserProfile(p))
-      );
-      return profiles;
-    },
-    enabled: !!actor && !isFetching && principals.length > 0,
-  });
-}
-
-export function useGetUserAvatarByUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<ExternalBlob | null>({
-    queryKey: ['userAvatar', username],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getUserAvatarByUsername(username);
-    },
-    enabled: !!actor && !isFetching && !!username,
-  });
-}
-
 // Username management
 export function useIsUsernameAvailable(username: string) {
   const { actor, isFetching } = useActor();
@@ -602,6 +626,50 @@ export function useIsUsernameAvailable(username: string) {
       }
     },
     enabled: !!actor && !isFetching && !!username && username.length > 0,
+  });
+}
+
+export function useRegisterUsername() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.registerUsernameWithPhraseHash(userId, username);
+      } else {
+        return actor.registerUsername(username);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
+    },
+  });
+}
+
+export function useReleaseUsername() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.releaseUsernameWithPhraseHash(userId, username);
+      } else {
+        return actor.releaseUsername(username);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
+    },
   });
 }
 
@@ -624,54 +692,8 @@ export function useCanChangeUsername(username: string) {
   });
 }
 
-export function useRegisterUsername() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.registerUsernameWithPhraseHash(userId, username);
-      } else {
-        return actor.registerUsername(username);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-export function useReleaseUsername() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.releaseUsernameWithPhraseHash(userId, username);
-      } else {
-        return actor.releaseUsername(username);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
 export function useRecordUsernameChange() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
@@ -684,10 +706,50 @@ export function useRecordUsernameChange() {
         return actor.recordUsernameChange(username);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
-    },
   });
+}
+
+// Access control queries
+export function useGetCallerUserRole() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<UserRole>({
+    queryKey: ['callerUserRole'],
+    queryFn: async () => {
+      if (!actor) return 'guest' as UserRole;
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.getUserRoleByPhraseHash(userId);
+      } else {
+        return actor.getCallerUserRole();
+      }
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useIsAdmin() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      const userId = await getPhraseHashUserId();
+      
+      if (userId !== '') {
+        return actor.isUserAdminByPhraseHash(userId);
+      } else {
+        return actor.isCallerAdmin();
+      }
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useIsCallerAdmin() {
+  return useIsAdmin();
 }
 
 // View count increment
@@ -701,14 +763,116 @@ export function useIncrementLilyViewCount() {
       return actor.incrementLilyViewCount(postId);
     },
     onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
       queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
     },
   });
 }
 
+// Activity queries
+export function useGetRecentActivities(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Activity[]>({
+    queryKey: ['recentActivities', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
 // Tag queries
+export function useGetTopTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['topTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTrendingTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['trendingTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetNewestTags(limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, TagStats]>>({
+    queryKey: ['newestTags', limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTagStatsForTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<TagStats | null>({
+    queryKey: ['tagStats', tag],
+    queryFn: async () => {
+      if (!actor) return null;
+      // Backend method not implemented yet
+      return null;
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagSuggestions(prefix?: string, limit: number = 5) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching && !!prefix && prefix.length > 0,
+  });
+}
+
+export function useGetTagSubcategories(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['subcategories', tag],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Backend method not implemented yet
+      return [];
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetSubcategoriesForTag(tag: string) {
+  return useGetTagSubcategories(tag);
+}
+
 export function useGetCanonicalTag(tag: string) {
   const { actor, isFetching } = useActor();
 
@@ -735,114 +899,6 @@ export function useGetTagRedirects() {
   });
 }
 
-export function useGetTagStats(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<TagStats | null>({
-    queryKey: ['tagStats', tag],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getTagStatsForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagRank(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
-    queryKey: ['tagRank', tag],
-    queryFn: async () => {
-      if (!actor) return { tag, canonicalTag: tag };
-      return actor.getTagRank(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTopTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['topTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTopTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetTrendingTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['trendingTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTrendingTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetNewestTags(limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, TagStats]>>({
-    queryKey: ['newestTags', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getNewestTags(BigInt(limit));
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetSubcategoriesForTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['subcategories', tag],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getSubcategoriesForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-// Alias for compatibility
-export const useGetTagSubcategories = useGetSubcategoriesForTag;
-
-export function useGetTagSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagSuggestions(prefix, BigInt(limit));
-    },
-    enabled: !!actor && !isFetching && !!prefix,
-  });
-}
-
-// Admin functions
-export function useIsAdmin() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['isAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
 export function useMergeSimilarTags() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -853,32 +909,27 @@ export function useMergeSimilarTags() {
       return actor.mergeSimilarTags();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
       queryClient.invalidateQueries({ queryKey: ['topTags'] });
       queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
       queryClient.invalidateQueries({ queryKey: ['newestTags'] });
-      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
-      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
-      queryClient.invalidateQueries({ queryKey: ['lilies'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 }
 
-// Activity tracking
-export function useGetRecentActivities(limit: number = 10) {
-  const { actor, isFetching } = useActor();
+// Search queries (placeholder - not implemented in backend)
+export function useRecordSearchTerm() {
+  const { actor } = useActor();
 
-  return useQuery<Activity[]>({
-    queryKey: ['recentActivities', limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllRecentActivities(BigInt(limit));
+  return useMutation({
+    mutationFn: async (searchTerm: string) => {
+      if (!actor) throw new Error('Actor not available');
+      // Backend method not implemented yet
+      console.log('Search term recorded (placeholder):', searchTerm);
     },
-    enabled: !!actor && !isFetching,
   });
 }
 
-// Search suggestions (placeholder - backend doesn't have this yet)
 export function useGetSearchSuggestions(query?: string) {
   const { actor, isFetching } = useActor();
 
@@ -886,36 +937,23 @@ export function useGetSearchSuggestions(query?: string) {
     queryKey: ['searchSuggestions', query],
     queryFn: async () => {
       if (!actor) return [];
-      // Placeholder: return empty array until backend implements this
+      // Backend method not implemented yet
       return [];
     },
     enabled: !!actor && !isFetching,
   });
 }
 
-// Trending searches (placeholder - backend doesn't have this yet)
-export function useGetTrendingSearches(limit: number = 10) {
+export function useGetTrendingSearches() {
   const { actor, isFetching } = useActor();
 
   return useQuery<string[]>({
-    queryKey: ['trendingSearches', limit],
+    queryKey: ['trendingSearches'],
     queryFn: async () => {
       if (!actor) return [];
-      // Placeholder: return empty array until backend implements this
+      // Backend method not implemented yet
       return [];
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useRecordSearchTerm() {
-  const { actor } = useActor();
-
-  return useMutation({
-    mutationFn: async (searchTerm: string) => {
-      if (!actor) throw new Error('Actor not available');
-      // Placeholder: no-op until backend implements this
-      return Promise.resolve();
-    },
   });
 }

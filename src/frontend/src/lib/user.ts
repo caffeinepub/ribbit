@@ -1,3 +1,5 @@
+import { UNIQUE_WORDS, FROG_TERMS } from './froggyPhraseWordList';
+
 const USERNAME_KEY = 'ribbit_username';
 const USER_ID_KEY = 'ribbit_user_id';
 const USERNAME_CHANGED_KEY = 'ribbit_username_changed';
@@ -77,12 +79,51 @@ function backupSettings(): void {
   localStorage.setItem(SETTINGS_BACKUP_KEY, JSON.stringify(settings));
 }
 
-export function setFroggyPhrase(phrase: string): void {
+/**
+ * Generate a random 12-word Froggy Phrase from the built-in word list.
+ * Ensures at least one frog-related term is included.
+ */
+function generateDefaultFroggyPhrase(): string {
+  const words: string[] = [];
+  
+  // Pick 11 random words from the main list
+  for (let i = 0; i < 11; i++) {
+    const randomIndex = Math.floor(Math.random() * UNIQUE_WORDS.length);
+    words.push(UNIQUE_WORDS[randomIndex]);
+  }
+  
+  // Add one frog-related term at a random position
+  const frogTermIndex = Math.floor(Math.random() * FROG_TERMS.length);
+  const frogTerm = FROG_TERMS[frogTermIndex];
+  const insertPosition = Math.floor(Math.random() * 12);
+  words.splice(insertPosition, 0, frogTerm);
+  
+  return words.join(' ');
+}
+
+/**
+ * Ensure a default Froggy Phrase exists. If none is stored, generate and persist one.
+ * This should be called early in the app lifecycle.
+ */
+export function ensureDefaultFroggyPhrase(): void {
+  const existingPhrase = getFroggyPhrase();
+  if (!existingPhrase) {
+    const newPhrase = generateDefaultFroggyPhrase();
+    // Use internal setter that bypasses immutability check
+    setFroggyPhraseInternal(newPhrase);
+  }
+}
+
+/**
+ * Internal setter for Froggy Phrase (used only by ensureDefaultFroggyPhrase).
+ * Does not enforce immutability.
+ */
+function setFroggyPhraseInternal(phrase: string): void {
   const trimmedPhrase = phrase.trim();
   const words = trimmedPhrase.split(/\s+/);
   
-  if (words.length < 5) {
-    throw new Error('Froggy Phrase must contain at least 5 words');
+  if (words.length !== 12) {
+    throw new Error('Froggy Phrase must contain exactly 12 words');
   }
   
   // Hash the phrase for storage
@@ -97,6 +138,20 @@ export function setFroggyPhrase(phrase: string): void {
   localStorage.setItem(`${FROGGY_PHRASE_KEY}_original`, obfuscated);
 }
 
+/**
+ * Attempt to set a new Froggy Phrase.
+ * IMMUTABLE: If a phrase already exists, this will throw an error.
+ * @throws Error if a phrase already exists
+ */
+export function setFroggyPhrase(phrase: string): void {
+  const existingPhrase = getFroggyPhrase();
+  if (existingPhrase) {
+    throw new Error('Froggy Phrase already exists and cannot be changed');
+  }
+  
+  setFroggyPhraseInternal(phrase);
+}
+
 export function getFroggyPhrase(): string | null {
   const obfuscated = localStorage.getItem(`${FROGGY_PHRASE_KEY}_original`);
   if (!obfuscated) return null;
@@ -108,52 +163,33 @@ export function getFroggyPhrase(): string | null {
   }
 }
 
+/**
+ * Restore from Froggy Phrase is disabled.
+ * @deprecated Froggy Phrase is now permanent and cannot be used for restore.
+ * @returns false always
+ */
 export function restoreFromFroggyPhrase(phrase: string): boolean {
-  const trimmedPhrase = phrase.trim();
-  const words = trimmedPhrase.split(/\s+/);
-  
-  if (words.length < 5) {
-    return false;
-  }
-  
-  const hashedPhrase = hashPhrase(trimmedPhrase);
-  const storedHash = localStorage.getItem(FROGGY_PHRASE_KEY);
-  
-  if (hashedPhrase !== storedHash) {
-    return false;
-  }
-  
-  // Restore settings from backup
-  const backupData = localStorage.getItem(SETTINGS_BACKUP_KEY);
-  if (!backupData) {
-    return false;
-  }
-  
-  try {
-    const settings = JSON.parse(backupData);
-    localStorage.setItem(USERNAME_KEY, settings.username);
-    localStorage.setItem(USER_ID_KEY, settings.userId.toString());
-    localStorage.setItem(USERNAME_CHANGED_KEY, settings.usernameChanged ? 'true' : 'false');
-    if (settings.previousUsername) {
-      localStorage.setItem(PREVIOUS_USERNAME_KEY, settings.previousUsername);
-    }
-    return true;
-  } catch {
-    return false;
-  }
+  console.warn('Froggy Phrase restore is disabled. The phrase is permanent once created.');
+  return false;
 }
 
+/**
+ * Clear Froggy Phrase is disabled.
+ * @deprecated Froggy Phrase is now permanent and cannot be cleared.
+ */
 export function clearFroggyPhrase(): void {
-  localStorage.removeItem(FROGGY_PHRASE_KEY);
-  localStorage.removeItem(`${FROGGY_PHRASE_KEY}_original`);
-  localStorage.removeItem(SETTINGS_BACKUP_KEY);
+  console.warn('Froggy Phrase cannot be cleared. It is permanent once created.');
 }
 
 /**
  * Compute SHA-256 hash of the Froggy Phrase as lowercase hex string.
  * Returns empty string if no phrase is set (anonymous mode).
+ * Ensures a phrase exists before computing the hash.
  */
 export async function getPhraseHashUserId(): Promise<string> {
+  // Ensure a phrase exists (will generate if missing)
+  ensureDefaultFroggyPhrase();
+  
   const phrase = getFroggyPhrase();
   if (!phrase) {
     return '';

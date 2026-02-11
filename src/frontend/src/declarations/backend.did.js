@@ -29,43 +29,10 @@ export const Visibility = IDL.Variant({
   'privateVisibility' : IDL.Null,
   'publicVisibility' : IDL.Null,
 });
-export const ActivityType = IDL.Variant({
-  'like' : IDL.Null,
-  'post' : IDL.Null,
-  'ribbit' : IDL.Null,
-  'viewRibbit' : IDL.Null,
-});
-export const Activity = IDL.Record({
-  'id' : IDL.Text,
-  'username' : IDL.Text,
-  'pond' : IDL.Text,
-  'type' : ActivityType,
-  'timestamp' : IDL.Int,
-  'targetId' : IDL.Text,
-});
 export const UserProfile = IDL.Record({
   'name' : IDL.Text,
   'joinedPonds' : IDL.Vec(IDL.Text),
   'avatar' : IDL.Opt(ExternalBlob),
-});
-export const Post = IDL.Record({
-  'id' : IDL.Text,
-  'tag' : IDL.Opt(IDL.Text),
-  'title' : IDL.Text,
-  'content' : IDL.Text,
-  'username' : IDL.Text,
-  'link' : IDL.Opt(IDL.Text),
-  'pond' : IDL.Text,
-  'viewCount' : IDL.Nat,
-  'timestamp' : IDL.Int,
-  'image' : IDL.Opt(ExternalBlob),
-});
-export const TagStats = IDL.Record({
-  'id' : IDL.Text,
-  'firstUsedAt' : IDL.Int,
-  'repliesTotal' : IDL.Nat,
-  'postsTotal' : IDL.Nat,
-  'lastActivityAt' : IDL.Int,
 });
 export const Pond = IDL.Record({
   'associatedTags' : IDL.Vec(IDL.Text),
@@ -82,6 +49,18 @@ export const Pond = IDL.Record({
   'moderators' : IDL.Vec(IDL.Principal),
   'visibility' : Visibility,
   'rules' : IDL.Vec(IDL.Text),
+});
+export const Post = IDL.Record({
+  'id' : IDL.Text,
+  'tag' : IDL.Opt(IDL.Text),
+  'title' : IDL.Text,
+  'content' : IDL.Text,
+  'username' : IDL.Text,
+  'link' : IDL.Opt(IDL.Text),
+  'pond' : IDL.Text,
+  'viewCount' : IDL.Nat,
+  'timestamp' : IDL.Int,
+  'image' : IDL.Opt(ExternalBlob),
 });
 export const Ribbit = IDL.Record({
   'id' : IDL.Text,
@@ -134,143 +113,31 @@ export const idlService = IDL.Service({
       [IDL.Bool],
       ['query'],
     ),
-  'clearPostLikes' : IDL.Func([IDL.Text], [], []),
   'createPond' : IDL.Func(
       [IDL.Text, IDL.Text, ExternalBlob, ExternalBlob, ExternalBlob, IDL.Text],
       [],
       [],
     ),
-  'createPost' : IDL.Func(
-      [
-        IDL.Text,
-        IDL.Text,
-        IDL.Opt(ExternalBlob),
-        IDL.Opt(IDL.Text),
-        IDL.Text,
-        IDL.Text,
-        IDL.Opt(IDL.Text),
-      ],
-      [IDL.Text],
-      [],
-    ),
-  'createRibbit' : IDL.Func(
-      [IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
-      [IDL.Text],
-      [],
-    ),
-  'deleteLily' : IDL.Func([IDL.Text], [], []),
-  'deleteRibbit' : IDL.Func([IDL.Text], [], []),
   'editPondSettings' : IDL.Func(
       [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Opt(Visibility)],
       [],
       [],
     ),
-  'getAllRecentActivities' : IDL.Func(
-      [IDL.Nat],
-      [IDL.Vec(Activity)],
-      ['query'],
-    ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCanonicalTagForTag' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
-  'getJoinedPonds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-  'getLikeCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-  'getLiliesByTag' : IDL.Func([IDL.Text, IDL.Text], [IDL.Vec(Post)], ['query']),
-  'getNewestTags' : IDL.Func(
-      [IDL.Nat],
-      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-      ['query'],
-    ),
   'getPond' : IDL.Func([IDL.Text], [IDL.Opt(Pond)], ['query']),
-  'getPondAboutInfo' : IDL.Func(
-      [IDL.Text],
-      [
-        IDL.Opt(
-          IDL.Record({
-            'title' : IDL.Text,
-            'associatedTags' : IDL.Vec(IDL.Text),
-            'admin' : IDL.Principal,
-            'lilyCount' : IDL.Nat,
-            'profileImage' : IDL.Opt(ExternalBlob),
-            'name' : IDL.Text,
-            'createdAt' : IDL.Int,
-            'memberCount' : IDL.Nat,
-            'description' : IDL.Text,
-            'bannerImage' : IDL.Opt(ExternalBlob),
-            'moderators' : IDL.Vec(IDL.Principal),
-            'visibility' : Visibility,
-            'rules' : IDL.Vec(IDL.Text),
-          })
-        ),
-      ],
-      ['query'],
-    ),
   'getPondModerators' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(IDL.Principal)],
       ['query'],
     ),
   'getPondRules' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
-  'getPost' : IDL.Func([IDL.Text], [IDL.Opt(Post)], ['query']),
-  'getPostLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getPostsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
-  'getRecentPosts' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
-  'getRecentRibbitViews' : IDL.Func(
-      [IDL.Text, IDL.Nat],
-      [IDL.Vec(Activity)],
-      ['query'],
-    ),
-  'getRecentRibbits' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
-  'getRecentlyLikedPosts' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
-  'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
-  'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-  'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
-  'getSubcategoriesForTag' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(IDL.Text)],
-      ['query'],
-    ),
-  'getTagRank' : IDL.Func(
-      [IDL.Text],
-      [
-        IDL.Record({
-          'tag' : IDL.Text,
-          'rank' : IDL.Opt(IDL.Nat),
-          'canonicalTag' : IDL.Text,
-        }),
-      ],
-      ['query'],
-    ),
   'getTagRedirects' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
-      ['query'],
-    ),
-  'getTagStatsForTag' : IDL.Func([IDL.Text], [IDL.Opt(TagStats)], ['query']),
-  'getTagSuggestions' : IDL.Func(
-      [IDL.Text, IDL.Nat],
-      [IDL.Vec(IDL.Text)],
-      ['query'],
-    ),
-  'getThreadedRibbitsSorted' : IDL.Func(
-      [IDL.Text, IDL.Text],
-      [IDL.Vec(Ribbit)],
-      ['query'],
-    ),
-  'getTopTags' : IDL.Func(
-      [IDL.Nat],
-      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-      ['query'],
-    ),
-  'getTrendingTags' : IDL.Func(
-      [IDL.Nat],
-      [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-      ['query'],
-    ),
-  'getUserAvatarByUsername' : IDL.Func(
-      [IDL.Text],
-      [IDL.Opt(ExternalBlob)],
       ['query'],
     ),
   'getUserProfile' : IDL.Func(
@@ -289,9 +156,6 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getUserRoleByPhraseHash' : IDL.Func([IDL.Text], [UserRole], ['query']),
-  'getViewCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-  'hasUserLikedPost' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
-  'hasUserLikedRibbit' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'incrementLilyViewCount' : IDL.Func([IDL.Text], [ViewIncrementResult], []),
   'initializeAccessControl' : IDL.Func([], [], []),
   'initializeFroggyPhrase' : IDL.Func([IDL.Text], [], []),
@@ -304,15 +168,7 @@ export const idlService = IDL.Service({
       [IDL.Bool],
       ['query'],
     ),
-  'joinPond' : IDL.Func([IDL.Text], [], []),
-  'joinPondByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'leavePond' : IDL.Func([IDL.Text], [], []),
-  'leavePondByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'likePost' : IDL.Func([IDL.Text], [], []),
-  'likeRibbit' : IDL.Func([IDL.Text], [], []),
   'listPonds' : IDL.Func([], [IDL.Vec(Pond)], ['query']),
-  'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
-  'listRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
   'mergeSimilarTags' : IDL.Func([], [], []),
   'recordUsernameChange' : IDL.Func([IDL.Text], [], []),
   'recordUsernameChangeByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -320,15 +176,10 @@ export const idlService = IDL.Service({
   'registerUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'releaseUsername' : IDL.Func([IDL.Text], [], []),
   'releaseUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'removeMemberFromPond' : IDL.Func([IDL.Text, IDL.Principal], [], []),
   'removeModerator' : IDL.Func([IDL.Text, IDL.Principal], [], []),
   'removePondRule' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'saveUserProfileByPhraseHash' : IDL.Func([IDL.Text, UserProfile], [], []),
-  'searchPonds' : IDL.Func([IDL.Text], [IDL.Vec(Pond)], ['query']),
-  'searchPosts' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
-  'unlikePost' : IDL.Func([IDL.Text], [], []),
-  'unlikeRibbit' : IDL.Func([IDL.Text], [], []),
 });
 
 export const idlInitArgs = [];
@@ -355,43 +206,10 @@ export const idlFactory = ({ IDL }) => {
     'privateVisibility' : IDL.Null,
     'publicVisibility' : IDL.Null,
   });
-  const ActivityType = IDL.Variant({
-    'like' : IDL.Null,
-    'post' : IDL.Null,
-    'ribbit' : IDL.Null,
-    'viewRibbit' : IDL.Null,
-  });
-  const Activity = IDL.Record({
-    'id' : IDL.Text,
-    'username' : IDL.Text,
-    'pond' : IDL.Text,
-    'type' : ActivityType,
-    'timestamp' : IDL.Int,
-    'targetId' : IDL.Text,
-  });
   const UserProfile = IDL.Record({
     'name' : IDL.Text,
     'joinedPonds' : IDL.Vec(IDL.Text),
     'avatar' : IDL.Opt(ExternalBlob),
-  });
-  const Post = IDL.Record({
-    'id' : IDL.Text,
-    'tag' : IDL.Opt(IDL.Text),
-    'title' : IDL.Text,
-    'content' : IDL.Text,
-    'username' : IDL.Text,
-    'link' : IDL.Opt(IDL.Text),
-    'pond' : IDL.Text,
-    'viewCount' : IDL.Nat,
-    'timestamp' : IDL.Int,
-    'image' : IDL.Opt(ExternalBlob),
-  });
-  const TagStats = IDL.Record({
-    'id' : IDL.Text,
-    'firstUsedAt' : IDL.Int,
-    'repliesTotal' : IDL.Nat,
-    'postsTotal' : IDL.Nat,
-    'lastActivityAt' : IDL.Int,
   });
   const Pond = IDL.Record({
     'associatedTags' : IDL.Vec(IDL.Text),
@@ -408,6 +226,18 @@ export const idlFactory = ({ IDL }) => {
     'moderators' : IDL.Vec(IDL.Principal),
     'visibility' : Visibility,
     'rules' : IDL.Vec(IDL.Text),
+  });
+  const Post = IDL.Record({
+    'id' : IDL.Text,
+    'tag' : IDL.Opt(IDL.Text),
+    'title' : IDL.Text,
+    'content' : IDL.Text,
+    'username' : IDL.Text,
+    'link' : IDL.Opt(IDL.Text),
+    'pond' : IDL.Text,
+    'viewCount' : IDL.Nat,
+    'timestamp' : IDL.Int,
+    'image' : IDL.Opt(ExternalBlob),
   });
   const Ribbit = IDL.Record({
     'id' : IDL.Text,
@@ -460,7 +290,6 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         ['query'],
       ),
-    'clearPostLikes' : IDL.Func([IDL.Text], [], []),
     'createPond' : IDL.Func(
         [
           IDL.Text,
@@ -473,145 +302,26 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
-    'createPost' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(ExternalBlob),
-          IDL.Opt(IDL.Text),
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(IDL.Text),
-        ],
-        [IDL.Text],
-        [],
-      ),
-    'createRibbit' : IDL.Func(
-        [IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
-        [IDL.Text],
-        [],
-      ),
-    'deleteLily' : IDL.Func([IDL.Text], [], []),
-    'deleteRibbit' : IDL.Func([IDL.Text], [], []),
     'editPondSettings' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Opt(Visibility)],
         [],
         [],
       ),
-    'getAllRecentActivities' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(Activity)],
-        ['query'],
-      ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCanonicalTagForTag' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
-    'getJoinedPonds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-    'getLikeCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-    'getLiliesByTag' : IDL.Func(
-        [IDL.Text, IDL.Text],
-        [IDL.Vec(Post)],
-        ['query'],
-      ),
-    'getNewestTags' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-        ['query'],
-      ),
     'getPond' : IDL.Func([IDL.Text], [IDL.Opt(Pond)], ['query']),
-    'getPondAboutInfo' : IDL.Func(
-        [IDL.Text],
-        [
-          IDL.Opt(
-            IDL.Record({
-              'title' : IDL.Text,
-              'associatedTags' : IDL.Vec(IDL.Text),
-              'admin' : IDL.Principal,
-              'lilyCount' : IDL.Nat,
-              'profileImage' : IDL.Opt(ExternalBlob),
-              'name' : IDL.Text,
-              'createdAt' : IDL.Int,
-              'memberCount' : IDL.Nat,
-              'description' : IDL.Text,
-              'bannerImage' : IDL.Opt(ExternalBlob),
-              'moderators' : IDL.Vec(IDL.Principal),
-              'visibility' : Visibility,
-              'rules' : IDL.Vec(IDL.Text),
-            })
-          ),
-        ],
-        ['query'],
-      ),
     'getPondModerators' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(IDL.Principal)],
         ['query'],
       ),
     'getPondRules' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
-    'getPost' : IDL.Func([IDL.Text], [IDL.Opt(Post)], ['query']),
-    'getPostLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getPostsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
-    'getRecentPosts' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
-    'getRecentRibbitViews' : IDL.Func(
-        [IDL.Text, IDL.Nat],
-        [IDL.Vec(Activity)],
-        ['query'],
-      ),
-    'getRecentRibbits' : IDL.Func([IDL.Nat], [IDL.Vec(Activity)], ['query']),
-    'getRecentlyLikedPosts' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(Activity)],
-        ['query'],
-      ),
-    'getRibbit' : IDL.Func([IDL.Text], [IDL.Opt(Ribbit)], ['query']),
-    'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-    'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
-    'getSubcategoriesForTag' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(IDL.Text)],
-        ['query'],
-      ),
-    'getTagRank' : IDL.Func(
-        [IDL.Text],
-        [
-          IDL.Record({
-            'tag' : IDL.Text,
-            'rank' : IDL.Opt(IDL.Nat),
-            'canonicalTag' : IDL.Text,
-          }),
-        ],
-        ['query'],
-      ),
     'getTagRedirects' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
-        ['query'],
-      ),
-    'getTagStatsForTag' : IDL.Func([IDL.Text], [IDL.Opt(TagStats)], ['query']),
-    'getTagSuggestions' : IDL.Func(
-        [IDL.Text, IDL.Nat],
-        [IDL.Vec(IDL.Text)],
-        ['query'],
-      ),
-    'getThreadedRibbitsSorted' : IDL.Func(
-        [IDL.Text, IDL.Text],
-        [IDL.Vec(Ribbit)],
-        ['query'],
-      ),
-    'getTopTags' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-        ['query'],
-      ),
-    'getTrendingTags' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(IDL.Tuple(IDL.Text, TagStats))],
-        ['query'],
-      ),
-    'getUserAvatarByUsername' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(ExternalBlob)],
         ['query'],
       ),
     'getUserProfile' : IDL.Func(
@@ -630,9 +340,6 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getUserRoleByPhraseHash' : IDL.Func([IDL.Text], [UserRole], ['query']),
-    'getViewCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-    'hasUserLikedPost' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
-    'hasUserLikedRibbit' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'incrementLilyViewCount' : IDL.Func([IDL.Text], [ViewIncrementResult], []),
     'initializeAccessControl' : IDL.Func([], [], []),
     'initializeFroggyPhrase' : IDL.Func([IDL.Text], [], []),
@@ -645,15 +352,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         ['query'],
       ),
-    'joinPond' : IDL.Func([IDL.Text], [], []),
-    'joinPondByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'leavePond' : IDL.Func([IDL.Text], [], []),
-    'leavePondByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'likePost' : IDL.Func([IDL.Text], [], []),
-    'likeRibbit' : IDL.Func([IDL.Text], [], []),
     'listPonds' : IDL.Func([], [IDL.Vec(Pond)], ['query']),
-    'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
-    'listRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
     'mergeSimilarTags' : IDL.Func([], [], []),
     'recordUsernameChange' : IDL.Func([IDL.Text], [], []),
     'recordUsernameChangeByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -661,15 +360,10 @@ export const idlFactory = ({ IDL }) => {
     'registerUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'releaseUsername' : IDL.Func([IDL.Text], [], []),
     'releaseUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'removeMemberFromPond' : IDL.Func([IDL.Text, IDL.Principal], [], []),
     'removeModerator' : IDL.Func([IDL.Text, IDL.Principal], [], []),
     'removePondRule' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'saveUserProfileByPhraseHash' : IDL.Func([IDL.Text, UserProfile], [], []),
-    'searchPonds' : IDL.Func([IDL.Text], [IDL.Vec(Pond)], ['query']),
-    'searchPosts' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
-    'unlikePost' : IDL.Func([IDL.Text], [], []),
-    'unlikeRibbit' : IDL.Func([IDL.Text], [], []),
   });
 };
 

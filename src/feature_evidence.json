@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-frontend-react-query-hooks-mutations-that-already-compute-getphrasehashuserid-so-they-actually-pass-the-phrase-hash-userid-into-the-backend-methods-that-accept-it-and-keep-working-when-the-userid-is-empty",
-      "featureTitle": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+      "featureId": "feature-ensure-the-frontend-initializes-froggy-phrase-access-control-automatically-on-app-startup-by-computing-the-froggy-phrase-sha-256-hash-via-getphrasehashuserid-then-calling-the-backend-initializefroggyphrase-userid-once-an-actor-is-available-so-froggy-phrase-users-are-authorized-before-they-perform-actions",
+      "featureTitle": "Ensure the frontend initializes Froggy Phrase access control automatically on app startup by computing the Froggy Phrase SHA-256 hash (via `getPhraseHashUserId()`), then calling the backend `initializeFroggyPhrase(userId)` once an actor is available, so Froggy Phrase users are authorized before they perform actions.",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -17,7 +18,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-4"
       ],
       "confidence": "high"
     }

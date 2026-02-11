@@ -1,52 +1,33 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T18:28:35.292Z",
+  "generatedAt": "2026-02-11T20:40:34.181Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
+    "total": 2,
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Add UserId (phrase-hash) parallel storage to the backend canister so identity-linked data can be keyed by `UserId = Text` while retaining all existing Principal-keyed storage unchanged.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Implement a backend linkage mechanism that records an association between `msg.caller : Principal` and a provided `userId : Text` (phrase-hash) whenever a phrase-hash-enabled method is called with a non-empty `userId`, and use this linkage to support gradual migration.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
         "id": "REQ-3",
-        "summary": "Update backend read/write paths for identity-affecting actions to dual-write (UserId + Principal) where possible, and to read with a safe fallback order (UserId first when available, otherwise Principal), without introducing new authorization gating.",
+        "summary": "Update the backend so that calling `initializeFroggyPhrase(userId : Text)` always results in the caller having AccessControl role `#user` (in addition to recording `userIdLinkage`). This must work for Froggy-Phrase-based sessions so that any backend methods guarded by `AccessControl.hasPermission(..., #user)` no longer trap as unauthorized for Froggy Phrase users.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-4",
-        "summary": "Expose backend query methods needed for Step 3 so the frontend can retrieve user/profile and like state via phrase-hash (`userId`) while still supporting legacy Principal-based queries as fallback.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+        "summary": "Ensure the frontend initializes Froggy Phrase access control automatically on app startup by computing the Froggy Phrase SHA-256 hash (via `getPhraseHashUserId()`), then calling the backend `initializeFroggyPhrase(userId)` once an actor is available, so Froggy Phrase users are authorized before they perform actions.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
+          "frontend/src/App.tsx"
         ]
       }
     ]
@@ -57,9 +38,17 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/TagHubRightSidebar.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/lib/types.ts",
+    "frontend/src/pages/PondAboutPage.tsx",
+    "frontend/src/pages/TagHubPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

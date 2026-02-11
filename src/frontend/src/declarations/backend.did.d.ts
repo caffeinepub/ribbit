@@ -10,18 +10,6 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface Activity {
-  'id' : string,
-  'username' : string,
-  'pond' : string,
-  'type' : ActivityType,
-  'timestamp' : bigint,
-  'targetId' : string,
-}
-export type ActivityType = { 'like' : null } |
-  { 'post' : null } |
-  { 'ribbit' : null } |
-  { 'viewRibbit' : null };
 export type ExternalBlob = Uint8Array;
 export interface Pond {
   'associatedTags' : Array<string>,
@@ -58,13 +46,6 @@ export interface Ribbit {
   'timestamp' : bigint,
   'parentId' : [] | [string],
   'postId' : string,
-}
-export interface TagStats {
-  'id' : string,
-  'firstUsedAt' : bigint,
-  'repliesTotal' : bigint,
-  'postsTotal' : bigint,
-  'lastActivityAt' : bigint,
 }
 export interface UserProfile {
   'name' : string,
@@ -112,91 +93,27 @@ export interface _SERVICE {
   'assignUserRoleByPhraseHash' : ActorMethod<[string, UserRole], undefined>,
   'canChangeUsername' : ActorMethod<[string], boolean>,
   'canChangeUsernameByPhraseHash' : ActorMethod<[string, string], boolean>,
-  'clearPostLikes' : ActorMethod<[string], undefined>,
   'createPond' : ActorMethod<
     [string, string, ExternalBlob, ExternalBlob, ExternalBlob, string],
     undefined
   >,
-  'createPost' : ActorMethod<
-    [
-      string,
-      string,
-      [] | [ExternalBlob],
-      [] | [string],
-      string,
-      string,
-      [] | [string],
-    ],
-    string
-  >,
-  'createRibbit' : ActorMethod<[string, [] | [string], string, string], string>,
-  'deleteLily' : ActorMethod<[string], undefined>,
-  'deleteRibbit' : ActorMethod<[string], undefined>,
   'editPondSettings' : ActorMethod<
     [string, [] | [string], [] | [string], [] | [Visibility]],
     undefined
   >,
-  'getAllRecentActivities' : ActorMethod<[bigint], Array<Activity>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCanonicalTagForTag' : ActorMethod<[string], string>,
-  'getJoinedPonds' : ActorMethod<[], Array<string>>,
-  'getLikeCountForPost' : ActorMethod<[string], bigint>,
-  'getLiliesByTag' : ActorMethod<[string, string], Array<Post>>,
-  'getNewestTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
   'getPond' : ActorMethod<[string], [] | [Pond]>,
-  'getPondAboutInfo' : ActorMethod<
-    [string],
-    [] | [
-      {
-        'title' : string,
-        'associatedTags' : Array<string>,
-        'admin' : Principal,
-        'lilyCount' : bigint,
-        'profileImage' : [] | [ExternalBlob],
-        'name' : string,
-        'createdAt' : bigint,
-        'memberCount' : bigint,
-        'description' : string,
-        'bannerImage' : [] | [ExternalBlob],
-        'moderators' : Array<Principal>,
-        'visibility' : Visibility,
-        'rules' : Array<string>,
-      }
-    ]
-  >,
   'getPondModerators' : ActorMethod<[string], Array<Principal>>,
   'getPondRules' : ActorMethod<[string], Array<string>>,
-  'getPost' : ActorMethod<[string], [] | [Post]>,
-  'getPostLikeCount' : ActorMethod<[string], bigint>,
   'getPostsByUsername' : ActorMethod<[string], Array<Post>>,
-  'getRecentPosts' : ActorMethod<[bigint], Array<Activity>>,
-  'getRecentRibbitViews' : ActorMethod<[string, bigint], Array<Activity>>,
-  'getRecentRibbits' : ActorMethod<[bigint], Array<Activity>>,
-  'getRecentlyLikedPosts' : ActorMethod<[bigint], Array<Activity>>,
-  'getRibbit' : ActorMethod<[string], [] | [Ribbit]>,
-  'getRibbitCountForPost' : ActorMethod<[string], bigint>,
-  'getRibbitLikeCount' : ActorMethod<[string], bigint>,
   'getRibbitsByUsername' : ActorMethod<[string], Array<Ribbit>>,
-  'getSubcategoriesForTag' : ActorMethod<[string], Array<string>>,
-  'getTagRank' : ActorMethod<
-    [string],
-    { 'tag' : string, 'rank' : [] | [bigint], 'canonicalTag' : string }
-  >,
   'getTagRedirects' : ActorMethod<[], Array<[string, string]>>,
-  'getTagStatsForTag' : ActorMethod<[string], [] | [TagStats]>,
-  'getTagSuggestions' : ActorMethod<[string, bigint], Array<string>>,
-  'getThreadedRibbitsSorted' : ActorMethod<[string, string], Array<Ribbit>>,
-  'getTopTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
-  'getTrendingTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
-  'getUserAvatarByUsername' : ActorMethod<[string], [] | [ExternalBlob]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserProfileByPhraseHash' : ActorMethod<[string], [] | [UserProfile]>,
   'getUserProfileByUsername' : ActorMethod<[string], [] | [UserProfile]>,
   'getUserRoleByPhraseHash' : ActorMethod<[string], UserRole>,
-  'getViewCountForPost' : ActorMethod<[string], bigint>,
-  'hasUserLikedPost' : ActorMethod<[string], boolean>,
-  'hasUserLikedRibbit' : ActorMethod<[string], boolean>,
   'incrementLilyViewCount' : ActorMethod<[string], ViewIncrementResult>,
   'initializeAccessControl' : ActorMethod<[], undefined>,
   'initializeFroggyPhrase' : ActorMethod<[string], undefined>,
@@ -205,15 +122,7 @@ export interface _SERVICE {
   'isUserAdminByPhraseHash' : ActorMethod<[string], boolean>,
   'isUsernameAvailable' : ActorMethod<[string], boolean>,
   'isUsernameAvailableByPhraseHash' : ActorMethod<[string, string], boolean>,
-  'joinPond' : ActorMethod<[string], undefined>,
-  'joinPondByPhraseHash' : ActorMethod<[string, string], undefined>,
-  'leavePond' : ActorMethod<[string], undefined>,
-  'leavePondByPhraseHash' : ActorMethod<[string, string], undefined>,
-  'likePost' : ActorMethod<[string], undefined>,
-  'likeRibbit' : ActorMethod<[string], undefined>,
   'listPonds' : ActorMethod<[], Array<Pond>>,
-  'listPosts' : ActorMethod<[], Array<Post>>,
-  'listRibbits' : ActorMethod<[string], Array<Ribbit>>,
   'mergeSimilarTags' : ActorMethod<[], undefined>,
   'recordUsernameChange' : ActorMethod<[string], undefined>,
   'recordUsernameChangeByPhraseHash' : ActorMethod<[string, string], undefined>,
@@ -221,15 +130,10 @@ export interface _SERVICE {
   'registerUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
   'releaseUsername' : ActorMethod<[string], undefined>,
   'releaseUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
-  'removeMemberFromPond' : ActorMethod<[string, Principal], undefined>,
   'removeModerator' : ActorMethod<[string, Principal], undefined>,
   'removePondRule' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveUserProfileByPhraseHash' : ActorMethod<[string, UserProfile], undefined>,
-  'searchPonds' : ActorMethod<[string], Array<Pond>>,
-  'searchPosts' : ActorMethod<[string], Array<Post>>,
-  'unlikePost' : ActorMethod<[string], undefined>,
-  'unlikeRibbit' : ActorMethod<[string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

@@ -1,111 +1,67 @@
 {
   "kind": "build_request",
-  "title": "Step 3: Begin parallel migration from Principal-keyed storage to phrase-hash UserId (keep Principal data intact)",
-  "priority": "normal",
+  "title": "Auto-assign #user role to all Froggy Phrase identities to stop unauthorized errors",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Add UserId (phrase-hash) parallel storage to the backend canister so identity-linked data can be keyed by `UserId = Text` while retaining all existing Principal-keyed storage unchanged.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "ok do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend compiles and deploys with no breaking changes to existing Principal-keyed maps/records.",
-        "New UserId-keyed maps exist for at least: user profiles, username ownership/mapping, and like state (post + ribbit likes).",
-        "No existing stable/state data is deleted or overwritten in a way that prevents Principal-based users from continuing to use the app."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Implement a backend linkage mechanism that records an association between `msg.caller : Principal` and a provided `userId : Text` (phrase-hash) whenever a phrase-hash-enabled method is called with a non-empty `userId`, and use this linkage to support gradual migration.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "ok do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When a shared method that receives `userId` is invoked with `userId != \"\"`, the canister stores/updates a mapping between the caller Principal and that userId.",
-        "If `userId == \"\"`, behavior remains unchanged and no linkage is required (anonymous/legacy mode continues to work).",
-        "The linkage is used to prefer UserId-keyed lookups when possible while preserving Principal fallback."
-      ]
-    },
-    {
       "id": "REQ-3",
-      "text": "Update backend read/write paths for identity-affecting actions to dual-write (UserId + Principal) where possible, and to read with a safe fallback order (UserId first when available, otherwise Principal), without introducing new authorization gating.",
+      "text": "Update the backend so that calling `initializeFroggyPhrase(userId : Text)` always results in the caller having AccessControl role `#user` (in addition to recording `userIdLinkage`). This must work for Froggy-Phrase-based sessions so that any backend methods guarded by `AccessControl.hasPermission(..., #user)` no longer trap as unauthorized for Froggy Phrase users.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-7",
+          "msg-8"
         ],
         "quotes": [
-          "ok do it"
+          "fix it so every froggy phrase identity receives the user role"
         ]
       },
       "acceptanceCriteria": [
-        "For each supported identity-affecting feature (at minimum: saving/fetching user profile, registering/releasing usernames, liking/unliking posts and ribbits), the backend writes UserId-keyed state when `userId != \"\"` and continues to write/maintain Principal-keyed state as it does today.",
-        "Queries that return the current user’s state return consistent results for (a) users with only Principal history, (b) users with only UserId history, and (c) users with both (UserId takes precedence when present).",
-        "All core actions remain callable in anonymous mode; no new role/admin/authorization checks are added beyond existing behavior/stubs."
+        "After a client calls `initializeFroggyPhrase(<sha256 phrase hash>)`, `getCallerUserRole()` returns `#user` for that same caller.",
+        "A Froggy Phrase user can successfully call at least one previously failing `#user`-gated method (e.g., `incrementLilyViewCount`) without receiving a trap containing \"Unauthorized\".",
+        "`initializeFroggyPhrase` remains idempotent (re-calling it does not error and does not downgrade any existing higher privilege such as admin, if applicable)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Expose backend query methods needed for Step 3 so the frontend can retrieve user/profile and like state via phrase-hash (`userId`) while still supporting legacy Principal-based queries as fallback.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "ok do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend provides phrase-hash equivalents (or enhanced existing methods) for querying user profile and like state using `userId : Text`, while keeping existing Principal-based query methods intact.",
-        "Candid/API generation succeeds and the frontend bindings can be regenerated without manual edits."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update the frontend React Query hooks/mutations that already compute `getPhraseHashUserId()` so they actually pass the phrase-hash `userId` into the backend methods that accept it (and keep working when the userId is empty).",
+      "text": "Ensure the frontend initializes Froggy Phrase access control automatically on app startup by computing the Froggy Phrase SHA-256 hash (via `getPhraseHashUserId()`), then calling the backend `initializeFroggyPhrase(userId)` once an actor is available, so Froggy Phrase users are authorized before they perform actions.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-7",
+          "msg-8"
         ],
         "quotes": [
-          "ok do it"
+          "fix it so every froggy phrase identity receives the user role"
         ]
       },
       "acceptanceCriteria": [
-        "In `frontend/src/hooks/useQueries.ts`, mutations such as join/leave pond, create post/lily, create ribbit, like/unlike post, like/unlike ribbit, and username-related mutations pass the computed `userId` to the backend method when the backend signature expects it.",
-        "If `getPhraseHashUserId()` returns an empty string, the frontend still calls the backend in a way that preserves existing anonymous/Principal-based behavior (no crashes).",
-        "TypeScript builds cleanly after regenerating backend bindings (no mismatched parameter lists)."
+        "On first page load in a fresh browser profile, the app generates a Froggy Phrase (existing behavior) and then successfully calls `initializeFroggyPhrase(<sha256 phrase hash>)` without user interaction.",
+        "After initialization completes, user actions that previously produced \"not authorized\" errors (e.g., liking, creating content, incrementing views where applicable) no longer show authorization errors for Froggy Phrase users.",
+        "The initialization call is not executed in a tight loop; it runs at most once per app session (or is otherwise clearly rate-limited/idempotent on the client)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
-    "Do not remove or rewrite existing Principal-keyed storage in this step; migration must be additive and reversible.",
-    "Do not introduce new authorization gating; core actions must remain callable in anonymous mode.",
-    "Do not edit frontend files under `frontend/src/components/ui`, `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx`."
+    "Backend must remain a single-actor Motoko canister (all logic in `backend/main.mo`).",
+    "Do not edit any files under `frontend/src/components/ui` or other immutable paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Completing the full cutover to phrase-hash-only identity (i.e., deleting Principal-keyed data) is out of scope for this step.",
-    "Adding third-party authentication providers or non-Internet-Identity auth is out of scope.",
-    "Introducing external databases or additional canisters/services is out of scope."
+    "Removing AccessControl authorization checks across the backend.",
+    "Implementing or integrating third-party authentication providers beyond existing Internet Identity support."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

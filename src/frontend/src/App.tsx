@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { RouterProvider, createRouter, createRoute, createRootRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
@@ -15,6 +16,8 @@ import TagPage from './pages/TagPage';
 import SavedLiliesPage from './pages/SavedLiliesPage';
 import TagHubPage from './pages/TagHubPage';
 import FrogProfilePage from './pages/FrogProfilePage';
+import { ensureDefaultFroggyPhrase } from './lib/user';
+import { useInitializeFroggyPhraseAccessControl } from './hooks/useInitializeFroggyPhraseAccessControl';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -123,6 +126,14 @@ declare module '@tanstack/react-router' {
 }
 
 export default function App() {
+  // Ensure Froggy Phrase is auto-generated on app mount
+  useEffect(() => {
+    ensureDefaultFroggyPhrase();
+  }, []);
+
+  // Initialize Froggy Phrase access control once actor is available
+  useInitializeFroggyPhraseAccessControl();
+
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <RouterProvider router={router} />

@@ -6,7 +6,7 @@ import TagHubRightSidebar from '@/components/TagHubRightSidebar';
 import { useGetTopTags, useGetTrendingTags, useGetNewestTags } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Hash, Tag, ChevronRight } from 'lucide-react';
-import type { TagStats } from '@/backend';
+import type { TagStats } from '@/lib/types';
 
 function TagItem({ tag, stats, rank }: { tag: string; stats: TagStats; rank: number }) {
   return (

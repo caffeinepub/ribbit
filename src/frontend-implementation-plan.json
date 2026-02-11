@@ -1,21 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Step 3 (frontend): Pass phrase-hash userId into phrase-hash-enabled React Query hooks",
+  "title": "Auto-initialize Froggy Phrase access control on startup",
   "requirements": [
     {
-      "id": "REQ-5",
-      "summary": "Update React Query hooks/mutations to pass computed phrase-hash userId into backend methods that accept it, with empty-string fallback to legacy calls.",
+      "id": "REQ-4",
+      "summary": "Automatically initialize Froggy Phrase access control on startup by hashing the phrase and calling backend initializeFroggyPhrase once an actor is available.",
       "acceptanceCriteria": [
-        "In frontend/src/hooks/useQueries.ts, mutations such as join/leave pond, create post/lily, create ribbit, like/unlike post, like/unlike ribbit, and username-related mutations pass the computed userId to the backend method when the backend signature expects it.",
-        "If getPhraseHashUserId() returns an empty string, the frontend still calls the backend in a way that preserves existing anonymous/Principal-based behavior (no crashes).",
-        "TypeScript builds cleanly after regenerating backend bindings (no mismatched parameter lists)."
+        "On first page load in a fresh browser profile, the app generates a Froggy Phrase (existing behavior) and then successfully calls `initializeFroggyPhrase(<sha256 phrase hash>)` without user interaction.",
+        "After initialization completes, user actions that previously produced \"not authorized\" errors (e.g., liking, creating content, incrementing views where applicable) no longer show authorization errors for Froggy Phrase users.",
+        "The initialization call is not executed in a tight loop; it runs at most once per app session (or is otherwise clearly rate-limited/idempotent on the client)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
+          "operation": "create",
+          "description": "Add a startup hook that waits for a backend actor from useActor(), computes the Froggy Phrase SHA-256 hash via getPhraseHashUserId(), and calls actor.initializeFroggyPhrase(userId) once per app session (use a sessionStorage flag and an in-memory guard to prevent tight loops). Ensure failures do not crash app startup (log and continue)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Update phrase-hash-aware queries/mutations to actually use getPhraseHashUserId() when calling backend functions that accept a userId. Specifically: (1) join/leave pond should call joinPondByPhraseHash(userId, pondName) / leavePondByPhraseHash(userId, pondName) when userId !== \"\", otherwise call joinPond(pondName) / leavePond(pondName); (2) username availability and can-change checks should call isUsernameAvailableByPhraseHash(userId, username) and canChangeUsernameByPhraseHash(userId, username) when userId !== \"\", otherwise call isUsernameAvailable(username) and canChangeUsername(username); (3) username mutations should call registerUsernameWithPhraseHash(userId, username), releaseUsernameWithPhraseHash(userId, username), and recordUsernameChangeByPhraseHash(userId, username) when userId !== \"\", otherwise use the existing Principal/legacy variants; (4) user profile save should call saveUserProfileByPhraseHash(userId, profile) when userId !== \"\", otherwise use saveCallerUserProfile(profile). Additionally, after backend bindings are regenerated, update any identity-affecting mutations whose signatures have been expanded to accept userId (e.g., create post/lily, create ribbit, like/unlike post, like/unlike ribbit) so they pass userId when required, while preserving empty-string fallback behavior."
+          "description": "Wire the new useInitializeFroggyPhraseAccessControl hook into app startup (in App component) so the initialization runs automatically after ensureDefaultFroggyPhrase() and once an actor is available."
         }
       ]
     }
