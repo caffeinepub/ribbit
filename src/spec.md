@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure all Froggy Phrase identities are automatically assigned the `#user` access control role so Froggy Phrase sessions no longer hit unauthorized traps on `#user`-gated backend methods.
+**Goal:** Eliminate “Unauthorized” errors for Froggy Phrase users by authorizing phrase-hash userId calls as full `#user` actions even when the caller principal is anonymous.
 
 **Planned changes:**
-- Backend: Update `initializeFroggyPhrase(userId : Text)` to always ensure the caller has AccessControl role `#user` while still recording `userIdLinkage`, and keep the call idempotent without downgrading higher roles.
-- Backend: Verify Froggy Phrase callers can pass `AccessControl.hasPermission(..., #user)` after initialization (e.g., for a previously failing method like `incrementLilyViewCount`).
-- Frontend: On app startup, compute the Froggy Phrase SHA-256 hash via `getPhraseHashUserId()` and call backend `initializeFroggyPhrase(userId)` once an actor is available, ensuring the call runs at most once per app session (or is otherwise rate-limited/idempotent).
+- Backend: Update authorization logic so requests with a recognized Froggy Phrase phrase-hash `userId` are treated as `#user` for all actions, regardless of caller principal (including anonymous).
+- Backend: Add/extend `*ByPhraseHash(userId, ...)` method variants for all UI-triggered write/mutation actions that currently require principal-based `#user` authorization (e.g., creating ponds, lilies/posts, ribbits/comments, liking/unliking, view-count increments, and username/avatar/profile saves).
+- Frontend: Update React Query queries/mutations to consistently call phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId; otherwise keep existing Internet Identity/principal-based calls.
 
-**User-visible outcome:** Froggy Phrase users are automatically initialized as `#user` on startup, and actions that previously failed with “Unauthorized” (e.g., liking/creating content/incrementing views where applicable) no longer show authorization errors.
+**User-visible outcome:** Froggy Phrase users can create ponds, create lilies/posts, create ribbits/comments, like/unlike, increment views, and save avatar/profile without “Unauthorized” errors even when not logged in with Internet Identity, while existing Internet Identity behavior remains unchanged.

@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useGetTopTags, useGetTrendingTags, useGetNewestTags } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Hash, TrendingUp, Sparkles } from 'lucide-react';
-import type { TagStats } from '@/lib/types';
+import type { TagStats } from '@/backend';
 
 function TagStatItem({ tag, stats }: { tag: string; stats: TagStats }) {
   const totalActivity = Number(stats.postsTotal) + Number(stats.repliesTotal);

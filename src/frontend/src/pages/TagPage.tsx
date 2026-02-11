@@ -4,7 +4,7 @@ import { Tabs } from '@/components/ui/tabs';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
-import { useGetLiliesByTag, useGetCanonicalTag, useGetTagSubcategories } from '@/hooks/useQueries';
+import { useGetLiliesByTag, useGetCanonicalTag, useGetSubcategories } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tag } from 'lucide-react';
 
@@ -17,7 +17,7 @@ export default function TagPage() {
   
   const { data: canonicalTag, isLoading: isLoadingCanonical } = useGetCanonicalTag(tag);
   const { data: lilies, isLoading: isLoadingLilies } = useGetLiliesByTag(canonicalTag || tag, sortBy);
-  const { data: subcategories, isLoading: isLoadingSubcategories } = useGetTagSubcategories(canonicalTag || tag);
+  const { data: subcategories, isLoading: isLoadingSubcategories } = useGetSubcategories(canonicalTag || tag);
 
   // Redirect to canonical tag if different
   useEffect(() => {

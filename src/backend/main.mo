@@ -30,42 +30,29 @@ actor Ribbit {
   var tagUsageCount : OrderedMap.Map<Text, Nat> = textMap.empty();
   var tagMergeRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
-  // Username-based avatar storage
   var usernameAvatars : OrderedMap.Map<Text, Storage.ExternalBlob> = textMap.empty();
 
-  // Likes system
   var postLikes : OrderedMap.Map<Text, OrderedMap.Map<Principal, Bool>> = textMap.empty();
   var ribbitLikes : OrderedMap.Map<Text, OrderedMap.Map<Principal, Bool>> = textMap.empty();
 
-  // New activity tracking system for Recent Activity
   var postActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var ribbitActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var likeActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
+  var viewActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
 
-  // Tag stats tracking
   var tagStats : OrderedMap.Map<Text, TagStats> = textMap.empty();
-
-  // === New: Subcategories for tags ===
   var tagSubcategories : OrderedMap.Map<Text, [Text]> = textMap.empty();
 
-  // Access control state
   let accessControlState = AccessControl.initState();
 
-  // New: Phrase-hash enabled storage
   var userIdLinkage : OrderedMap.Map<Text, Principal> = textMap.empty();
+  var userIdRoleOverrides : OrderedMap.Map<Text, Bool> = textMap.empty();
   var userIdUsernameLinkage : OrderedMap.Map<Text, Text> = textMap.empty();
-
-  // Parallel like mappings
   var userIdPostLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
   var userIdRibbitLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
-
-  // Store userId-mapped user profiles
   var userIdUserProfiles : OrderedMap.Map<Text, UserProfile> = textMap.empty();
-
-  // Username linkage between userId and username
   var userIdUsernameRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
-  // Activity tracking data type
   type Activity = {
     id : Text;
     type_ : ActivityType;
@@ -132,14 +119,12 @@ actor Ribbit {
     avatar : ?Storage.ExternalBlob;
   };
 
-  // View increment result type
   public type ViewIncrementResult = {
     #success;
     #notFound;
     #error;
   };
 
-  // Updated tag stats type with IDs
   type TagStats = {
     id : Text;
     postsTotal : Nat;
@@ -156,34 +141,46 @@ actor Ribbit {
 
   public shared ({ caller }) func initializeFroggyPhrase(userId : Text) : async () {
     userIdLinkage := textMap.put(userIdLinkage, userId, caller);
+    userIdRoleOverrides := textMap.put(userIdRoleOverrides, userId, true);
+    AccessControl.initialize(accessControlState, caller);
+  };
 
-    let currentRole = AccessControl.getUserRole(accessControlState, caller);
+  func isFroggyPhraseUser(userId : Text) : Bool {
+    switch (textMap.get(userIdRoleOverrides, userId)) {
+      case (?true) { true };
+      case _ { false };
+    };
+  };
 
-    // Only upgrade guests to users; preserve existing admin/user roles
-    switch (currentRole) {
-      case (#guest) {
-        // For guests, we need to initialize them as users
-        // Since AccessControl.assignRole requires admin permission and guests can't self-promote,
-        // we use AccessControl.initialize which will make them a user (not admin, since system is already initialized)
-        AccessControl.initialize(accessControlState, caller);
+  func getFroggyPhraseUserRole(userId : Text) : AccessControl.UserRole {
+    if (isFroggyPhraseUser(userId)) { #user } else { #guest };
+  };
+
+  func getUserRoleText(caller : Principal) : AccessControl.UserRole {
+    switch (principalToUserId(caller)) {
+      case (?userId) {
+        if (isFroggyPhraseUser(userId)) {
+          #user;
+        } else {
+          AccessControl.getUserRole(accessControlState, caller);
+        };
       };
-      case (#user) {
-        // Already a user, no action needed
-      };
-      case (#admin) {
-        // Already an admin, no action needed
-      };
+      case null { AccessControl.getUserRole(accessControlState, caller) };
     };
   };
 
   public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
-    AccessControl.getUserRole(accessControlState, caller);
+    getUserRoleText(caller);
   };
 
   public query func getUserRoleByPhraseHash(userId : Text) : async AccessControl.UserRole {
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?principal) { AccessControl.getUserRole(accessControlState, principal) };
-      case (null) { #guest };
+    if (isFroggyPhraseUser(userId)) {
+      #user;
+    } else {
+      switch (textMap.get(userIdLinkage, userId)) {
+        case (?principal) { AccessControl.getUserRole(accessControlState, principal) };
+        case (null) { #guest };
+      };
     };
   };
 
@@ -203,30 +200,28 @@ actor Ribbit {
   };
 
   public query func isUserAdminByPhraseHash(userId : Text) : async Bool {
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?principal) { AccessControl.isAdmin(accessControlState, principal) };
-      case (null) { false };
+    if (isFroggyPhraseUser(userId)) {
+      false;
+    } else {
+      switch (textMap.get(userIdLinkage, userId)) {
+        case (?principal) { AccessControl.isAdmin(accessControlState, principal) };
+        case (null) { false };
+      };
     };
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can access profiles");
     };
     principalMap.get(userProfiles, caller);
   };
 
   public query func getUserProfileByPhraseHash(userId : Text) : async ?UserProfile {
-    let profileByPhraseHash = textMap.get(userIdUserProfiles, userId);
-    switch (profileByPhraseHash) {
-      case (?profile) { ?profile };
-      case (null) {
-        switch (textMap.get(userIdLinkage, userId)) {
-          case (?principal) { principalMap.get(userProfiles, principal) };
-          case (null) { null };
-        };
-      };
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
     };
+    textMap.get(userIdUserProfiles, userId);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
@@ -237,25 +232,39 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles := principalMap.put(userProfiles, caller, profile);
   };
 
   public shared func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
     userIdUserProfiles := textMap.put(userIdUserProfiles, userId, profile);
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?principal) { userProfiles := principalMap.put(userProfiles, principal, profile) };
-      case (null) {};
+  };
+
+  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can increment view counts");
+    };
+    switch (textMap.get(posts, postId)) {
+      case (null) { #notFound };
+      case (?post) {
+        let updatedPost = {
+          post with
+          viewCount = post.viewCount + 1;
+        };
+        posts := textMap.put(posts, postId, updatedPost);
+        #success;
+      };
     };
   };
 
-  // ===== END ACCESS CONTROL =====
-
-  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Debug.trap("Unauthorized: Only users can increment view counts");
+  public shared func incrementLilyViewCountByPhraseHash(userId : Text, postId : Text) : async ViewIncrementResult {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
     };
     switch (textMap.get(posts, postId)) {
       case (null) { #notFound };
@@ -379,7 +388,7 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func mergeSimilarTags() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Debug.trap("Unauthorized: Only admins can merge tags");
     };
 
@@ -512,7 +521,7 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func registerUsername(username : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can register usernames");
     };
 
@@ -547,6 +556,10 @@ actor Ribbit {
   };
 
   public shared func registerUsernameWithPhraseHash(userId : Text, username : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
     if (textMap.contains(usernameRegistry, username)) {
       Debug.trap("Username already taken");
     };
@@ -555,7 +568,7 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func releaseUsername(username : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can release usernames");
     };
 
@@ -577,6 +590,10 @@ actor Ribbit {
   };
 
   public shared func releaseUsernameWithPhraseHash(userId : Text, username : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
     switch (textMap.get(userIdUsernameRegistry, userId)) {
       case (?registeredUsername) {
         if (registeredUsername != username) {
@@ -628,7 +645,7 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func recordUsernameChange(username : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can record username changes");
     };
 
@@ -661,6 +678,10 @@ actor Ribbit {
   };
 
   public shared func recordUsernameChangeByPhraseHash(userId : Text, username : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
     switch (textMap.get(userIdUsernameRegistry, userId)) {
       case (?registeredUsername) {
         if (registeredUsername != username) {
@@ -684,12 +705,12 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (getUserRoleText(caller) != #user) {
       Debug.trap("Unauthorized: Only users can create ponds");
     };
 
     if (not isAlphanumeric(name)) {
-      Debug.trap("Pond name must contain only letters and numbers. ");
+      Debug.trap("Pond name must contain only letters and numbers.");
     };
 
     if (textMap.contains(ponds, name)) {
@@ -856,5 +877,1292 @@ actor Ribbit {
       case (?pond) { pond.rules };
     };
   };
-};
 
+  public shared ({ caller }) func deleteLily(postId : Text) : async () {
+    switch (textMap.get(posts, postId)) {
+      case (null) { Debug.trap("Post not found") };
+      case (?post) {
+        if (not isAdminOfPond(caller, post.pond)) {
+          Debug.trap("Unauthorized: Only pond admins can delete lilies in their pond");
+        };
+        posts := textMap.delete(posts, postId);
+        postLikes := textMap.delete(postLikes, postId);
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteRibbit(ribbitId : Text) : async () {
+    switch (textMap.get(ribbits, ribbitId)) {
+      case (null) { Debug.trap("Ribbit not found") };
+      case (?ribbit) {
+        switch (textMap.get(posts, ribbit.postId)) {
+          case (null) { Debug.trap("Associated post not found") };
+          case (?post) {
+            if (not isAdminOfPond(caller, post.pond)) {
+              Debug.trap("Unauthorized: Only pond admins can delete ribbits in their pond");
+            };
+            ribbits := textMap.delete(ribbits, ribbitId);
+            ribbitLikes := textMap.delete(ribbitLikes, ribbitId);
+          };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeMemberFromPond(pondName : Text, member : Principal) : async () {
+    if (not isAdminOfPond(caller, pondName)) {
+      Debug.trap("Unauthorized: Only pond admins can remove members");
+    };
+
+    switch (textMap.get(ponds, pondName)) {
+      case (null) { Debug.trap("Pond not found") };
+      case (?pond) {
+        if (not isMemberOfPond(member, pondName)) {
+          Debug.trap("User is not a member of this pond");
+        };
+
+        let updatedMembers = Array.filter<Principal>(pond.members, func(m) { m != member });
+        let updatedPond = {
+          pond with
+          members = updatedMembers;
+          memberCount = Nat.sub(pond.memberCount, 1);
+        };
+        ponds := textMap.put(ponds, pondName, updatedPond);
+
+        switch (principalMap.get(userProfiles, member)) {
+          case (null) {};
+          case (?profile) {
+            let updatedJoinedPonds = Array.filter<Text>(profile.joinedPonds, func(p) { p != pondName });
+            let updatedProfile = {
+              profile with
+              joinedPonds = updatedJoinedPonds;
+            };
+            userProfiles := principalMap.put(userProfiles, member, updatedProfile);
+          };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func createPost(title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can create posts");
+    };
+
+    switch (textMap.get(ponds, pond)) {
+      case (null) {
+        Debug.trap("Pond not found");
+      };
+      case (?pondData) {
+        if (not isMemberOfPond(caller, pond)) {
+          Debug.trap("You must be a member of this pond to post a Lily.");
+        };
+      };
+    };
+
+    usernameOwnership := textMap.put(usernameOwnership, username, caller);
+    principalToUsername := principalMap.put(principalToUsername, caller, username);
+
+    let postId = Text.concat("post_", Nat.toText(textMap.size(posts) + 1));
+
+    let normalizedTag = switch (tag) {
+      case (null) { null };
+      case (?t) {
+        let norm = normalizeTag(t);
+        switch (textMap.get(tagUsageCount, norm)) {
+          case (null) {
+            tagUsageCount := textMap.put(tagUsageCount, norm, 1);
+          };
+          case (?count) {
+            tagUsageCount := textMap.put(tagUsageCount, norm, count + 1);
+          };
+        };
+
+        switch (textMap.get(ponds, pond)) {
+          case (null) {};
+          case (?pondData) {
+            let tagExists = Array.find<Text>(pondData.associatedTags, func(existingTag) { existingTag == norm }) != null;
+            if (not tagExists) {
+              let updatedPond = {
+                pondData with
+                associatedTags = Array.append(pondData.associatedTags, [norm]);
+              };
+              ponds := textMap.put(ponds, pond, updatedPond);
+            };
+          };
+        };
+
+        let canonicalTag = getCanonicalTag(norm);
+
+        let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+          case (null) {
+            let defaultStats : TagStats = {
+              id = canonicalTag;
+              postsTotal = 0;
+              repliesTotal = 0;
+              firstUsedAt = Time.now();
+              lastActivityAt = Time.now();
+            };
+            defaultStats;
+          };
+          case (?stats) { stats };
+        };
+
+        let updatedStats = {
+          currentStats with
+          postsTotal = currentStats.postsTotal + 1;
+          lastActivityAt = Time.now();
+        };
+
+        let finalStats = if (currentStats.postsTotal == 0) {
+          {
+            updatedStats with
+            firstUsedAt = Time.now();
+          };
+        } else { updatedStats };
+
+        tagStats := textMap.put(tagStats, canonicalTag, finalStats);
+
+        ?norm;
+      };
+    };
+
+    let post : Post = {
+      id = postId;
+      title;
+      content;
+      image;
+      link;
+      pond;
+      username;
+      timestamp = Time.now();
+      viewCount = 0;
+      tag = normalizedTag;
+    };
+
+    posts := textMap.put(posts, postId, post);
+
+    switch (textMap.get(ponds, pond)) {
+      case (null) {};
+      case (?pondData) {
+        let updatedPond = {
+          pondData with
+          lilyCount = pondData.lilyCount + 1;
+        };
+        ponds := textMap.put(ponds, pond, updatedPond);
+      };
+    };
+
+    postId;
+  };
+
+  public shared func createPostByPhraseHash(userId : Text, title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(ponds, pond)) {
+      case (null) {
+        Debug.trap("Pond not found");
+      };
+      case (?_pondData) {};
+    };
+
+    let postId = Text.concat("post_", Nat.toText(textMap.size(posts) + 1));
+
+    let normalizedTag = switch (tag) {
+      case (null) { null };
+      case (?t) {
+        let norm = normalizeTag(t);
+        switch (textMap.get(tagUsageCount, norm)) {
+          case (null) {
+            tagUsageCount := textMap.put(tagUsageCount, norm, 1);
+          };
+          case (?count) {
+            tagUsageCount := textMap.put(tagUsageCount, norm, count + 1);
+          };
+        };
+
+        switch (textMap.get(ponds, pond)) {
+          case (null) {};
+          case (?pondData) {
+            let tagExists = Array.find<Text>(pondData.associatedTags, func(existingTag) { existingTag == norm }) != null;
+            if (not tagExists) {
+              let updatedPond = {
+                pondData with
+                associatedTags = Array.append(pondData.associatedTags, [norm]);
+              };
+              ponds := textMap.put(ponds, pond, updatedPond);
+            };
+          };
+        };
+
+        let canonicalTag = getCanonicalTag(norm);
+
+        let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+          case (null) {
+            let defaultStats : TagStats = {
+              id = canonicalTag;
+              postsTotal = 0;
+              repliesTotal = 0;
+              firstUsedAt = Time.now();
+              lastActivityAt = Time.now();
+            };
+            defaultStats;
+          };
+          case (?stats) { stats };
+        };
+
+        let updatedStats = {
+          currentStats with
+          postsTotal = currentStats.postsTotal + 1;
+          lastActivityAt = Time.now();
+        };
+
+        let finalStats = if (currentStats.postsTotal == 0) {
+          {
+            updatedStats with
+            firstUsedAt = Time.now();
+          };
+        } else { updatedStats };
+
+        tagStats := textMap.put(tagStats, canonicalTag, finalStats);
+
+        ?norm;
+      };
+    };
+
+    let post : Post = {
+      id = postId;
+      title;
+      content;
+      image;
+      link;
+      pond;
+      username;
+      timestamp = Time.now();
+      viewCount = 0;
+      tag = normalizedTag;
+    };
+
+    posts := textMap.put(posts, postId, post);
+
+    switch (textMap.get(ponds, pond)) {
+      case (null) {};
+      case (?pondData) {
+        let updatedPond = {
+          pondData with
+          lilyCount = pondData.lilyCount + 1;
+        };
+        ponds := textMap.put(ponds, pond, updatedPond);
+      };
+    };
+
+    postId;
+  };
+
+  public shared ({ caller }) func likePost(postId : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can like posts");
+    };
+
+    switch (textMap.get(posts, postId)) {
+      case (null) { Debug.trap("Post not found") };
+      case (?_) {
+        var currentLikes = switch (textMap.get(postLikes, postId)) {
+          case (null) { principalMap.empty<Bool>() };
+          case (?likes) { likes };
+        };
+
+        currentLikes := principalMap.put(currentLikes, caller, true);
+        postLikes := textMap.put(postLikes, postId, currentLikes);
+        logActivity(#like, postId, "", "");
+      };
+    };
+  };
+
+  public shared func likePostByPhraseHash(userId : Text, postId : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(posts, postId)) {
+      case (null) { Debug.trap("Post not found") };
+      case (?_) {
+        var currentLikes = switch (textMap.get(userIdPostLikes, userId)) {
+          case (null) { textMap.empty<Bool>() };
+          case (?likes) { likes };
+        };
+
+        currentLikes := textMap.put(currentLikes, postId, true);
+        userIdPostLikes := textMap.put(userIdPostLikes, userId, currentLikes);
+      };
+    };
+  };
+
+  public shared ({ caller }) func unlikePost(postId : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can unlike posts");
+    };
+
+    switch (textMap.get(posts, postId)) {
+      case (null) { Debug.trap("Post not found") };
+      case (?_) {
+        switch (textMap.get(postLikes, postId)) {
+          case (null) {};
+          case (?likes) {
+            let updatedLikes = principalMap.delete(likes, caller);
+            postLikes := textMap.put(postLikes, postId, updatedLikes);
+          };
+        };
+      };
+    };
+  };
+
+  public shared func unlikePostByPhraseHash(userId : Text, postId : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(posts, postId)) {
+      case (null) { Debug.trap("Post not found") };
+      case (?_) {
+        switch (textMap.get(userIdPostLikes, userId)) {
+          case (null) {};
+          case (?likes) {
+            let updatedLikes = textMap.delete(likes, postId);
+            userIdPostLikes := textMap.put(userIdPostLikes, userId, updatedLikes);
+          };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func likeRibbit(ribbitId : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can like ribbits");
+    };
+
+    switch (textMap.get(ribbits, ribbitId)) {
+      case (null) { Debug.trap("Ribbit not found") };
+      case (?_) {
+        var currentLikes = switch (textMap.get(ribbitLikes, ribbitId)) {
+          case (null) { principalMap.empty<Bool>() };
+          case (?likes) { likes };
+        };
+
+        currentLikes := principalMap.put(currentLikes, caller, true);
+        ribbitLikes := textMap.put(ribbitLikes, ribbitId, currentLikes);
+      };
+    };
+  };
+
+  public shared func likeRibbitByPhraseHash(userId : Text, ribbitId : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(ribbits, ribbitId)) {
+      case (null) { Debug.trap("Ribbit not found") };
+      case (?_) {
+        var currentLikes = switch (textMap.get(userIdRibbitLikes, userId)) {
+          case (null) { textMap.empty<Bool>() };
+          case (?likes) { likes };
+        };
+
+        currentLikes := textMap.put(currentLikes, ribbitId, true);
+        userIdRibbitLikes := textMap.put(userIdRibbitLikes, userId, currentLikes);
+      };
+    };
+  };
+
+  public shared ({ caller }) func unlikeRibbit(ribbitId : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can unlike ribbits");
+    };
+
+    switch (textMap.get(ribbits, ribbitId)) {
+      case (null) { Debug.trap("Ribbit not found") };
+      case (?_) {
+        switch (textMap.get(ribbitLikes, ribbitId)) {
+          case (null) {};
+          case (?likes) {
+            let updatedLikes = principalMap.delete(likes, caller);
+            ribbitLikes := textMap.put(ribbitLikes, ribbitId, updatedLikes);
+          };
+        };
+      };
+    };
+  };
+
+  public shared func unlikeRibbitByPhraseHash(userId : Text, ribbitId : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(ribbits, ribbitId)) {
+      case (null) { Debug.trap("Ribbit not found") };
+      case (?_) {
+        switch (textMap.get(userIdRibbitLikes, userId)) {
+          case (null) {};
+          case (?likes) {
+            let updatedLikes = textMap.delete(likes, ribbitId);
+            userIdRibbitLikes := textMap.put(userIdRibbitLikes, userId, updatedLikes);
+          };
+        };
+      };
+    };
+  };
+
+  public query func getPostLikeCount(postId : Text) : async Nat {
+    switch (textMap.get(postLikes, postId)) {
+      case (null) { 0 };
+      case (?likes) { principalMap.size(likes) };
+    };
+  };
+
+  public query ({ caller }) func hasUserLikedPost(postId : Text) : async Bool {
+    switch (textMap.get(postLikes, postId)) {
+      case (null) { false };
+      case (?likes) {
+        switch (principalMap.get(likes, caller)) {
+          case (null) { false };
+          case (?liked) { liked };
+        };
+      };
+    };
+  };
+
+  public query func hasUserLikedPostByPhraseHash(userId : Text, postId : Text) : async Bool {
+    switch (textMap.get(userIdPostLikes, userId)) {
+      case (null) { false };
+      case (?likes) {
+        switch (textMap.get(likes, postId)) {
+          case (null) { false };
+          case (?liked) { liked };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func clearPostLikes(postId : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Debug.trap("Unauthorized: Only admins can clear post likes");
+    };
+    postLikes := textMap.delete(postLikes, postId);
+  };
+
+  public query func getRibbitLikeCount(ribbitId : Text) : async Nat {
+    switch (textMap.get(ribbitLikes, ribbitId)) {
+      case (null) { 0 };
+      case (?likes) { principalMap.size(likes) };
+    };
+  };
+
+  public query ({ caller }) func hasUserLikedRibbit(ribbitId : Text) : async Bool {
+    switch (textMap.get(ribbitLikes, ribbitId)) {
+      case (null) { false };
+      case (?likes) {
+        switch (principalMap.get(likes, caller)) {
+          case (null) { false };
+          case (?liked) { liked };
+        };
+      };
+    };
+  };
+
+  public query func hasUserLikedRibbitByPhraseHash(userId : Text, ribbitId : Text) : async Bool {
+    switch (textMap.get(userIdRibbitLikes, userId)) {
+      case (null) { false };
+      case (?likes) {
+        switch (textMap.get(likes, ribbitId)) {
+          case (null) { false };
+          case (?liked) { liked };
+        };
+      };
+    };
+  };
+
+  public query func getLikeCountForPost(postId : Text) : async Nat {
+    switch (textMap.get(postLikes, postId)) {
+      case (null) { 0 };
+      case (?likes) { principalMap.size(likes) };
+    };
+  };
+
+  public query func getPost(id : Text) : async ?Post {
+    textMap.get(posts, id);
+  };
+
+  public query func listPosts() : async [Post] {
+    Iter.toArray(textMap.vals(posts));
+  };
+
+  public query func getTagSuggestions(prefix : Text, limit : Nat) : async [Text] {
+    let normalizedPrefix = normalizeTag(prefix);
+
+    let filteredTags = Array.filter<(Text, Nat)>(
+      Iter.toArray(textMap.entries(tagUsageCount)),
+      func((tag, _) : (Text, Nat)) : Bool {
+        Text.startsWith(tag, #text normalizedPrefix);
+      },
+    );
+
+    let sortedTags = Array.sort<(Text, Nat)>(
+      filteredTags,
+      func(a : (Text, Nat), b : (Text, Nat)) : { #less; #equal; #greater } {
+        if (a.1 > b.1) { #less } else if (a.1 < b.1) { #greater } else { #equal };
+      },
+    );
+
+    let limitedTags = Array.tabulate<(Text, Nat)>(
+      Nat.min(limit, sortedTags.size()),
+      func(i : Nat) : (Text, Nat) { sortedTags[i] },
+    );
+
+    Array.map<(Text, Nat), Text>(limitedTags, func((tag, _) : (Text, Nat)) : Text { tag });
+  };
+
+  public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can create ribbits");
+    };
+
+    let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
+
+    let ribbit : Ribbit = {
+      id = ribbitId;
+      postId;
+      parentId;
+      content;
+      username;
+      timestamp = Time.now();
+    };
+
+    ribbits := textMap.put(ribbits, ribbitId, ribbit);
+
+    trackViewRibbitActivity(ribbitId, username);
+
+    switch (textMap.get(posts, postId)) {
+      case (?post) {
+        switch (post.tag) {
+          case (?tag) {
+            let canonicalTag = getCanonicalTag(tag);
+
+            let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+              case (null) {
+                let defaultStats : TagStats = {
+                  id = canonicalTag;
+                  postsTotal = 0;
+                  repliesTotal = 0;
+                  firstUsedAt = Time.now();
+                  lastActivityAt = Time.now();
+                };
+                defaultStats;
+              };
+              case (?stats) { stats };
+            };
+
+            let updatedStats = {
+              currentStats with
+              repliesTotal = currentStats.repliesTotal + 1;
+              lastActivityAt = Time.now();
+            };
+
+            tagStats := textMap.put(tagStats, canonicalTag, updatedStats);
+          };
+          case (null) {};
+        };
+      };
+      case (null) {};
+    };
+
+    ribbitId;
+  };
+
+  public shared func createRibbitByPhraseHash(userId : Text, postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
+
+    let ribbit : Ribbit = {
+      id = ribbitId;
+      postId;
+      parentId;
+      content;
+      username;
+      timestamp = Time.now();
+    };
+
+    ribbits := textMap.put(ribbits, ribbitId, ribbit);
+
+    trackViewRibbitActivity(ribbitId, username);
+
+    switch (textMap.get(posts, postId)) {
+      case (?post) {
+        switch (post.tag) {
+          case (?tag) {
+            let canonicalTag = getCanonicalTag(tag);
+
+            let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
+              case (null) {
+                let defaultStats : TagStats = {
+                  id = canonicalTag;
+                  postsTotal = 0;
+                  repliesTotal = 0;
+                  firstUsedAt = Time.now();
+                  lastActivityAt = Time.now();
+                };
+                defaultStats;
+              };
+              case (?stats) { stats };
+            };
+
+            let updatedStats = {
+              currentStats with
+              repliesTotal = currentStats.repliesTotal + 1;
+              lastActivityAt = Time.now();
+            };
+
+            tagStats := textMap.put(tagStats, canonicalTag, updatedStats);
+          };
+          case (null) {};
+        };
+      };
+      case (null) {};
+    };
+
+    ribbitId;
+  };
+
+  func trackViewRibbitActivity(ribbitId : Text, username : Text) {
+    let hasViewedBefore = Array.find<Activity>(
+      Iter.toArray(textMap.vals(ribbitActivity)),
+      func(activity) {
+        activity.type_ == #viewRibbit and activity.targetId == ribbitId and activity.username == username
+      },
+    ) != null;
+
+    if (not hasViewedBefore) {
+      let activity : Activity = {
+        id = ribbitId # "_view_" # Int.toText(Time.now());
+        type_ = #viewRibbit;
+        targetId = ribbitId;
+        timestamp = Time.now();
+        username;
+        pond = "";
+      };
+
+      ribbitActivity := textMap.put(ribbitActivity, activity.id, activity);
+    };
+  };
+
+  public query func getRecentRibbitViews(username : Text, limit : Nat) : async [Activity] {
+    let viewActivities = Array.filter<Activity>(
+      Iter.toArray(textMap.vals(ribbitActivity)),
+      func(activity) {
+        activity.type_ == #viewRibbit and activity.username == username
+      },
+    );
+
+    let now = Time.now();
+    let lastDay = 24 * 60 * 60 * 1_000_000_000;
+
+    let recentViews = Array.filter<Activity>(
+      viewActivities,
+      func(activity) {
+        now - activity.timestamp <= lastDay
+      },
+    );
+
+    let sortedViews = Array.sort<Activity>(
+      recentViews,
+      func(a, b) {
+        if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+      },
+    );
+
+    let resultSize = Nat.min(sortedViews.size(), limit);
+    if (resultSize == 0) {
+      return [];
+    };
+
+    let limitedResult = Array.tabulate<Activity>(
+      resultSize,
+      func(i) { sortedViews[i] },
+    );
+
+    limitedResult;
+  };
+
+  public query func getRibbit(id : Text) : async ?Ribbit {
+    textMap.get(ribbits, id);
+  };
+
+  public query func listRibbits(postId : Text) : async [Ribbit] {
+    let filtered = Array.filter<Ribbit>(
+      Iter.toArray(textMap.vals(ribbits)),
+      func(r : Ribbit) : Bool { r.postId == postId },
+    );
+    filtered;
+  };
+
+  public query func getThreadedRibbitsSorted(postId : Text, sortBy : Text) : async [Ribbit] {
+    let allRibbits = Array.filter<Ribbit>(
+      Iter.toArray(textMap.vals(ribbits)),
+      func(r : Ribbit) : Bool { r.postId == postId },
+    );
+
+    let rootRibbits = Array.filter<Ribbit>(
+      allRibbits,
+      func(r : Ribbit) : Bool { switch (r.parentId) { case (null) { true }; case (?_) { false } } },
+    );
+
+    let sortedRootRibbits = switch (sortBy) {
+      case ("top") {
+        Array.sort<Ribbit>(
+          rootRibbits,
+          func(a : Ribbit, b : Ribbit) : { #less; #equal; #greater } {
+            let aLikes = switch (textMap.get(ribbitLikes, a.id)) {
+              case (null) { 0 };
+              case (?likes) { principalMap.size(likes) };
+            };
+            let bLikes = switch (textMap.get(ribbitLikes, b.id)) {
+              case (null) { 0 };
+              case (?likes) { principalMap.size(likes) };
+            };
+            if (aLikes > bLikes) { #less } else if (aLikes < bLikes) { #greater } else { #equal };
+          },
+        );
+      };
+      case ("newest") {
+        Array.sort<Ribbit>(
+          rootRibbits,
+          func(a : Ribbit, b : Ribbit) : { #less; #equal; #greater } {
+            if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+          },
+        );
+      };
+      case (_) { rootRibbits };
+    };
+
+    func buildThread(ribbit : Ribbit) : [Ribbit] {
+      let children = Array.filter<Ribbit>(
+        allRibbits,
+        func(r : Ribbit) : Bool {
+          switch (r.parentId) {
+            case (null) { false };
+            case (?parentId) { parentId == ribbit.id };
+          };
+        },
+      );
+
+      var thread = [ribbit];
+      for (child in children.vals()) {
+        thread := Array.append(thread, buildThread(child));
+      };
+      thread;
+    };
+
+    var threadedRibbits : [Ribbit] = [];
+    for (root in sortedRootRibbits.vals()) {
+      threadedRibbits := Array.append(threadedRibbits, buildThread(root));
+    };
+
+    threadedRibbits;
+  };
+
+  public query func getRibbitCountForPost(postId : Text) : async Nat {
+    var count = 0;
+    for ((_, ribbit) in textMap.entries(ribbits)) {
+      if (ribbit.postId == postId) {
+        count += 1;
+      };
+    };
+    count;
+  };
+
+  public query func getViewCountForPost(postId : Text) : async Nat {
+    switch (textMap.get(posts, postId)) {
+      case (null) { 0 };
+      case (?post) { post.viewCount };
+    };
+  };
+
+  public query func searchPonds(searchTerm : Text) : async [Pond] {
+    let filtered = Array.filter<Pond>(
+      Iter.toArray(textMap.vals(ponds)),
+      func(p : Pond) : Bool {
+        Text.contains(p.name, #text searchTerm) or Text.contains(p.description, #text searchTerm);
+      },
+    );
+    filtered;
+  };
+
+  public query func searchPosts(searchTerm : Text) : async [Post] {
+    let filtered = Array.filter<Post>(
+      Iter.toArray(textMap.vals(posts)),
+      func(p : Post) : Bool {
+        Text.contains(p.title, #text searchTerm) or Text.contains(p.content, #text searchTerm) or Text.contains(p.pond, #text searchTerm);
+      },
+    );
+    filtered;
+  };
+
+  public shared ({ caller }) func joinPond(pondName : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can join ponds");
+    };
+
+    switch (textMap.get(ponds, pondName)) {
+      case (null) { Debug.trap("Pond not found") };
+      case (?pond) {
+        if (isMemberOfPond(caller, pondName)) {
+          Debug.trap("Already a member of this pond");
+        };
+
+        let updatedPond = {
+          pond with
+          members = Array.append(pond.members, [caller]);
+          memberCount = pond.memberCount + 1;
+        };
+        ponds := textMap.put(ponds, pondName, updatedPond);
+
+        switch (principalMap.get(userProfiles, caller)) {
+          case (null) {
+            let newProfile : UserProfile = {
+              name = "Frog_" # Nat.toText(Int.abs(Time.now()) % 10000);
+              joinedPonds = [pondName];
+              avatar = null;
+            };
+            userProfiles := principalMap.put(userProfiles, caller, newProfile);
+          };
+          case (?profile) {
+            let updatedProfile = {
+              profile with
+              joinedPonds = Array.append(profile.joinedPonds, [pondName]);
+            };
+            userProfiles := principalMap.put(userProfiles, caller, updatedProfile);
+          };
+        };
+      };
+    };
+  };
+
+  public shared func joinPondByPhraseHash(userId : Text, pondName : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) {
+        switch (textMap.get(ponds, pondName)) {
+          case (null) { Debug.trap("Pond not found") };
+          case (?pond) {
+            if (isMemberOfPond(principal, pondName)) {
+              Debug.trap("Already a member of this pond");
+            };
+
+            let updatedPond = {
+              pond with
+              members = Array.append(pond.members, [principal]);
+              memberCount = pond.memberCount + 1;
+            };
+            ponds := textMap.put(ponds, pondName, updatedPond);
+          };
+        };
+      };
+      case (null) { Debug.trap("User ID not found") };
+    };
+  };
+
+  public shared ({ caller }) func leavePond(pondName : Text) : async () {
+    if (getUserRoleText(caller) != #user) {
+      Debug.trap("Unauthorized: Only users can leave ponds");
+    };
+
+    switch (textMap.get(ponds, pondName)) {
+      case (null) { Debug.trap("Pond not found") };
+      case (?pond) {
+        if (not isMemberOfPond(caller, pondName)) {
+          Debug.trap("Not a member of this pond");
+        };
+
+        let updatedMembers = Array.filter<Principal>(pond.members, func(member) { member != caller });
+        let updatedPond = {
+          pond with
+          members = updatedMembers;
+          memberCount = Nat.sub(pond.memberCount, 1);
+        };
+        ponds := textMap.put(ponds, pondName, updatedPond);
+
+        switch (principalMap.get(userProfiles, caller)) {
+          case (null) {};
+          case (?profile) {
+            let updatedJoinedPonds = Array.filter<Text>(profile.joinedPonds, func(p) { p != pondName });
+            let updatedProfile = {
+              profile with
+              joinedPonds = updatedJoinedPonds;
+            };
+            userProfiles := principalMap.put(userProfiles, caller, updatedProfile);
+          };
+        };
+      };
+    };
+  };
+
+  public shared func leavePondByPhraseHash(userId : Text, pondName : Text) : async () {
+    if (not isFroggyPhraseUser(userId)) {
+      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+    };
+
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) {
+        switch (textMap.get(ponds, pondName)) {
+          case (null) { Debug.trap("Pond not found") };
+          case (?pond) {
+            if (not isMemberOfPond(principal, pondName)) {
+              Debug.trap("Not a member of this pond");
+            };
+
+            let updatedMembers = Array.filter<Principal>(pond.members, func(member) { member != principal });
+            let updatedPond = {
+              pond with
+              members = updatedMembers;
+              memberCount = Nat.sub(pond.memberCount, 1);
+            };
+            ponds := textMap.put(ponds, pondName, updatedPond);
+          };
+        };
+      };
+      case (null) { Debug.trap("User ID not found") };
+    };
+  };
+
+  public query func getJoinedPonds() : async [Text] {
+    switch (principalMap.get(userProfiles, Principal.fromActor(Ribbit))) {
+      case (null) { [] };
+      case (?profile) { profile.joinedPonds };
+    };
+  };
+
+  public query func getPondAboutInfo(pondName : Text) : async ?{
+    name : Text;
+    title : Text;
+    description : Text;
+    profileImage : ?Storage.ExternalBlob;
+    bannerImage : ?Storage.ExternalBlob;
+    createdAt : Int;
+    memberCount : Nat;
+    visibility : Visibility;
+    rules : [Text];
+    moderators : [Principal];
+    admin : Principal;
+    associatedTags : [Text];
+    lilyCount : Nat;
+  } {
+    switch (textMap.get(ponds, pondName)) {
+      case (null) { null };
+      case (?pond) {
+        ?{
+          name = pond.name;
+          title = pond.name;
+          description = pond.description;
+          profileImage = pond.profileImage;
+          bannerImage = pond.bannerImage;
+          createdAt = pond.createdAt;
+          memberCount = pond.memberCount;
+          visibility = pond.visibility;
+          rules = pond.rules;
+          moderators = pond.moderators;
+          admin = pond.admin;
+          associatedTags = pond.associatedTags;
+          lilyCount = pond.lilyCount;
+        };
+      };
+    };
+  };
+
+  public query func getLiliesByTag(tag : Text, sortBy : Text) : async [Post] {
+    let canonicalTag = getCanonicalTag(tag);
+
+    let filteredPosts = Array.filter<Post>(
+      Iter.toArray(textMap.vals(posts)),
+      func(p : Post) : Bool {
+        switch (p.tag) {
+          case (null) { false };
+          case (?t) { t == canonicalTag };
+        };
+      },
+    );
+
+    let sortedPosts = switch (sortBy) {
+      case ("newest") {
+        Array.sort<Post>(
+          filteredPosts,
+          func(a : Post, b : Post) : { #less; #equal; #greater } {
+            if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+          },
+        );
+      };
+      case ("most_viewed") {
+        Array.sort<Post>(
+          filteredPosts,
+          func(a : Post, b : Post) : { #less; #equal; #greater } {
+            if (a.viewCount > b.viewCount) { #less } else if (a.viewCount < b.viewCount) { #greater } else { #equal };
+          },
+        );
+      };
+      case ("most_replied") {
+        Array.sort<Post>(
+          filteredPosts,
+          func(a : Post, b : Post) : { #less; #equal; #greater } {
+            let aReplies = getRibbitCountForPostSync(a.id);
+            let bReplies = getRibbitCountForPostSync(b.id);
+            if (aReplies > bReplies) { #less } else if (aReplies < bReplies) { #greater } else { #equal };
+          },
+        );
+      };
+      case (_) { filteredPosts };
+    };
+
+    sortedPosts;
+  };
+
+  func getRibbitCountForPostSync(postId : Text) : Nat {
+    var count = 0;
+    for ((_, ribbit) in textMap.entries(ribbits)) {
+      if (ribbit.postId == postId) {
+        count += 1;
+      };
+    };
+    count;
+  };
+
+  public query func getTagRank(tag : Text) : async {
+    tag : Text;
+    rank : ?Nat;
+    canonicalTag : Text;
+  } {
+    let canonicalTag = getCanonicalTag(tag);
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + b.repliesTotal < b.repliesTotal) { #greater } else { #equal };
+      },
+    );
+
+    var position = 1;
+    var found = false;
+
+    var i = 0;
+    while (i < sorted.size()) {
+      let (currentTag, _) = sorted[i];
+      if (currentTag == canonicalTag) {
+        found := true;
+        i := sorted.size();
+      } else {
+        position += 1;
+        i += 1;
+      };
+    };
+
+    {
+      tag = canonicalTag;
+      rank = if (found) { ?position } else { null };
+      canonicalTag;
+    };
+  };
+
+  public query func getUserAvatarByUsername(username : Text) : async ?Storage.ExternalBlob {
+    textMap.get(usernameAvatars, username);
+  };
+
+  func logActivity(activityType : ActivityType, targetId : Text, username : Text, pond : Text) {
+    let activity : Activity = {
+      id = Text.concat("activity_", Nat.toText(textMap.size(postActivity) + textMap.size(ribbitActivity) + textMap.size(likeActivity)));
+      type_ = activityType;
+      targetId;
+      timestamp = Time.now();
+      username;
+      pond;
+    };
+
+    switch (activityType) {
+      case (#post) {
+        postActivity := textMap.put(postActivity, activity.id, activity);
+      };
+      case (#ribbit) {
+        ribbitActivity := textMap.put(ribbitActivity, activity.id, activity);
+      };
+      case (#like) {
+        likeActivity := textMap.put(likeActivity, activity.id, activity);
+      };
+      case (#viewRibbit) {
+        ribbitActivity := textMap.put(ribbitActivity, activity.id, activity);
+      };
+    };
+  };
+
+  public query func getRecentPosts(limit : Nat) : async [Activity] {
+    let allPosts = Iter.toArray(textMap.vals(postActivity));
+    let sortedPosts = Array.sort<Activity>(
+      allPosts,
+      func(a : Activity, b : Activity) : { #less; #equal; #greater } {
+        if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+      },
+    );
+    let limitedPosts = Array.tabulate<Activity>(
+      Nat.min(limit, sortedPosts.size()),
+      func(i : Nat) : Activity { sortedPosts[i] },
+    );
+    limitedPosts;
+  };
+
+  public query func getRecentRibbits(limit : Nat) : async [Activity] {
+    let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
+    let sortedRibbits = Array.sort<Activity>(
+      allRibbits,
+      func(a : Activity, b : Activity) : { #less; #equal; #greater } {
+        if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+      },
+    );
+    let limitedRibbits = Array.tabulate<Activity>(
+      Nat.min(limit, sortedRibbits.size()),
+      func(i : Nat) : Activity { sortedRibbits[i] },
+    );
+    limitedRibbits;
+  };
+
+  public query func getRecentlyLikedPosts(limit : Nat) : async [Activity] {
+    let allLikes = Iter.toArray(textMap.vals(likeActivity));
+    let sortedLikes = Array.sort<Activity>(
+      allLikes,
+      func(a : Activity, b : Activity) : { #less; #equal; #greater } {
+        if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+      },
+    );
+    let limitedLikes = Array.tabulate<Activity>(
+      Nat.min(limit, sortedLikes.size()),
+      func(i : Nat) : Activity { sortedLikes[i] },
+    );
+    limitedLikes;
+  };
+
+  public query func getAllRecentActivities(limit : Nat) : async [Activity] {
+    let allPosts = Iter.toArray(textMap.vals(postActivity));
+    let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
+    let allLikes = Iter.toArray(textMap.vals(likeActivity));
+
+    let allActivities = Array.append(
+      Array.append(allPosts, allRibbits),
+      allLikes,
+    );
+
+    let sortedActivities = Array.sort<Activity>(
+      allActivities,
+      func(a : Activity, b : Activity) : { #less; #equal; #greater } {
+        if (a.timestamp > b.timestamp) { #less } else if (a.timestamp < b.timestamp) { #greater } else { #equal };
+      },
+    );
+
+    let limitedActivities = Array.tabulate<Activity>(
+      Nat.min(limit, sortedActivities.size()),
+      func(i : Nat) : Activity { sortedActivities[i] },
+    );
+    limitedActivities;
+  };
+
+  public query func getTopTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + a.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  public query func getTrendingTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let radius = 25_000_000_000_000;
+    let now = Time.now();
+
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        let aScore = computeTrendingScore(a, now, radius);
+        let bScore = computeTrendingScore(b, now, radius);
+        if (aScore > bScore) { #less } else if (aScore < bScore) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  public query func getNewestTags(limit : Nat) : async [(Text, TagStats)] {
+    let entries = Iter.toArray(textMap.entries(tagStats));
+    let sorted = Array.sort<(Text, TagStats)>(
+      entries,
+      func((_, a), (_, b)) {
+        if (a.firstUsedAt > b.firstUsedAt) { #less } else if (a.firstUsedAt < b.firstUsedAt) { #greater } else { #equal };
+      },
+    );
+    let take = Nat.min(limit, sorted.size());
+    Array.tabulate<(Text, TagStats)>(take, func(i) { sorted[i] });
+  };
+
+  func computeTrendingScore(stats : TagStats, now : Int, radius : Int) : Int {
+    let activityAge = now - stats.lastActivityAt;
+    let window = activityAge / radius;
+    let remaining = activityAge - (window * radius);
+
+    let adjustedAge = if (remaining < 0) { -remaining } else { remaining };
+    let baseScore = stats.postsTotal + stats.repliesTotal;
+
+    let recalculateScore = switch (window) {
+      case (0) { baseScore * 10 };
+      case (1) { baseScore * 3 };
+      case (2) { baseScore * 2 };
+      case (3) { baseScore * 1 };
+      case (_) { baseScore };
+    };
+    recalculateScore / (adjustedAge / radius + 1);
+  };
+
+  public query func getTagStatsForTag(tag : Text) : async ?TagStats {
+    let canonicalTag = getCanonicalTag(tag);
+    textMap.get(tagStats, canonicalTag);
+  };
+
+  public query func getSubcategoriesForTag(tag : Text) : async [Text] {
+    let canonicalTag = getCanonicalTag(tag);
+
+    let subcategories = switch (textMap.get(tagSubcategories, canonicalTag)) {
+      case (?subs) { subs };
+      case null {
+        if (canonicalTag != tag) {
+          switch (textMap.get(tagSubcategories, tag)) {
+            case (?subs) { subs };
+            case null { [] };
+          };
+        } else { [] };
+      };
+    };
+    subcategories;
+  };
+
+  func principalToUserId(caller : Principal) : ?Text {
+    for ((userId, principal) in textMap.entries(userIdLinkage)) {
+      if (principal == caller) {
+        return ?userId;
+      };
+    };
+    null;
+  };
+};

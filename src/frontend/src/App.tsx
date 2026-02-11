@@ -17,7 +17,6 @@ import SavedLiliesPage from './pages/SavedLiliesPage';
 import TagHubPage from './pages/TagHubPage';
 import FrogProfilePage from './pages/FrogProfilePage';
 import { ensureDefaultFroggyPhrase } from './lib/user';
-import { useInitializeFroggyPhraseAccessControl } from './hooks/useInitializeFroggyPhraseAccessControl';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -130,9 +129,6 @@ export default function App() {
   useEffect(() => {
     ensureDefaultFroggyPhrase();
   }, []);
-
-  // Initialize Froggy Phrase access control once actor is available
-  useInitializeFroggyPhraseAccessControl();
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

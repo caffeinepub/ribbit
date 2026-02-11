@@ -106,12 +106,12 @@ export default function PondAboutPage() {
                 {pondInfo.profileImage && (
                   <img
                     src={pondInfo.profileImage.getDirectURL()}
-                    alt={pondInfo.name}
+                    alt={pondInfo.title}
                     className="w-20 h-20 rounded-full object-cover border-4 border-primary/20 flex-shrink-0"
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-3xl mb-2">{pondInfo.name}</CardTitle>
+                  <CardTitle className="text-3xl mb-2">{pondInfo.title}</CardTitle>
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {pondInfo.description}
                   </p>

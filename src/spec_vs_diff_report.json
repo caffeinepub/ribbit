@@ -1,53 +1,50 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T20:40:34.178Z",
-  "summary": "REQ-4 (frontend auto-initialization of Froggy Phrase access control on startup) appears implemented via a new hook invoked from App.tsx, with session-level rate limiting. REQ-3 (backend ensure initializeFroggyPhrase assigns #user role idempotently without downgrading) is not evidenced in the provided truncated backend diff; the diff shows access-control state and linkage maps but not the initializeFroggyPhrase implementation/role assignment behavior.",
+  "generatedAt": "2026-02-11T21:23:29.946Z",
+  "summary": "The diff shows partial frontend adoption of phrase-hash endpoints for joining/leaving ponds, but does not provide evidence that backend authorization was updated to treat valid Froggy Phrase userIds as full #user for all actions, nor that phrase-hash variants were added/used for the full set of write actions (create pond/post/ribbit, like/unlike, view counts, profile/avatar saves). It also includes unrelated Tag UI changes not requested by the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-3",
-      "requirement": "Update the backend so that calling `initializeFroggyPhrase(userId : Text)` always results in the caller having AccessControl role `#user` (in addition to recording `userIdLinkage`), remains idempotent, and does not downgrade higher privilege roles.",
-      "reason": "The backend diff snippet is truncated and does not show any changes to the `initializeFroggyPhrase` function implementation, nor any explicit assignment of AccessControl role `#user` for the caller or logic ensuring idempotency/non-downgrade.",
+      "id": "REQ-1",
+      "requirement": "Backend: Treat any call that includes a valid stored Froggy Phrase phrase-hash userId as authorized as a full #user regardless of caller principal (including anonymous), eliminating Unauthorized traps for Froggy Phrase users while preserving principal-based behavior for non–Froggy Phrase users.",
+      "reason": "backend/main.mo is truncated and the diff excerpt only shows state/type declarations; there is no visible change to authorization/role-check logic or removal/bypass of principal-based Unauthorized traps based on phrase-hash userId.",
       "evidence": [
-        "backend/main.mo (truncated; no initializeFroggyPhrase logic shown)"
+        "backend/main.mo (truncated excerpt shows only imports/state/type definitions; no authorization logic shown)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Backend: Add/extend phrase-hash variants for all user write actions that rely on #user role checks (create pond/post/ribbit, like/unlike, view increments, username/avatar/profile saves, and other UI-triggered mutations) so Froggy Phrase users can succeed even when caller is anonymous.",
+      "reason": "The diff summary does not show backend method additions/changes for phrase-hash variants across all mutations; only frontend calls to join/leave by phrase hash are visible. No evidence is provided for phrase-hash variants for create pond, create lily/post, create ribbit/comment, like/unlike, view-count increments, or profile/avatar saving.",
+      "evidence": [
+        "backend/main.mo (truncated; no method signatures/guards visible)",
+        "frontend/src/hooks/useQueries.ts (shows joinPondByPhraseHash/leavePondByPhraseHash usage, but createPond still calls actor.createPond without phrase-hash userId)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever getPhraseHashUserId() returns non-empty for create pond, create lily/post, create ribbit/comment, like/unlike, view-count increments, and avatar/profile saving.",
+      "reason": "Only join/leave pond mutations conditionally use phrase-hash endpoints. The create pond mutation shown still calls actor.createPond(...) and does not use getPhraseHashUserId() or a *ByPhraseHash endpoint. The diff excerpt provides no evidence of updates for create lily/post, create ribbit/comment, like/unlike, view increments, or avatar/profile saving.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts (useJoinPond/useLeavePond updated; useCreatePond still calls actor.createPond(...) without phrase-hash userId)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added local frontend type definitions for Activity/TagStats not explicitly requested by the BuildRequest.",
-      "reason": "BuildRequest only asks for Froggy Phrase access control initialization and backend role assignment; new types are unrelated to those requirements.",
+      "description": "Tag page UI changes (canonical tag redirect, subcategories section, layout/skeleton rendering) unrelated to authorization/phrase-hash endpoint usage.",
+      "reason": "BuildRequest is focused on authorization and switching to phrase-hash backend endpoints for write actions; it does not request Tag page UI/UX changes.",
       "evidence": [
-        "frontend/src/lib/types.ts"
-      ]
-    },
-    {
-      "description": "UI changes/features related to Tag Hub sidebar and Tag Hub page using TagStats modules (top/trending/newest tags).",
-      "reason": "Not part of the Froggy Phrase access control initialization/role assignment requirements.",
-      "evidence": [
-        "frontend/src/components/TagHubRightSidebar.tsx",
-        "frontend/src/pages/TagHubPage.tsx"
-      ]
-    },
-    {
-      "description": "Backend additions related to tag subcategories and expanded activity/tag stats structures (as indicated by 'New' comments/fields), not requested.",
-      "reason": "BuildRequest scope is AccessControl role assignment for Froggy Phrase users; tag subcategories/activity/tag stats are outside that scope.",
-      "evidence": [
-        "backend/main.mo (shows 'New activity tracking system', 'Tag stats tracking', 'New: Subcategories for tags')"
+        "frontend/src/pages/TagPage.tsx"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.64,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/TagHubRightSidebar.tsx",
-    "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/lib/types.ts",
-    "frontend/src/pages/PondAboutPage.tsx",
-    "frontend/src/pages/TagHubPage.tsx",
+    "frontend/src/pages/TagPage.tsx",
     "project_state.json"
   ]
 }

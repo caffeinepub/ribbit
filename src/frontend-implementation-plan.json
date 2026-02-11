@@ -1,26 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Auto-initialize Froggy Phrase access control on startup",
+  "title": "Use phrase-hash variants for Froggy Phrase users across all write actions",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Automatically initialize Froggy Phrase access control on startup by hashing the phrase and calling backend initializeFroggyPhrase once an actor is available.",
+      "id": "REQ-3",
+      "summary": "Route all user-authorized mutations/queries through phrase-hash backend methods when a Froggy Phrase userId is available, preserving existing Internet Identity behavior otherwise.",
       "acceptanceCriteria": [
-        "On first page load in a fresh browser profile, the app generates a Froggy Phrase (existing behavior) and then successfully calls `initializeFroggyPhrase(<sha256 phrase hash>)` without user interaction.",
-        "After initialization completes, user actions that previously produced \"not authorized\" errors (e.g., liking, creating content, incrementing views where applicable) no longer show authorization errors for Froggy Phrase users.",
-        "The initialization call is not executed in a tight loop; it runs at most once per app session (or is otherwise clearly rate-limited/idempotent on the client)."
+        "When `getPhraseHashUserId()` returns a non-empty string, the app calls the corresponding `*ByPhraseHash(userId, ...)` backend methods for mutations that require `#user` authorization.",
+        "A Froggy Phrase user can successfully: create a pond, create a lily/post, create a ribbit/comment, and save their avatar/profile without seeing \"Unauthorized\" errors, even when not logged in with Internet Identity.",
+        "Existing behavior for Internet Identity users remains functional (i.e., if no phrase-hash userId is present, the app continues to call the principal-based methods as it does today)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
-          "operation": "create",
-          "description": "Add a startup hook that waits for a backend actor from useActor(), computes the Froggy Phrase SHA-256 hash via getPhraseHashUserId(), and calls actor.initializeFroggyPhrase(userId) once per app session (use a sessionStorage flag and an in-memory guard to prevent tight loops). Ensure failures do not crash app startup (log and continue)."
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update React Query hooks to consistently prefer phrase-hash methods when `getPhraseHashUserId()` is non-empty: create pond (switch to the phrase-hash variant once available), create lily/post (use `createPostByPhraseHash`), create ribbit/comment (use `createRibbitByPhraseHash`), like/unlike posts (use `likePostByPhraseHash`/`unlikePostByPhraseHash`), like/unlike ribbits (use `likeRibbitByPhraseHash`/`unlikeRibbitByPhraseHash`), and view-count increments (use `incrementLilyViewCountByPhraseHash`). Also update read queries tied to identity where needed (e.g., `hasUserLikedPost`/`hasUserLikedRibbit`) to use the phrase-hash variants when applicable."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/backend.d.ts",
           "operation": "modify",
-          "description": "Wire the new useInitializeFroggyPhraseAccessControl hook into app startup (in App component) so the initialization runs automatically after ensureDefaultFroggyPhrase() and once an actor is available."
+          "description": "Extend the generated backend type definitions to include any newly-added phrase-hash functions needed by the UI (notably a phrase-hash variant for pond creation and any other UI-triggered mutations that were previously principal-only), so `useQueries.ts` can call them type-safely."
         }
       ]
     }

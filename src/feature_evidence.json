@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-frontend-initializes-froggy-phrase-access-control-automatically-on-app-startup-by-computing-the-froggy-phrase-sha-256-hash-via-getphrasehashuserid-then-calling-the-backend-initializefroggyphrase-userid-once-an-actor-is-available-so-froggy-phrase-users-are-authorized-before-they-perform-actions",
-      "featureTitle": "Ensure the frontend initializes Froggy Phrase access control automatically on app startup by computing the Froggy Phrase SHA-256 hash (via `getPhraseHashUserId()`), then calling the backend `initializeFroggyPhrase(userId)` once an actor is available, so Froggy Phrase users are authorized before they perform actions.",
+      "featureId": "feature-frontend-update-react-query-mutations-queries-to-consistently-use-phrase-hash-backend-endpoints-whenever-getphrasehashuserid-returns-a-non-empty-userid-including-at-minimum-create-pond-create-lily-post-create-ribbit-comment-like-unlike-actions-view-count-increments-and-avatar-profile-saving-so-froggy-phrase-users-do-not-hit-unauthorized-errors-when-not-using-internet-identity",
+      "featureTitle": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId, including (at minimum) create pond, create lily/post, create ribbit/comment, like/unlike actions, view-count increments, and avatar/profile saving, so Froggy Phrase users do not hit unauthorized errors when not using Internet Identity.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -18,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-3"
       ],
       "confidence": "high"
     }

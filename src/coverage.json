@@ -1,33 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T20:40:34.181Z",
+  "generatedAt": "2026-02-11T21:23:29.948Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
+    "total": 3,
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-3",
-        "summary": "Update the backend so that calling `initializeFroggyPhrase(userId : Text)` always results in the caller having AccessControl role `#user` (in addition to recording `userIdLinkage`). This must work for Froggy-Phrase-based sessions so that any backend methods guarded by `AccessControl.hasPermission(..., #user)` no longer trap as unauthorized for Froggy Phrase users.",
+        "id": "REQ-1",
+        "summary": "Backend: Implement Froggy Phrase–based authorization so any call that includes a valid stored Froggy Phrase phrase-hash userId is authorized as a full `#user` regardless of the caller principal (including anonymous `2vxsx-fae`). This must eliminate current `Debug.trap(\"Unauthorized...\")` failures for Froggy Phrase users performing write actions.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-4",
-        "summary": "Ensure the frontend initializes Froggy Phrase access control automatically on app startup by computing the Froggy Phrase SHA-256 hash (via `getPhraseHashUserId()`), then calling the backend `initializeFroggyPhrase(userId)` once an actor is available, so Froggy Phrase users are authorized before they perform actions.",
+        "id": "REQ-2",
+        "summary": "Backend: Add/extend phrase-hash variants for all user write actions that currently rely on `getUserRoleText(caller) == #user` (e.g., creating ponds, creating lilies/posts, creating ribbits/comments, liking/unliking, view-count increments, username/avatar/profile saves, and any other mutations triggered from the UI) so the frontend can pass the Froggy Phrase phrase-hash userId and succeed even when the actor is anonymous.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId, including (at minimum) create pond, create lily/post, create ribbit/comment, like/unlike actions, view-count increments, and avatar/profile saving, so Froggy Phrase users do not hit unauthorized errors when not using Internet Identity.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/backend.d.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/backend.d.ts"
         ]
       }
     ]
@@ -38,17 +45,12 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/TagHubRightSidebar.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useInitializeFroggyPhraseAccessControl.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/lib/types.ts",
-    "frontend/src/pages/PondAboutPage.tsx",
-    "frontend/src/pages/TagHubPage.tsx",
+    "frontend/src/pages/TagPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
