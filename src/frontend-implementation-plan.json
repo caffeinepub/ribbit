@@ -1,6 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix pond creation so only the creator becomes a member (frontend scope)",
+  "title": "Frontend scope review for pond creation auto-membership fix",
   "requirements": []
 }

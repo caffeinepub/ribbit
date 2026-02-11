@@ -792,7 +792,7 @@ actor Ribbit {
       profileImage = ?profileImage;
       bannerImage = ?bannerImage;
       createdAt = Time.now();
-      memberCount = 1; // Creator is the first member
+      memberCount = 1; // Creator is the first and only initial member
       members = [caller];
       moderators = [caller];
       admin = caller;
@@ -804,7 +804,7 @@ actor Ribbit {
 
     ponds := textMap.put(ponds, name, pond);
 
-    // Update creator's joined ponds
+    // Update only the creator's joined ponds in their user profile
     switch (principalMap.get(userProfiles, caller)) {
       case (null) {
         let newProfile : UserProfile = {
@@ -1038,7 +1038,7 @@ actor Ribbit {
       ensureUserRole(caller);
     };
 
-    // Check if pond exists
+    // Check if pond exists and caller is a member
     switch (textMap.get(ponds, pond)) {
       case (null) {
         Debug.trap("Pond not found");
@@ -1628,6 +1628,27 @@ actor Ribbit {
           memberCount = pond.memberCount + 1;
         };
         ponds := textMap.put(ponds, pondName, updatedPond);
+
+        // Update user's joined ponds in their profile
+        switch (principalMap.get(userProfiles, caller)) {
+          case (null) {
+            // Create new profile with this pond
+            let newProfile : UserProfile = {
+              name = "Frog_" # Nat.toText(Int.abs(Time.now()) % 10000);
+              joinedPonds = [pondName];
+              avatar = null;
+            };
+            userProfiles := principalMap.put(userProfiles, caller, newProfile);
+          };
+          case (?profile) {
+            // Update existing profile
+            let updatedProfile = {
+              profile with
+              joinedPonds = Array.append(profile.joinedPonds, [pondName]);
+            };
+            userProfiles := principalMap.put(userProfiles, caller, updatedProfile);
+          };
+        };
       };
     };
   };

@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T00:42:53.371Z",
+  "generatedAt": "2026-02-11T01:18:37.658Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,15 +11,15 @@
     "implemented": 0,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Fix the backend pond-creation logic so that when a new pond is created, only the creating principal (`caller`) is added as a member (and optionally as the initial moderator/admin per existing behavior), rather than adding all known/initialized users.",
+        "id": "REQ-3",
+        "summary": "Update the backend pond-creation logic so that when a new pond is created, the new Pond record’s membership is initialized with exactly one member: the creating principal (the shared update call `caller`). Do not use or copy any global principal list (e.g., `initializedUsers`) when populating `Pond.members`, and set `memberCount` to match the initialized membership.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-2",
-        "summary": "Ensure pond creation updates user membership state only for the creating principal (e.g., the creator’s `UserProfile.joinedPonds`), and does not append the new pond to every user’s profile or any global joined-pond list for other principals.",
+        "id": "REQ-4",
+        "summary": "Ensure pond creation updates membership-related user state only for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not append the new pond to any other user profile or any global per-user membership list for other principals.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []

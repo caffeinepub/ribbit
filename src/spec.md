@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix pond creation so that only the creating user becomes a member (and has their membership state updated), instead of all users being auto-added.
+**Goal:** Fix backend pond creation so that only the creating principal is added as an initial member, and only the creator’s profile is updated.
 
 **Planned changes:**
-- Update backend `createPond(...)` logic to initialize the new pond’s `members` list with only the `caller` (preserving any existing creator admin/mod assignment behavior).
-- Remove/avoid any pond-creation code paths that populate `members` from global user registries (e.g., `initializedUsers` or similar collections).
-- Ensure pond creation updates joined-pond membership state only for the creator (e.g., creator’s `joinedPonds`) and does not add the new pond to other users’ profiles.
+- Update pond-creation logic to initialize `Pond.members` with exactly `[caller]` and set `memberCount` to `1`, without referencing or copying any global user/principal list (e.g., `initializedUsers`).
+- Ensure pond creation updates membership-related user state (e.g., `UserProfile.joinedPonds`) only for the creating principal and does not modify any other users’ profiles or any global per-user membership lists.
 
-**User-visible outcome:** After creating a pond, only the creator is a member by default; other users will not see the pond in their joined ponds unless they explicitly join.
+**User-visible outcome:** When a user creates a new pond, only they are a member by default; other users do not appear as members and are not treated as joined until they explicitly join.

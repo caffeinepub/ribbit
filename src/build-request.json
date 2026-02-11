@@ -1,55 +1,56 @@
 {
   "kind": "build_request",
-  "title": "Fix pond creation so only the creator becomes a member",
-  "priority": "normal",
+  "title": "Fix pond creation so only the creator joins the new pond",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Fix the backend pond-creation logic so that when a new pond is created, only the creating principal (`caller`) is added as a member (and optionally as the initial moderator/admin per existing behavior), rather than adding all known/initialized users.",
+      "id": "REQ-3",
+      "text": "Update the backend pond-creation logic so that when a new pond is created, the new Pond record’s membership is initialized with exactly one member: the creating principal (the shared update call `caller`). Do not use or copy any global principal list (e.g., `initializedUsers`) when populating `Pond.members`, and set `memberCount` to match the initialized membership.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4",
-          "msg-6"
+          "recent-5",
+          "recent-6"
         ],
         "quotes": [
-          "for some reason when a new pond is created, all users become members of that pond automatically. why? dont code yet",
-          "ok fix it"
+          "its still not working. all users are autojoining ponds. why is this happening still? dont code yet",
+          "apply the correction now"
         ]
       },
       "acceptanceCriteria": [
-        "After calling the existing `createPond(...)` update method, the created pond’s `members` list contains the creator principal and does not contain unrelated principals.",
-        "The created pond’s `memberCount` matches the length of the `members` array (e.g., 1 if only the creator is added).",
-        "No code path during pond creation populates `members` from global user registries such as `initializedUsers` or equivalent principal collections."
+        "Creating a new pond results in `pond.members == [caller]` (order not important but only one element).",
+        "Creating a new pond sets `pond.memberCount == 1`.",
+        "No principals other than `caller` are added to the new pond’s `members` list during pond creation (including any principals present in `initializedUsers`).",
+        "A second, different principal viewing the newly created pond is not considered a member until they explicitly join."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Ensure pond creation updates user membership state only for the creating principal (e.g., the creator’s `UserProfile.joinedPonds`), and does not append the new pond to every user’s profile or any global joined-pond list for other principals.",
+      "id": "REQ-4",
+      "text": "Ensure pond creation updates membership-related user state only for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not append the new pond to any other user profile or any global per-user membership list for other principals.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "recent-6"
         ],
         "quotes": [
-          "for some reason when a new pond is created, all users become members of that pond automatically. why? dont code yet"
+          "apply the correction now"
         ]
       },
       "acceptanceCriteria": [
-        "Immediately after pond creation, `getJoinedPonds()` (or equivalent membership query) for the creator includes the new pond.",
-        "Immediately after pond creation, `getJoinedPonds()` (or equivalent membership query) for a different authenticated principal does not include the new pond unless they explicitly joined it.",
-        "Existing join/leave behavior continues to work as before for non-creators."
+        "After pond creation, only the creator’s `UserProfile.joinedPonds` (if maintained by the canister) is updated to include the new pond.",
+        "No other principals’ `UserProfile.joinedPonds` values change as a result of pond creation.",
+        "There is no code path in pond creation that iterates over `initializedUsers` (or any global set of users) to modify user profiles or pond membership."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with logic in backend/main.mo (no additional backend services).",
-    "Use English for any user-facing text."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit any frontend files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not redesign the pond membership/join UX.",
-    "Do not change unrelated hover/styling behavior or other frontend components.",
-    "Do not introduce new authentication providers beyond existing Internet Identity support."
+    "Do not change join/leave behavior beyond fixing the incorrect auto-membership caused by pond creation.",
+    "Do not introduce new authentication mechanisms beyond the existing identity model.",
+    "Do not redesign pond data models beyond what is necessary to correct initial membership and profile updates."
   ],
   "imageRequirements": {
     "required": [],
