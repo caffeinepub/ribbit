@@ -71,6 +71,7 @@ export function useCreatePond() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ponds'] });
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
     },
   });
 }
@@ -84,16 +85,18 @@ export function useJoinPond() {
       if (!actor) throw new Error('Actor not available');
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.joinPondByPhraseHash(userId, pondName);
-      } else {
-        return actor.joinPond(pondName);
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
+      
+      return actor.joinPondByPhraseHash(userId, pondName);
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
+      queryClient.invalidateQueries({ queryKey: ['pondAbout', pondName] });
       queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['ponds'] });
     },
   });
 }
@@ -107,16 +110,18 @@ export function useLeavePond() {
       if (!actor) throw new Error('Actor not available');
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.leavePondByPhraseHash(userId, pondName);
-      } else {
-        return actor.leavePond(pondName);
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
+      
+      return actor.leavePondByPhraseHash(userId, pondName);
     },
     onSuccess: (_, pondName) => {
       queryClient.invalidateQueries({ queryKey: ['pond', pondName] });
+      queryClient.invalidateQueries({ queryKey: ['pondAbout', pondName] });
       queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['ponds'] });
     },
   });
 }
@@ -128,7 +133,15 @@ export function useGetJoinedPonds() {
     queryKey: ['joinedPonds'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getJoinedPonds();
+      const userId = await getPhraseHashUserId();
+      
+      if (!userId) {
+        return [];
+      }
+      
+      // Fetch user profile by phrase hash to get joined ponds
+      const profile = await actor.getUserProfileByPhraseHash(userId);
+      return profile?.joinedPonds || [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -202,30 +215,15 @@ export function useCreateLily() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.createPostByPhraseHash(
-          userId,
-          params.title,
-          params.content,
-          params.image,
-          params.link,
-          params.pond,
-          params.username,
-          params.tag
-        );
-      } else {
-        return actor.createPost(
-          params.title,
-          params.content,
-          params.image,
-          params.link,
-          params.pond,
-          params.username,
-          params.tag
-        );
-      }
+      return actor.createPost(
+        params.title,
+        params.content,
+        params.image,
+        params.link,
+        params.pond,
+        params.username,
+        params.tag
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lilies'] });
@@ -249,30 +247,15 @@ export function useCreatePost() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.createPostByPhraseHash(
-          userId,
-          params.title,
-          params.content,
-          params.image,
-          params.link,
-          params.pond,
-          params.username,
-          params.tag
-        );
-      } else {
-        return actor.createPost(
-          params.title,
-          params.content,
-          params.image,
-          params.link,
-          params.pond,
-          params.username,
-          params.tag
-        );
-      }
+      return actor.createPost(
+        params.title,
+        params.content,
+        params.image,
+        params.link,
+        params.pond,
+        params.username,
+        params.tag
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -327,13 +310,7 @@ export function useHasUserLikedPost(postId: string) {
     queryKey: ['hasUserLikedPost', postId],
     queryFn: async () => {
       if (!actor) return false;
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.hasUserLikedPostByPhraseHash(userId, postId);
-      } else {
-        return actor.hasUserLikedPost(postId);
-      }
+      return actor.hasUserLikedPost(postId);
     },
     enabled: !!actor && !isFetching && !!postId,
   });
@@ -346,13 +323,7 @@ export function useLikePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.likePostByPhraseHash(userId, postId);
-      } else {
-        return actor.likePost(postId);
-      }
+      return actor.likePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
@@ -368,13 +339,7 @@ export function useUnlikePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.unlikePostByPhraseHash(userId, postId);
-      } else {
-        return actor.unlikePost(postId);
-      }
+      return actor.unlikePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLikeCount', postId] });
@@ -448,24 +413,12 @@ export function useCreateRibbit() {
       username: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.createRibbitByPhraseHash(
-          userId,
-          params.postId,
-          params.parentId,
-          params.content,
-          params.username
-        );
-      } else {
-        return actor.createRibbit(
-          params.postId,
-          params.parentId,
-          params.content,
-          params.username
-        );
-      }
+      return actor.createRibbit(
+        params.postId,
+        params.parentId,
+        params.content,
+        params.username
+      );
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['ribbits', variables.postId] });
@@ -495,13 +448,7 @@ export function useHasUserLikedRibbit(ribbitId: string) {
     queryKey: ['hasUserLikedRibbit', ribbitId],
     queryFn: async () => {
       if (!actor) return false;
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.hasUserLikedRibbitByPhraseHash(userId, ribbitId);
-      } else {
-        return actor.hasUserLikedRibbit(ribbitId);
-      }
+      return actor.hasUserLikedRibbit(ribbitId);
     },
     enabled: !!actor && !isFetching && !!ribbitId,
   });
@@ -514,13 +461,7 @@ export function useLikeRibbit() {
   return useMutation({
     mutationFn: async (ribbitId: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.likeRibbitByPhraseHash(userId, ribbitId);
-      } else {
-        return actor.likeRibbit(ribbitId);
-      }
+      return actor.likeRibbit(ribbitId);
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
@@ -536,13 +477,7 @@ export function useUnlikeRibbit() {
   return useMutation({
     mutationFn: async (ribbitId: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.unlikeRibbitByPhraseHash(userId, ribbitId);
-      } else {
-        return actor.unlikeRibbit(ribbitId);
-      }
+      return actor.unlikeRibbit(ribbitId);
     },
     onSuccess: (_, ribbitId) => {
       queryClient.invalidateQueries({ queryKey: ['ribbitLikeCount', ribbitId] });
@@ -595,6 +530,7 @@ export function useSaveCallerUserProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['joinedPonds'] });
     },
   });
 }
@@ -725,7 +661,6 @@ export function useRegisterUsername() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -742,19 +677,17 @@ export function useReleaseUsername() {
       if (userId !== '') {
         return actor.releaseUsernameWithPhraseHash(userId, username);
       } else {
-        return actor.releaseUsername(username);
+        throw new Error('Cannot release username without user ID');
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
 
 export function useRecordUsernameChange() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
@@ -764,11 +697,8 @@ export function useRecordUsernameChange() {
       if (userId !== '') {
         return actor.recordUsernameChangeByPhraseHash(userId, username);
       } else {
-        return actor.recordUsernameChange(username);
+        throw new Error('Cannot record username change without user ID');
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -788,49 +718,6 @@ export function useGetRecentActivities(limit: number = 10) {
 }
 
 // Tag queries
-export function useGetCanonicalTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string>({
-    queryKey: ['canonicalTag', tag],
-    queryFn: async () => {
-      if (!actor) return tag;
-      return actor.getCanonicalTagForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagRedirects() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, string]>>({
-    queryKey: ['tagRedirects'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagRedirects();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useMergeSimilarTags() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.mergeSimilarTags();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
-      queryClient.invalidateQueries({ queryKey: ['canonicalTag'] });
-      queryClient.invalidateQueries({ queryKey: ['liliesByTag'] });
-    },
-  });
-}
-
 export function useGetTopTags(limit: number = 10) {
   const { actor, isFetching } = useActor();
 
@@ -870,7 +757,7 @@ export function useGetNewestTags(limit: number = 10) {
   });
 }
 
-export function useGetTagStats(tag: string) {
+export function useGetTagStatsForTag(tag: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<TagStats | null>({
@@ -883,24 +770,11 @@ export function useGetTagStats(tag: string) {
   });
 }
 
-export function useGetTagRank(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
-    queryKey: ['tagRank', tag],
-    queryFn: async () => {
-      if (!actor) return { tag, canonicalTag: tag };
-      return actor.getTagRank(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetSubcategories(tag: string) {
+export function useGetSubcategoriesForTag(tag: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<string[]>({
-    queryKey: ['subcategories', tag],
+    queryKey: ['tagSubcategories', tag],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getSubcategoriesForTag(tag);
@@ -915,65 +789,40 @@ export function useGetTagSuggestions(prefix: string, limit: number = 10) {
   return useQuery<string[]>({
     queryKey: ['tagSuggestions', prefix, limit],
     queryFn: async () => {
-      if (!actor || !prefix.trim()) return [];
+      if (!actor) return [];
       return actor.getTagSuggestions(prefix, BigInt(limit));
     },
-    enabled: !!actor && !isFetching && !!prefix.trim(),
+    enabled: !!actor && !isFetching && !!prefix && prefix.length > 0,
   });
 }
 
-// Search queries (placeholders for future implementation)
-export function useRecordSearchTerm() {
-  return useMutation({
-    mutationFn: async (_searchTerm: string) => {
-      // Placeholder for future implementation
-      return Promise.resolve();
-    },
-  });
-}
-
-export function useGetSearchSuggestions(_query?: string) {
-  return useQuery<string[]>({
-    queryKey: ['searchSuggestions', _query],
-    queryFn: async () => {
-      // Placeholder for future implementation
-      return [];
-    },
-    enabled: false,
-  });
-}
-
-export function useGetTrendingSearches() {
-  return useQuery<string[]>({
-    queryKey: ['trendingSearches'],
-    queryFn: async () => {
-      // Placeholder for future implementation
-      return [];
-    },
-    enabled: false,
-  });
-}
-
-// Role queries
-export function useGetCallerUserRole() {
+export function useGetCanonicalTag(tag: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<UserRole>({
-    queryKey: ['callerUserRole'],
+  return useQuery<string>({
+    queryKey: ['canonicalTag', tag],
     queryFn: async () => {
-      if (!actor) return 'guest' as UserRole;
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.getUserRoleByPhraseHash(userId);
-      } else {
-        return actor.getCallerUserRole();
-      }
+      if (!actor) return tag;
+      return actor.getCanonicalTagForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagRedirects() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, string]>>({
+    queryKey: ['tagRedirects'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagRedirects();
     },
     enabled: !!actor && !isFetching,
   });
 }
 
+// Admin queries
 export function useIsAdmin() {
   const { actor, isFetching } = useActor();
 
@@ -981,15 +830,29 @@ export function useIsAdmin() {
     queryKey: ['isAdmin'],
     queryFn: async () => {
       if (!actor) return false;
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.isUserAdminByPhraseHash(userId);
-      } else {
-        return actor.isCallerAdmin();
-      }
+      return actor.isCallerAdmin();
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+export function useMergeSimilarTags() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.mergeSimilarTags();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['topTags'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
+      queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
+      queryClient.invalidateQueries({ queryKey: ['lilies'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
   });
 }
 
@@ -1001,18 +864,51 @@ export function useIncrementLilyViewCount() {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!actor) throw new Error('Actor not available');
-      const userId = await getPhraseHashUserId();
-      
-      if (userId !== '') {
-        return actor.incrementLilyViewCountByPhraseHash(userId, postId);
-      } else {
-        return actor.incrementLilyViewCount(postId);
-      }
+      return actor.incrementLilyViewCount(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
       queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
+  });
+}
+
+// Search placeholder hooks
+export function useGetTrendingSearches() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['trendingSearches'],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Placeholder: return empty array
+      return [];
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetSearchSuggestions(query: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['searchSuggestions', query],
+    queryFn: async () => {
+      if (!actor) return [];
+      // Placeholder: return empty array
+      return [];
+    },
+    enabled: !!actor && !isFetching && !!query && query.length > 0,
+  });
+}
+
+// Placeholder hook for recording search terms (no backend method)
+export function useRecordSearchTerm() {
+  return useMutation({
+    mutationFn: async (term: string) => {
+      // Placeholder: no-op since backend doesn't have this method
+      console.log('Search term recorded (client-side only):', term);
+      return Promise.resolve();
     },
   });
 }

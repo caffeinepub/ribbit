@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Eliminate “Unauthorized” errors for Froggy Phrase users by authorizing phrase-hash userId calls as full `#user` actions even when the caller principal is anonymous.
+**Goal:** Prevent anonymous users from appearing as the same pond member by switching pond membership to use Froggy Phrase hash identity (userId) instead of the anonymous caller Principal.
 
 **Planned changes:**
-- Backend: Update authorization logic so requests with a recognized Froggy Phrase phrase-hash `userId` are treated as `#user` for all actions, regardless of caller principal (including anonymous).
-- Backend: Add/extend `*ByPhraseHash(userId, ...)` method variants for all UI-triggered write/mutation actions that currently require principal-based `#user` authorization (e.g., creating ponds, lilies/posts, ribbits/comments, liking/unliking, view-count increments, and username/avatar/profile saves).
-- Frontend: Update React Query queries/mutations to consistently call phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId; otherwise keep existing Internet Identity/principal-based calls.
+- Update the backend pond storage model to store membership by userId (phrase hash) rather than by Principal, and adjust all membership-related methods (join/leave/check/get joined ponds) to read/write using userId.
+- Add/adjust backend membership endpoints that accept phrase hash (userId) and update frontend React Query hooks to use these phrase-hash endpoints for join/leave and joined-ponds queries (no principal-based fallback for pond membership).
+- If the pond storage schema changes, implement a conditional Motoko state migration so upgrades succeed and existing ponds remain readable, while ensuring legacy principal-based membership does not cause anonymous users to appear as members after upgrade.
+- Keep admin-only authorization enforcement intact and return clear English error messages for unauthorized operations.
 
-**User-visible outcome:** Froggy Phrase users can create ponds, create lilies/posts, create ribbits/comments, like/unlike, increment views, and save avatar/profile without “Unauthorized” errors even when not logged in with Internet Identity, while existing Internet Identity behavior remains unchanged.
+**User-visible outcome:** Joining or leaving a pond is scoped to the current Froggy Phrase identity; different browsers/devices with different phrase hashes no longer share pond membership, and the UI reflects membership changes immediately after join/leave.

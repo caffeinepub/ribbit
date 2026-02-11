@@ -95,14 +95,12 @@ export interface backendInterface {
     addPondRule(pondName: string, rule: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
-    canChangeUsername(username: string): Promise<boolean>;
+    canChangeUsername(_username: string): Promise<boolean>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
-    createPostByPhraseHash(userId: string, title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
-    createRibbitByPhraseHash(userId: string, postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;
@@ -162,11 +160,8 @@ export interface backendInterface {
     getUserRoleByPhraseHash(userId: string): Promise<UserRole>;
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
-    hasUserLikedPostByPhraseHash(userId: string, postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
-    hasUserLikedRibbitByPhraseHash(userId: string, ribbitId: string): Promise<boolean>;
     incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
-    incrementLilyViewCountByPhraseHash(userId: string, postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
     initializeFroggyPhrase(userId: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
@@ -179,18 +174,14 @@ export interface backendInterface {
     leavePond(pondName: string): Promise<void>;
     leavePondByPhraseHash(userId: string, pondName: string): Promise<void>;
     likePost(postId: string): Promise<void>;
-    likePostByPhraseHash(userId: string, postId: string): Promise<void>;
     likeRibbit(ribbitId: string): Promise<void>;
-    likeRibbitByPhraseHash(userId: string, ribbitId: string): Promise<void>;
     listPonds(): Promise<Array<Pond>>;
     listPosts(): Promise<Array<Post>>;
     listRibbits(postId: string): Promise<Array<Ribbit>>;
     mergeSimilarTags(): Promise<void>;
-    recordUsernameChange(username: string): Promise<void>;
     recordUsernameChangeByPhraseHash(userId: string, username: string): Promise<void>;
     registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
-    releaseUsername(username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
@@ -200,7 +191,5 @@ export interface backendInterface {
     searchPonds(searchTerm: string): Promise<Array<Pond>>;
     searchPosts(searchTerm: string): Promise<Array<Post>>;
     unlikePost(postId: string): Promise<void>;
-    unlikePostByPhraseHash(userId: string, postId: string): Promise<void>;
     unlikeRibbit(ribbitId: string): Promise<void>;
-    unlikeRibbitByPhraseHash(userId: string, ribbitId: string): Promise<void>;
 }

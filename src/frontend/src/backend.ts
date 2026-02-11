@@ -187,14 +187,12 @@ export interface backendInterface {
     addPondRule(pondName: string, rule: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
-    canChangeUsername(username: string): Promise<boolean>;
+    canChangeUsername(_username: string): Promise<boolean>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
     createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
-    createPostByPhraseHash(userId: string, title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
-    createRibbitByPhraseHash(userId: string, postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;
@@ -254,11 +252,8 @@ export interface backendInterface {
     getUserRoleByPhraseHash(userId: string): Promise<UserRole>;
     getViewCountForPost(postId: string): Promise<bigint>;
     hasUserLikedPost(postId: string): Promise<boolean>;
-    hasUserLikedPostByPhraseHash(userId: string, postId: string): Promise<boolean>;
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
-    hasUserLikedRibbitByPhraseHash(userId: string, ribbitId: string): Promise<boolean>;
     incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
-    incrementLilyViewCountByPhraseHash(userId: string, postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
     initializeFroggyPhrase(userId: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
@@ -271,18 +266,14 @@ export interface backendInterface {
     leavePond(pondName: string): Promise<void>;
     leavePondByPhraseHash(userId: string, pondName: string): Promise<void>;
     likePost(postId: string): Promise<void>;
-    likePostByPhraseHash(userId: string, postId: string): Promise<void>;
     likeRibbit(ribbitId: string): Promise<void>;
-    likeRibbitByPhraseHash(userId: string, ribbitId: string): Promise<void>;
     listPonds(): Promise<Array<Pond>>;
     listPosts(): Promise<Array<Post>>;
     listRibbits(postId: string): Promise<Array<Ribbit>>;
     mergeSimilarTags(): Promise<void>;
-    recordUsernameChange(username: string): Promise<void>;
     recordUsernameChangeByPhraseHash(userId: string, username: string): Promise<void>;
     registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
-    releaseUsername(username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
@@ -292,9 +283,7 @@ export interface backendInterface {
     searchPonds(searchTerm: string): Promise<Array<Pond>>;
     searchPosts(searchTerm: string): Promise<Array<Post>>;
     unlikePost(postId: string): Promise<void>;
-    unlikePostByPhraseHash(userId: string, postId: string): Promise<void>;
     unlikeRibbit(ribbitId: string): Promise<void>;
-    unlikeRibbitByPhraseHash(userId: string, ribbitId: string): Promise<void>;
 }
 import type { Activity as _Activity, ActivityType as _ActivityType, ExternalBlob as _ExternalBlob, Pond as _Pond, Post as _Post, Ribbit as _Ribbit, TagStats as _TagStats, UserProfile as _UserProfile, UserRole as _UserRole, ViewIncrementResult as _ViewIncrementResult, Visibility as _Visibility, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -509,20 +498,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createPostByPhraseHash(arg0: string, arg1: string, arg2: string, arg3: ExternalBlob | null, arg4: string | null, arg5: string, arg6: string, arg7: string | null): Promise<string> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createPostByPhraseHash(arg0, arg1, arg2, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg4), arg5, arg6, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg7));
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createPostByPhraseHash(arg0, arg1, arg2, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg4), arg5, arg6, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg7));
-            return result;
-        }
-    }
     async createRibbit(arg0: string, arg1: string | null, arg2: string, arg3: string): Promise<string> {
         if (this.processError) {
             try {
@@ -534,20 +509,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createRibbit(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
-            return result;
-        }
-    }
-    async createRibbitByPhraseHash(arg0: string, arg1: string, arg2: string | null, arg3: string, arg4: string): Promise<string> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createRibbitByPhraseHash(arg0, arg1, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg2), arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createRibbitByPhraseHash(arg0, arg1, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg2), arg3, arg4);
             return result;
         }
     }
@@ -1143,20 +1104,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async hasUserLikedPostByPhraseHash(arg0: string, arg1: string): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.hasUserLikedPostByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.hasUserLikedPostByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
     async hasUserLikedRibbit(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -1171,20 +1118,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async hasUserLikedRibbitByPhraseHash(arg0: string, arg1: string): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.hasUserLikedRibbitByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.hasUserLikedRibbitByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
     async incrementLilyViewCount(arg0: string): Promise<ViewIncrementResult> {
         if (this.processError) {
             try {
@@ -1196,20 +1129,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.incrementLilyViewCount(arg0);
-            return from_candid_ViewIncrementResult_n46(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async incrementLilyViewCountByPhraseHash(arg0: string, arg1: string): Promise<ViewIncrementResult> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.incrementLilyViewCountByPhraseHash(arg0, arg1);
-                return from_candid_ViewIncrementResult_n46(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.incrementLilyViewCountByPhraseHash(arg0, arg1);
             return from_candid_ViewIncrementResult_n46(this._uploadFile, this._downloadFile, result);
         }
     }
@@ -1381,20 +1300,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async likePostByPhraseHash(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.likePostByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.likePostByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
     async likeRibbit(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1406,20 +1311,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.likeRibbit(arg0);
-            return result;
-        }
-    }
-    async likeRibbitByPhraseHash(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.likeRibbitByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.likeRibbitByPhraseHash(arg0, arg1);
             return result;
         }
     }
@@ -1479,20 +1370,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async recordUsernameChange(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.recordUsernameChange(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.recordUsernameChange(arg0);
-            return result;
-        }
-    }
     async recordUsernameChangeByPhraseHash(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1532,20 +1409,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.registerUsernameWithPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
-    async releaseUsername(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.releaseUsername(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.releaseUsername(arg0);
             return result;
         }
     }
@@ -1675,20 +1538,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async unlikePostByPhraseHash(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.unlikePostByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.unlikePostByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
     async unlikeRibbit(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1700,20 +1549,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.unlikeRibbit(arg0);
-            return result;
-        }
-    }
-    async unlikeRibbitByPhraseHash(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.unlikeRibbitByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.unlikeRibbitByPhraseHash(arg0, arg1);
             return result;
         }
     }

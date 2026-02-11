@@ -1,89 +1,79 @@
 {
   "kind": "build_request",
-  "title": "Fix authorization: treat Froggy Phrase userId as full #user for all actions (even with anonymous principal)",
-  "priority": "high",
+  "title": "Fix pond membership so anonymous users do not auto-join all ponds (use Froggy Phrase hash identity)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Backend: Implement Froggy Phrase–based authorization so any call that includes a valid stored Froggy Phrase phrase-hash userId is authorized as a full `#user` regardless of the caller principal (including anonymous `2vxsx-fae`). This must eliminate current `Debug.trap(\"Unauthorized...\")` failures for Froggy Phrase users performing write actions.",
+      "id": "REQ-5",
+      "text": "Update pond membership logic to use Froggy Phrase hash (userId) instead of caller Principal, so anonymous users (shared principal `2vxsx-fae`) do not appear as the same member across all ponds. This includes updating the Pond storage model and all membership-related backend methods (join/leave/check/get joined ponds) to read/write membership by userId.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-5",
+          "msg-6"
         ],
         "quotes": [
-          "its still saying unauthorized when trying actions such as creating ponds, lilies, saving avatars, etc. why?",
-          "If the call includes a Froggy Phrase hash, treat that caller as a full user, even if the principal is anonymous.",
-          "Do you want all Froggy Phrase users (regardless of principal) to be treated exactly as #user for every action?",
-          "yes"
+          "why are all users automatically joining all ponds? i thought we fixed that? --- dont code yet",
+          "go ahead and fix it"
         ]
       },
       "acceptanceCriteria": [
-        "Given a request that includes a Froggy Phrase phrase-hash userId that the canister recognizes as a Froggy Phrase user (e.g., `userIdRoleOverrides[userId] == true`), backend authorization checks treat the call as `#user` even if `caller` is anonymous.",
-        "No write/mutation method used by the app for Froggy Phrase flows traps with an \"Unauthorized\" error solely due to `caller` being anonymous.",
-        "Principal-based authorization for non–Froggy Phrase users continues to behave as before (i.e., anonymous callers without a valid Froggy Phrase userId remain unauthorized where `#user` is required)."
+        "If two different browsers/devices have different Froggy Phrase hashes, joining a pond in one browser does not cause the other browser to appear as a member of that pond.",
+        "Joining/leaving a pond updates membership status based on userId and does not depend on `msg.caller` for normal users.",
+        "The backend no longer uses `pond.members : [Principal]` (or equivalent principal-based member lists) as the source of truth for user membership in ponds.",
+        "Membership checks used by pond pages/cards/about sidebar are evaluated against the requesting userId (phrase hash) and not against the anonymous principal.",
+        "Any remaining authorization failures (admin-only operations) continue to be enforced and return clear English error messages (e.g., \"Unauthorized: This operation is restricted to admins only.\")."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Backend: Add/extend phrase-hash variants for all user write actions that currently rely on `getUserRoleText(caller) == #user` (e.g., creating ponds, creating lilies/posts, creating ribbits/comments, liking/unliking, view-count increments, username/avatar/profile saves, and any other mutations triggered from the UI) so the frontend can pass the Froggy Phrase phrase-hash userId and succeed even when the actor is anonymous.",
+      "id": "REQ-6",
+      "text": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "go ahead and fix it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend membership actions (join/leave) call phrase-hash membership methods (e.g., `joinPondByPhraseHash(userId, pondName)` / `leavePondByPhraseHash(userId, pondName)`) and no longer rely on `joinPond(pondName)` / `leavePond(pondName)` for the anonymous-site flow.",
+        "The joined-ponds query used by the UI is fetched by phrase hash (userId) so that joined ponds are scoped to the current Froggy Phrase identity.",
+        "After join/leave, the frontend invalidates and refetches the pond + joined-ponds queries and the UI immediately reflects the correct membership state for that userId."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "If changing the stored type/schema for ponds is required to move from principal-based membership to userId-based membership, implement a conditional Motoko state migration so existing deployed state upgrades safely without trapping, and existing ponds remain readable after upgrade.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6"
         ],
         "quotes": [
-          "unauthorized when trying actions such as creating ponds, lilies, saving avatars, etc.",
-          "If the call includes a Froggy Phrase hash, treat that caller as a full user, even if the principal is anonymous."
+          "go ahead and fix it"
         ]
       },
       "acceptanceCriteria": [
-        "For each write action exposed in the UI, there exists a backend method that accepts a phrase-hash `userId : Text` and does not depend on principal-based role checks when `isFroggyPhraseUser(userId)` is true.",
-        "Calling these phrase-hash variants with a recognized Froggy Phrase `userId` succeeds even if the caller principal is anonymous.",
-        "Where ownership checks exist (e.g., profile/username/avatar writes), the phrase-hash variant uses `userId` as the identity boundary for Froggy Phrase users (i.e., does not require `verifyPhraseHashCaller` when `isFroggyPhraseUser(userId)` is true, consistent with existing `saveUserProfileByPhraseHash`)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId, including (at minimum) create pond, create lily/post, create ribbit/comment, like/unlike actions, view-count increments, and avatar/profile saving, so Froggy Phrase users do not hit unauthorized errors when not using Internet Identity.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "unauthorized when trying actions such as creating ponds, lilies, saving avatars, etc."
-        ]
-      },
-      "acceptanceCriteria": [
-        "When `getPhraseHashUserId()` returns a non-empty string, the app calls the corresponding `*ByPhraseHash(userId, ...)` backend methods for mutations that require `#user` authorization.",
-        "A Froggy Phrase user can successfully: create a pond, create a lily/post, create a ribbit/comment, and save their avatar/profile without seeing \"Unauthorized\" errors, even when not logged in with Internet Identity.",
-        "Existing behavior for Internet Identity users remains functional (i.e., if no phrase-hash userId is present, the app continues to call the principal-based methods as it does today)."
+        "Upgrading the canister with existing state succeeds without traps.",
+        "Existing ponds remain listable/readable after the upgrade.",
+        "Legacy principal-based membership data (if present) does not cause all anonymous users to appear as members after migration; membership is determined solely by userId going forward."
       ]
     }
   ],
   "constraints": [
     "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
-    "Do not edit frontend files under `frontend/src/components/ui` or other immutable paths listed in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Only create `backend/migration.mo` if a state upgrade/migration is necessary; follow the conditional migration policy.",
+    "Do not edit any frontend files under `frontend/src/components/ui` or other `frontend.immutablePaths`."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or off-canister storage beyond the existing canister state.",
-    "Introducing real-time/WebSocket features."
+    "Implementing or re-introducing principal-based authentication/authorization for normal user actions.",
+    "Adding third-party authentication providers (only Internet Identity is supported).",
+    "Building real-time presence or live membership updates (no websockets)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

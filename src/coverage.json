@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T21:23:29.948Z",
+  "generatedAt": "2026-02-11T22:54:39.679Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,31 +11,30 @@
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Backend: Implement Froggy Phrase–based authorization so any call that includes a valid stored Froggy Phrase phrase-hash userId is authorized as a full `#user` regardless of the caller principal (including anonymous `2vxsx-fae`). This must eliminate current `Debug.trap(\"Unauthorized...\")` failures for Froggy Phrase users performing write actions.",
+        "id": "REQ-5",
+        "summary": "Update pond membership logic to use Froggy Phrase hash (userId) instead of caller Principal, so anonymous users (shared principal `2vxsx-fae`) do not appear as the same member across all ponds. This includes updating the Pond storage model and all membership-related backend methods (join/leave/check/get joined ponds) to read/write membership by userId.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-2",
-        "summary": "Backend: Add/extend phrase-hash variants for all user write actions that currently rely on `getUserRoleText(caller) == #user` (e.g., creating ponds, creating lilies/posts, creating ribbits/comments, liking/unliking, view-count increments, username/avatar/profile saves, and any other mutations triggered from the UI) so the frontend can pass the Froggy Phrase phrase-hash userId and succeed even when the actor is anonymous.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId, including (at minimum) create pond, create lily/post, create ribbit/comment, like/unlike actions, view-count increments, and avatar/profile saving, so Froggy Phrase users do not hit unauthorized errors when not using Internet Identity.",
+        "id": "REQ-6",
+        "summary": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/backend.d.ts"
+          "frontend/src/backend.d.ts",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/backend.d.ts"
+          "frontend/src/hooks/useQueries.ts"
         ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "If changing the stored type/schema for ponds is required to move from principal-based membership to userId-based membership, implement a conditional Motoko state migration so existing deployed state upgrades safely without trapping, and existing ponds remain readable after upgrade.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
@@ -45,12 +44,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/TagPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,26 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Use phrase-hash variants for Froggy Phrase users across all write actions",
+  "title": "Update frontend pond membership flows to be Froggy Phrase hash (userId) based",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Route all user-authorized mutations/queries through phrase-hash backend methods when a Froggy Phrase userId is available, preserving existing Internet Identity behavior otherwise.",
+      "id": "REQ-6",
+      "summary": "Switch frontend pond membership queries/mutations to phrase-hash (userId) methods only and ensure join/leave refreshes membership UI immediately.",
       "acceptanceCriteria": [
-        "When `getPhraseHashUserId()` returns a non-empty string, the app calls the corresponding `*ByPhraseHash(userId, ...)` backend methods for mutations that require `#user` authorization.",
-        "A Froggy Phrase user can successfully: create a pond, create a lily/post, create a ribbit/comment, and save their avatar/profile without seeing \"Unauthorized\" errors, even when not logged in with Internet Identity.",
-        "Existing behavior for Internet Identity users remains functional (i.e., if no phrase-hash userId is present, the app continues to call the principal-based methods as it does today)."
+        "Frontend membership actions (join/leave) call phrase-hash membership methods (e.g., `joinPondByPhraseHash(userId, pondName)` / `leavePondByPhraseHash(userId, pondName)`) and no longer rely on `joinPond(pondName)` / `leavePond(pondName)` for the anonymous-site flow.",
+        "The joined-ponds query used by the UI is fetched by phrase hash (userId) so that joined ponds are scoped to the current Froggy Phrase identity.",
+        "After join/leave, the frontend invalidates and refetches the pond + joined-ponds queries and the UI immediately reflects the correct membership state for that userId."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update React Query hooks to consistently prefer phrase-hash methods when `getPhraseHashUserId()` is non-empty: create pond (switch to the phrase-hash variant once available), create lily/post (use `createPostByPhraseHash`), create ribbit/comment (use `createRibbitByPhraseHash`), like/unlike posts (use `likePostByPhraseHash`/`unlikePostByPhraseHash`), like/unlike ribbits (use `likeRibbitByPhraseHash`/`unlikeRibbitByPhraseHash`), and view-count increments (use `incrementLilyViewCountByPhraseHash`). Also update read queries tied to identity where needed (e.g., `hasUserLikedPost`/`hasUserLikedRibbit`) to use the phrase-hash variants when applicable."
-        },
-        {
           "path": "frontend/src/backend.d.ts",
           "operation": "modify",
-          "description": "Extend the generated backend type definitions to include any newly-added phrase-hash functions needed by the UI (notably a phrase-hash variant for pond creation and any other UI-triggered mutations that were previously principal-only), so `useQueries.ts` can call them type-safely."
+          "description": "Update the typed backend interface to match the new phrase-hash-based membership read capability used by the UI (e.g., add a `getJoinedPondsByPhraseHash(userId: string): Promise<Array<string>>` method, and any other phrase-hash membership status reads the frontend will call)."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Remove principal-based fallback behavior for pond membership flows: update `useJoinPond` and `useLeavePond` to always compute `userId` via `getPhraseHashUserId()` and call only `actor.joinPondByPhraseHash(userId, pondName)` / `actor.leavePondByPhraseHash(userId, pondName)` (if `userId` cannot be computed, throw a clear error instead of falling back). Update `useGetJoinedPonds` to fetch joined ponds using a phrase-hash method (e.g., `actor.getJoinedPondsByPhraseHash(userId)`) rather than `actor.getJoinedPonds()`. Ensure post-mutation invalidations include `['joinedPonds']` and both pond detail keys used by the UI (e.g., `['pond', pondName]` and `['pondAbout', pondName]`) so pond pages/cards/about sidebar update immediately."
         }
       ]
     }

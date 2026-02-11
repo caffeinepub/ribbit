@@ -1,50 +1,56 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T21:23:29.946Z",
-  "summary": "The diff shows partial frontend adoption of phrase-hash endpoints for joining/leaving ponds, but does not provide evidence that backend authorization was updated to treat valid Froggy Phrase userIds as full #user for all actions, nor that phrase-hash variants were added/used for the full set of write actions (create pond/post/ribbit, like/unlike, view counts, profile/avatar saves). It also includes unrelated Tag UI changes not requested by the BuildRequest.",
+  "generatedAt": "2026-02-11T22:54:39.676Z",
+  "summary": "Frontend hooks were updated to compute a Froggy Phrase hash userId and call phrase-hash join/leave endpoints, but the backend diff excerpt still shows principal-based pond membership storage (`members : [Principal]`) and there is no evidence of backend membership methods being migrated to userId-based storage or of any state migration for upgrades. Some additional backend state additions (e.g., tag subcategories, various userId linkage maps) appear in the diff without being explicitly requested by REQ-5/6/7.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Backend: Treat any call that includes a valid stored Froggy Phrase phrase-hash userId as authorized as a full #user regardless of caller principal (including anonymous), eliminating Unauthorized traps for Froggy Phrase users while preserving principal-based behavior for non–Froggy Phrase users.",
-      "reason": "backend/main.mo is truncated and the diff excerpt only shows state/type declarations; there is no visible change to authorization/role-check logic or removal/bypass of principal-based Unauthorized traps based on phrase-hash userId.",
+      "id": "REQ-5",
+      "requirement": "Update pond membership logic and storage to use Froggy Phrase hash (userId) instead of caller Principal, including join/leave/check/get joined ponds; backend must no longer use `pond.members : [Principal]` as the source of truth.",
+      "reason": "In the provided backend diff excerpt, the `Pond` type still contains `members : [Principal]` and there is no visible replacement with a userId-based member list/map nor evidence of updated membership methods in the shown portion.",
       "evidence": [
-        "backend/main.mo (truncated excerpt shows only imports/state/type definitions; no authorization logic shown)"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Backend: Add/extend phrase-hash variants for all user write actions that rely on #user role checks (create pond/post/ribbit, like/unlike, view increments, username/avatar/profile saves, and other UI-triggered mutations) so Froggy Phrase users can succeed even when caller is anonymous.",
-      "reason": "The diff summary does not show backend method additions/changes for phrase-hash variants across all mutations; only frontend calls to join/leave by phrase hash are visible. No evidence is provided for phrase-hash variants for create pond, create lily/post, create ribbit/comment, like/unlike, view-count increments, or profile/avatar saving.",
+      "id": "REQ-6",
+      "requirement": "Add/adjust phrase-hash-based membership endpoints (join/leave/check/get joined ponds by userId) and update frontend React Query hooks to use them (including joined-ponds query fetched by phrase hash; no principal-based fallback).",
+      "reason": "The frontend diff shows join/leave mutations calling `joinPondByPhraseHash(userId, pondName)` and `leavePondByPhraseHash(userId, pondName)`, but the diff is truncated before showing the joined-ponds query implementation, and there is no backend evidence in the excerpt that the corresponding phrase-hash endpoints exist or that membership status/joined-ponds fetching is userId-based end-to-end.",
       "evidence": [
-        "backend/main.mo (truncated; no method signatures/guards visible)",
-        "frontend/src/hooks/useQueries.ts (shows joinPondByPhraseHash/leavePondByPhraseHash usage, but createPond still calls actor.createPond without phrase-hash userId)"
+        "frontend/src/hooks/useQueries.ts",
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever getPhraseHashUserId() returns non-empty for create pond, create lily/post, create ribbit/comment, like/unlike, view-count increments, and avatar/profile saving.",
-      "reason": "Only join/leave pond mutations conditionally use phrase-hash endpoints. The create pond mutation shown still calls actor.createPond(...) and does not use getPhraseHashUserId() or a *ByPhraseHash endpoint. The diff excerpt provides no evidence of updates for create lily/post, create ribbit/comment, like/unlike, view increments, or avatar/profile saving.",
+      "id": "REQ-7",
+      "requirement": "If the pond schema changes are required, implement a conditional Motoko state migration so upgrades succeed without traps and legacy principal membership does not make all anonymous users appear as members.",
+      "reason": "No `backend/migration.mo` was added, and the backend excerpt still shows principal-based membership in the `Pond` type; there is no evidence in the diff summary of any conditional migration logic.",
       "evidence": [
-        "frontend/src/hooks/useQueries.ts (useJoinPond/useLeavePond updated; useCreatePond still calls actor.createPond(...) without phrase-hash userId)"
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Tag page UI changes (canonical tag redirect, subcategories section, layout/skeleton rendering) unrelated to authorization/phrase-hash endpoint usage.",
-      "reason": "BuildRequest is focused on authorization and switching to phrase-hash backend endpoints for write actions; it does not request Tag page UI/UX changes.",
+      "description": "Added/introduced \"tag subcategories\" state (`tagSubcategories`) in the backend.",
+      "reason": "Not requested by REQ-5/REQ-6/REQ-7, which are limited to pond membership identity and migration concerns.",
       "evidence": [
-        "frontend/src/pages/TagPage.tsx"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Added multiple new phrase-hash/linkage and parallel like/profile maps (`userIdLinkage`, `userIdUsernameLinkage`, `userIdPostLikes`, `userIdRibbitLikes`, `userIdUserProfiles`, `userIdUsernameRegistry`) beyond pond membership changes.",
+      "reason": "REQ-5/6/7 focus on pond membership storage and endpoints; the diff shows additional userId-based storage for likes/profiles/username linkage without a corresponding request in the BuildRequest.",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/TagPage.tsx",
     "project_state.json"
   ]
 }

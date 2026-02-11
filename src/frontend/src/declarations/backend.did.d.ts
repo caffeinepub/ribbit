@@ -129,24 +129,7 @@ export interface _SERVICE {
     ],
     string
   >,
-  'createPostByPhraseHash' : ActorMethod<
-    [
-      string,
-      string,
-      string,
-      [] | [ExternalBlob],
-      [] | [string],
-      string,
-      string,
-      [] | [string],
-    ],
-    string
-  >,
   'createRibbit' : ActorMethod<[string, [] | [string], string, string], string>,
-  'createRibbitByPhraseHash' : ActorMethod<
-    [string, string, [] | [string], string, string],
-    string
-  >,
   'deleteLily' : ActorMethod<[string], undefined>,
   'deleteRibbit' : ActorMethod<[string], undefined>,
   'editPondSettings' : ActorMethod<
@@ -213,14 +196,8 @@ export interface _SERVICE {
   'getUserRoleByPhraseHash' : ActorMethod<[string], UserRole>,
   'getViewCountForPost' : ActorMethod<[string], bigint>,
   'hasUserLikedPost' : ActorMethod<[string], boolean>,
-  'hasUserLikedPostByPhraseHash' : ActorMethod<[string, string], boolean>,
   'hasUserLikedRibbit' : ActorMethod<[string], boolean>,
-  'hasUserLikedRibbitByPhraseHash' : ActorMethod<[string, string], boolean>,
   'incrementLilyViewCount' : ActorMethod<[string], ViewIncrementResult>,
-  'incrementLilyViewCountByPhraseHash' : ActorMethod<
-    [string, string],
-    ViewIncrementResult
-  >,
   'initializeAccessControl' : ActorMethod<[], undefined>,
   'initializeFroggyPhrase' : ActorMethod<[string], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
@@ -233,18 +210,14 @@ export interface _SERVICE {
   'leavePond' : ActorMethod<[string], undefined>,
   'leavePondByPhraseHash' : ActorMethod<[string, string], undefined>,
   'likePost' : ActorMethod<[string], undefined>,
-  'likePostByPhraseHash' : ActorMethod<[string, string], undefined>,
   'likeRibbit' : ActorMethod<[string], undefined>,
-  'likeRibbitByPhraseHash' : ActorMethod<[string, string], undefined>,
   'listPonds' : ActorMethod<[], Array<Pond>>,
   'listPosts' : ActorMethod<[], Array<Post>>,
   'listRibbits' : ActorMethod<[string], Array<Ribbit>>,
   'mergeSimilarTags' : ActorMethod<[], undefined>,
-  'recordUsernameChange' : ActorMethod<[string], undefined>,
   'recordUsernameChangeByPhraseHash' : ActorMethod<[string, string], undefined>,
   'registerUsername' : ActorMethod<[string], undefined>,
   'registerUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
-  'releaseUsername' : ActorMethod<[string], undefined>,
   'releaseUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
   'removeMemberFromPond' : ActorMethod<[string, Principal], undefined>,
   'removeModerator' : ActorMethod<[string, Principal], undefined>,
@@ -254,9 +227,7 @@ export interface _SERVICE {
   'searchPonds' : ActorMethod<[string], Array<Pond>>,
   'searchPosts' : ActorMethod<[string], Array<Post>>,
   'unlikePost' : ActorMethod<[string], undefined>,
-  'unlikePostByPhraseHash' : ActorMethod<[string, string], undefined>,
   'unlikeRibbit' : ActorMethod<[string], undefined>,
-  'unlikeRibbitByPhraseHash' : ActorMethod<[string, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

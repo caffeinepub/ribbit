@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-frontend-update-react-query-mutations-queries-to-consistently-use-phrase-hash-backend-endpoints-whenever-getphrasehashuserid-returns-a-non-empty-userid-including-at-minimum-create-pond-create-lily-post-create-ribbit-comment-like-unlike-actions-view-count-increments-and-avatar-profile-saving-so-froggy-phrase-users-do-not-hit-unauthorized-errors-when-not-using-internet-identity",
-      "featureTitle": "Frontend: Update React Query mutations/queries to consistently use phrase-hash backend endpoints whenever `getPhraseHashUserId()` returns a non-empty userId, including (at minimum) create pond, create lily/post, create ribbit/comment, like/unlike actions, view-count increments, and avatar/profile saving, so Froggy Phrase users do not hit unauthorized errors when not using Internet Identity.",
+      "featureId": "feature-add-adjust-phrase-hash-based-membership-endpoints-used-by-the-frontend-so-that-the-ui-can-fetch-joined-ponds-and-membership-status-using-userid-froggy-phrase-hash-and-update-the-frontend-react-query-hooks-to-call-those-phrase-hash-endpoints-no-principal-based-fallback-for-pond-membership",
+      "featureTitle": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
       "files": [
         "frontend/src/hooks/useQueries.ts"
       ],
@@ -17,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-6"
       ],
       "confidence": "high"
     }

@@ -30,29 +30,42 @@ actor Ribbit {
   var tagUsageCount : OrderedMap.Map<Text, Nat> = textMap.empty();
   var tagMergeRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
+  // Username-based avatar storage
   var usernameAvatars : OrderedMap.Map<Text, Storage.ExternalBlob> = textMap.empty();
 
+  // Likes system
   var postLikes : OrderedMap.Map<Text, OrderedMap.Map<Principal, Bool>> = textMap.empty();
   var ribbitLikes : OrderedMap.Map<Text, OrderedMap.Map<Principal, Bool>> = textMap.empty();
 
+  // New activity tracking system for Recent Activity
   var postActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var ribbitActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
   var likeActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
-  var viewActivity : OrderedMap.Map<Text, Activity> = textMap.empty();
 
+  // Tag stats tracking
   var tagStats : OrderedMap.Map<Text, TagStats> = textMap.empty();
+
+  // === New: Subcategories for tags ===
   var tagSubcategories : OrderedMap.Map<Text, [Text]> = textMap.empty();
 
+  // Access control state
   let accessControlState = AccessControl.initState();
 
+  // New: Phrase-hash enabled storage
   var userIdLinkage : OrderedMap.Map<Text, Principal> = textMap.empty();
-  var userIdRoleOverrides : OrderedMap.Map<Text, Bool> = textMap.empty();
   var userIdUsernameLinkage : OrderedMap.Map<Text, Text> = textMap.empty();
+
+  // Parallel like mappings
   var userIdPostLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
   var userIdRibbitLikes : OrderedMap.Map<Text, OrderedMap.Map<Text, Bool>> = textMap.empty();
+
+  // Store userId-mapped user profiles
   var userIdUserProfiles : OrderedMap.Map<Text, UserProfile> = textMap.empty();
+
+  // Username linkage between userId and username
   var userIdUsernameRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
+  // Activity tracking data type
   type Activity = {
     id : Text;
     type_ : ActivityType;
@@ -119,12 +132,14 @@ actor Ribbit {
     avatar : ?Storage.ExternalBlob;
   };
 
+  // View increment result type
   public type ViewIncrementResult = {
     #success;
     #notFound;
     #error;
   };
 
+  // Updated tag stats type with IDs
   type TagStats = {
     id : Text;
     postsTotal : Nat;
@@ -140,47 +155,19 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func initializeFroggyPhrase(userId : Text) : async () {
+    // Record linkage between userId and caller
     userIdLinkage := textMap.put(userIdLinkage, userId, caller);
-    userIdRoleOverrides := textMap.put(userIdRoleOverrides, userId, true);
     AccessControl.initialize(accessControlState, caller);
   };
 
-  func isFroggyPhraseUser(userId : Text) : Bool {
-    switch (textMap.get(userIdRoleOverrides, userId)) {
-      case (?true) { true };
-      case _ { false };
-    };
-  };
-
-  func getFroggyPhraseUserRole(userId : Text) : AccessControl.UserRole {
-    if (isFroggyPhraseUser(userId)) { #user } else { #guest };
-  };
-
-  func getUserRoleText(caller : Principal) : AccessControl.UserRole {
-    switch (principalToUserId(caller)) {
-      case (?userId) {
-        if (isFroggyPhraseUser(userId)) {
-          #user;
-        } else {
-          AccessControl.getUserRole(accessControlState, caller);
-        };
-      };
-      case null { AccessControl.getUserRole(accessControlState, caller) };
-    };
-  };
-
   public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
-    getUserRoleText(caller);
+    AccessControl.getUserRole(accessControlState, caller);
   };
 
   public query func getUserRoleByPhraseHash(userId : Text) : async AccessControl.UserRole {
-    if (isFroggyPhraseUser(userId)) {
-      #user;
-    } else {
-      switch (textMap.get(userIdLinkage, userId)) {
-        case (?principal) { AccessControl.getUserRole(accessControlState, principal) };
-        case (null) { #guest };
-      };
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { AccessControl.getUserRole(accessControlState, principal) };
+      case (null) { #guest };
     };
   };
 
@@ -188,9 +175,9 @@ actor Ribbit {
     AccessControl.assignRole(accessControlState, caller, user, role);
   };
 
-  public shared ({ caller }) func assignUserRoleByPhraseHash(userId : Text, role : AccessControl.UserRole) : async () {
+  public shared func assignUserRoleByPhraseHash(userId : Text, role : AccessControl.UserRole) : async () {
     switch (textMap.get(userIdLinkage, userId)) {
-      case (?principal) { AccessControl.assignRole(accessControlState, caller, principal, role) };
+      case (?principal) { AccessControl.assignRole(accessControlState, Principal.fromActor(Ribbit), principal, role) };
       case (null) { Debug.trap("User ID not found") };
     };
   };
@@ -200,72 +187,48 @@ actor Ribbit {
   };
 
   public query func isUserAdminByPhraseHash(userId : Text) : async Bool {
-    if (isFroggyPhraseUser(userId)) {
-      false;
-    } else {
-      switch (textMap.get(userIdLinkage, userId)) {
-        case (?principal) { AccessControl.isAdmin(accessControlState, principal) };
-        case (null) { false };
-      };
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { AccessControl.isAdmin(accessControlState, principal) };
+      case (null) { false };
     };
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can access profiles");
-    };
     principalMap.get(userProfiles, caller);
   };
 
   public query func getUserProfileByPhraseHash(userId : Text) : async ?UserProfile {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-    textMap.get(userIdUserProfiles, userId);
-  };
-
-  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Debug.trap("Unauthorized: Can only view your own profile");
-    };
-    principalMap.get(userProfiles, user);
-  };
-
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can save profiles");
-    };
-    userProfiles := principalMap.put(userProfiles, caller, profile);
-  };
-
-  public shared func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-    userIdUserProfiles := textMap.put(userIdUserProfiles, userId, profile);
-  };
-
-  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can increment view counts");
-    };
-    switch (textMap.get(posts, postId)) {
-      case (null) { #notFound };
-      case (?post) {
-        let updatedPost = {
-          post with
-          viewCount = post.viewCount + 1;
+    let profileByPhraseHash = textMap.get(userIdUserProfiles, userId);
+    switch (profileByPhraseHash) {
+      case (?profile) { ?profile };
+      case (null) {
+        switch (textMap.get(userIdLinkage, userId)) {
+          case (?principal) { principalMap.get(userProfiles, principal) };
+          case (null) { null };
         };
-        posts := textMap.put(posts, postId, updatedPost);
-        #success;
       };
     };
   };
 
-  public shared func incrementLilyViewCountByPhraseHash(userId : Text, postId : Text) : async ViewIncrementResult {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    principalMap.get(userProfiles, user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    userProfiles := principalMap.put(userProfiles, caller, profile);
+  };
+
+  public shared func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
+    userIdUserProfiles := textMap.put(userIdUserProfiles, userId, profile);
+    switch (textMap.get(userIdLinkage, userId)) {
+      case (?principal) { userProfiles := principalMap.put(userProfiles, principal, profile) };
+      case (null) {};
     };
+  };
+
+  // ===== END ACCESS CONTROL =====
+
+  public shared func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
     switch (textMap.get(posts, postId)) {
       case (null) { #notFound };
       case (?post) {
@@ -387,10 +350,14 @@ actor Ribbit {
     false;
   };
 
-  public shared ({ caller }) func mergeSimilarTags() : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Debug.trap("Unauthorized: Only admins can merge tags");
+  func validateAdminAccess(caller : Principal) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Debug.trap("Unauthorized: This operation is restricted to admins only.");
     };
+  };
+
+  public shared ({ caller }) func mergeSimilarTags() : async () {
+    validateAdminAccess(caller);
 
     let tags = Iter.toArray(textMap.keys(tagUsageCount));
     let tagCount = tags.size();
@@ -520,46 +487,16 @@ actor Ribbit {
     not textMap.contains(usernameRegistry, username);
   };
 
-  public shared ({ caller }) func registerUsername(username : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can register usernames");
-    };
-
+  public shared func registerUsername(username : Text) : async () {
     if (textMap.contains(usernameRegistry, username)) {
       Debug.trap("Username already taken");
     };
 
-    switch (principalMap.get(principalToUsername, caller)) {
-      case (?existingUsername) {
-        let currentTime = Time.now();
-        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
-
-        switch (textMap.get(usernameChangeHistory, existingUsername)) {
-          case (?lastChangeTime) {
-            if (currentTime - lastChangeTime < cooldownPeriod) {
-              Debug.trap("You can only change your username once every 24 hours.");
-            };
-          };
-          case (null) {};
-        };
-
-        usernameRegistry := textMap.delete(usernameRegistry, existingUsername);
-        usernameOwnership := textMap.delete(usernameOwnership, existingUsername);
-      };
-      case (null) {};
-    };
-
     usernameRegistry := textMap.put(usernameRegistry, username, true);
-    usernameOwnership := textMap.put(usernameOwnership, username, caller);
-    principalToUsername := principalMap.put(principalToUsername, caller, username);
     usernameChangeHistory := textMap.put(usernameChangeHistory, username, Time.now());
   };
 
   public shared func registerUsernameWithPhraseHash(userId : Text, username : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     if (textMap.contains(usernameRegistry, username)) {
       Debug.trap("Username already taken");
     };
@@ -567,33 +504,7 @@ actor Ribbit {
     usernameRegistry := textMap.put(usernameRegistry, username, true);
   };
 
-  public shared ({ caller }) func releaseUsername(username : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can release usernames");
-    };
-
-    switch (textMap.get(usernameOwnership, username)) {
-      case (null) {
-        Debug.trap("Username not registered");
-      };
-      case (?owner) {
-        if (owner != caller) {
-          Debug.trap("Unauthorized: Can only release your own username");
-        };
-
-        usernameRegistry := textMap.delete(usernameRegistry, username);
-        usernameOwnership := textMap.delete(usernameOwnership, username);
-        usernameChangeHistory := textMap.delete(usernameChangeHistory, username);
-        principalToUsername := principalMap.delete(principalToUsername, owner);
-      };
-    };
-  };
-
   public shared func releaseUsernameWithPhraseHash(userId : Text, username : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     switch (textMap.get(userIdUsernameRegistry, userId)) {
       case (?registeredUsername) {
         if (registeredUsername != username) {
@@ -606,30 +517,8 @@ actor Ribbit {
     };
   };
 
-  public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
-    switch (textMap.get(usernameOwnership, username)) {
-      case (?owner) {
-        if (owner != caller) {
-          return false;
-        };
-      };
-      case (null) {};
-    };
-
-    switch (principalMap.get(principalToUsername, caller)) {
-      case (?currentUsername) {
-        let currentTime = Time.now();
-        let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
-
-        switch (textMap.get(usernameChangeHistory, currentUsername)) {
-          case (?lastChangeTime) {
-            return currentTime - lastChangeTime >= cooldownPeriod;
-          };
-          case (null) { return true };
-        };
-      };
-      case (null) { return true };
-    };
+  public query ({ caller }) func canChangeUsername(_username : Text) : async Bool {
+    caller != Principal.fromActor(Ribbit);
   };
 
   public query func canChangeUsernameByPhraseHash(userId : Text, username : Text) : async Bool {
@@ -644,44 +533,7 @@ actor Ribbit {
     };
   };
 
-  public shared ({ caller }) func recordUsernameChange(username : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can record username changes");
-    };
-
-    switch (textMap.get(usernameOwnership, username)) {
-      case (null) {
-        Debug.trap("Username not registered");
-      };
-      case (?owner) {
-        if (owner != caller) {
-          Debug.trap("Unauthorized: Can only change your own username");
-        };
-      };
-    };
-
-    let currentTime = Time.now();
-    let cooldownPeriod = 24 * 60 * 60 * 1_000_000_000;
-
-    switch (textMap.get(usernameChangeHistory, username)) {
-      case (null) {
-        usernameChangeHistory := textMap.put(usernameChangeHistory, username, currentTime);
-      };
-      case (?lastChangeTime) {
-        if (currentTime - lastChangeTime < cooldownPeriod) {
-          Debug.trap("You can only change your username once every 24 hours.");
-        } else {
-          usernameChangeHistory := textMap.put(usernameChangeHistory, username, currentTime);
-        };
-      };
-    };
-  };
-
   public shared func recordUsernameChangeByPhraseHash(userId : Text, username : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     switch (textMap.get(userIdUsernameRegistry, userId)) {
       case (?registeredUsername) {
         if (registeredUsername != username) {
@@ -705,12 +557,8 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can create ponds");
-    };
-
     if (not isAlphanumeric(name)) {
-      Debug.trap("Pond name must contain only letters and numbers.");
+      Debug.trap("Pond name must contain only letters and numbers. ");
     };
 
     if (textMap.contains(ponds, name)) {
@@ -832,8 +680,8 @@ actor Ribbit {
     };
   };
 
-  public query func isPondAdmin(pondName : Text) : async Bool {
-    isAdminOfPond(Principal.fromActor(Ribbit), pondName);
+  public query ({ caller }) func isPondAdmin(pondName : Text) : async Bool {
+    isAdminOfPond(caller, pondName);
   };
 
   public shared ({ caller }) func addPondRule(pondName : Text, rule : Text) : async () {
@@ -945,10 +793,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func createPost(title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can create posts");
-    };
-
     switch (textMap.get(ponds, pond)) {
       case (null) {
         Debug.trap("Pond not found");
@@ -1056,116 +900,7 @@ actor Ribbit {
     postId;
   };
 
-  public shared func createPostByPhraseHash(userId : Text, title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
-    switch (textMap.get(ponds, pond)) {
-      case (null) {
-        Debug.trap("Pond not found");
-      };
-      case (?_pondData) {};
-    };
-
-    let postId = Text.concat("post_", Nat.toText(textMap.size(posts) + 1));
-
-    let normalizedTag = switch (tag) {
-      case (null) { null };
-      case (?t) {
-        let norm = normalizeTag(t);
-        switch (textMap.get(tagUsageCount, norm)) {
-          case (null) {
-            tagUsageCount := textMap.put(tagUsageCount, norm, 1);
-          };
-          case (?count) {
-            tagUsageCount := textMap.put(tagUsageCount, norm, count + 1);
-          };
-        };
-
-        switch (textMap.get(ponds, pond)) {
-          case (null) {};
-          case (?pondData) {
-            let tagExists = Array.find<Text>(pondData.associatedTags, func(existingTag) { existingTag == norm }) != null;
-            if (not tagExists) {
-              let updatedPond = {
-                pondData with
-                associatedTags = Array.append(pondData.associatedTags, [norm]);
-              };
-              ponds := textMap.put(ponds, pond, updatedPond);
-            };
-          };
-        };
-
-        let canonicalTag = getCanonicalTag(norm);
-
-        let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
-          case (null) {
-            let defaultStats : TagStats = {
-              id = canonicalTag;
-              postsTotal = 0;
-              repliesTotal = 0;
-              firstUsedAt = Time.now();
-              lastActivityAt = Time.now();
-            };
-            defaultStats;
-          };
-          case (?stats) { stats };
-        };
-
-        let updatedStats = {
-          currentStats with
-          postsTotal = currentStats.postsTotal + 1;
-          lastActivityAt = Time.now();
-        };
-
-        let finalStats = if (currentStats.postsTotal == 0) {
-          {
-            updatedStats with
-            firstUsedAt = Time.now();
-          };
-        } else { updatedStats };
-
-        tagStats := textMap.put(tagStats, canonicalTag, finalStats);
-
-        ?norm;
-      };
-    };
-
-    let post : Post = {
-      id = postId;
-      title;
-      content;
-      image;
-      link;
-      pond;
-      username;
-      timestamp = Time.now();
-      viewCount = 0;
-      tag = normalizedTag;
-    };
-
-    posts := textMap.put(posts, postId, post);
-
-    switch (textMap.get(ponds, pond)) {
-      case (null) {};
-      case (?pondData) {
-        let updatedPond = {
-          pondData with
-          lilyCount = pondData.lilyCount + 1;
-        };
-        ponds := textMap.put(ponds, pond, updatedPond);
-      };
-    };
-
-    postId;
-  };
-
   public shared ({ caller }) func likePost(postId : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can like posts");
-    };
-
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
@@ -1181,30 +916,7 @@ actor Ribbit {
     };
   };
 
-  public shared func likePostByPhraseHash(userId : Text, postId : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
-    switch (textMap.get(posts, postId)) {
-      case (null) { Debug.trap("Post not found") };
-      case (?_) {
-        var currentLikes = switch (textMap.get(userIdPostLikes, userId)) {
-          case (null) { textMap.empty<Bool>() };
-          case (?likes) { likes };
-        };
-
-        currentLikes := textMap.put(currentLikes, postId, true);
-        userIdPostLikes := textMap.put(userIdPostLikes, userId, currentLikes);
-      };
-    };
-  };
-
   public shared ({ caller }) func unlikePost(postId : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can unlike posts");
-    };
-
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
@@ -1219,30 +931,7 @@ actor Ribbit {
     };
   };
 
-  public shared func unlikePostByPhraseHash(userId : Text, postId : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
-    switch (textMap.get(posts, postId)) {
-      case (null) { Debug.trap("Post not found") };
-      case (?_) {
-        switch (textMap.get(userIdPostLikes, userId)) {
-          case (null) {};
-          case (?likes) {
-            let updatedLikes = textMap.delete(likes, postId);
-            userIdPostLikes := textMap.put(userIdPostLikes, userId, updatedLikes);
-          };
-        };
-      };
-    };
-  };
-
   public shared ({ caller }) func likeRibbit(ribbitId : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can like ribbits");
-    };
-
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
@@ -1257,30 +946,7 @@ actor Ribbit {
     };
   };
 
-  public shared func likeRibbitByPhraseHash(userId : Text, ribbitId : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
-    switch (textMap.get(ribbits, ribbitId)) {
-      case (null) { Debug.trap("Ribbit not found") };
-      case (?_) {
-        var currentLikes = switch (textMap.get(userIdRibbitLikes, userId)) {
-          case (null) { textMap.empty<Bool>() };
-          case (?likes) { likes };
-        };
-
-        currentLikes := textMap.put(currentLikes, ribbitId, true);
-        userIdRibbitLikes := textMap.put(userIdRibbitLikes, userId, currentLikes);
-      };
-    };
-  };
-
   public shared ({ caller }) func unlikeRibbit(ribbitId : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can unlike ribbits");
-    };
-
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
@@ -1289,25 +955,6 @@ actor Ribbit {
           case (?likes) {
             let updatedLikes = principalMap.delete(likes, caller);
             ribbitLikes := textMap.put(ribbitLikes, ribbitId, updatedLikes);
-          };
-        };
-      };
-    };
-  };
-
-  public shared func unlikeRibbitByPhraseHash(userId : Text, ribbitId : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
-    switch (textMap.get(ribbits, ribbitId)) {
-      case (null) { Debug.trap("Ribbit not found") };
-      case (?_) {
-        switch (textMap.get(userIdRibbitLikes, userId)) {
-          case (null) {};
-          case (?likes) {
-            let updatedLikes = textMap.delete(likes, ribbitId);
-            userIdRibbitLikes := textMap.put(userIdRibbitLikes, userId, updatedLikes);
           };
         };
       };
@@ -1333,22 +980,8 @@ actor Ribbit {
     };
   };
 
-  public query func hasUserLikedPostByPhraseHash(userId : Text, postId : Text) : async Bool {
-    switch (textMap.get(userIdPostLikes, userId)) {
-      case (null) { false };
-      case (?likes) {
-        switch (textMap.get(likes, postId)) {
-          case (null) { false };
-          case (?liked) { liked };
-        };
-      };
-    };
-  };
-
   public shared ({ caller }) func clearPostLikes(postId : Text) : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Debug.trap("Unauthorized: Only admins can clear post likes");
-    };
+    validateAdminAccess(caller);
     postLikes := textMap.delete(postLikes, postId);
   };
 
@@ -1364,18 +997,6 @@ actor Ribbit {
       case (null) { false };
       case (?likes) {
         switch (principalMap.get(likes, caller)) {
-          case (null) { false };
-          case (?liked) { liked };
-        };
-      };
-    };
-  };
-
-  public query func hasUserLikedRibbitByPhraseHash(userId : Text, ribbitId : Text) : async Bool {
-    switch (textMap.get(userIdRibbitLikes, userId)) {
-      case (null) { false };
-      case (?likes) {
-        switch (textMap.get(likes, ribbitId)) {
           case (null) { false };
           case (?liked) { liked };
         };
@@ -1424,67 +1045,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can create ribbits");
-    };
-
-    let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
-
-    let ribbit : Ribbit = {
-      id = ribbitId;
-      postId;
-      parentId;
-      content;
-      username;
-      timestamp = Time.now();
-    };
-
-    ribbits := textMap.put(ribbits, ribbitId, ribbit);
-
-    trackViewRibbitActivity(ribbitId, username);
-
-    switch (textMap.get(posts, postId)) {
-      case (?post) {
-        switch (post.tag) {
-          case (?tag) {
-            let canonicalTag = getCanonicalTag(tag);
-
-            let currentStats = switch (textMap.get(tagStats, canonicalTag)) {
-              case (null) {
-                let defaultStats : TagStats = {
-                  id = canonicalTag;
-                  postsTotal = 0;
-                  repliesTotal = 0;
-                  firstUsedAt = Time.now();
-                  lastActivityAt = Time.now();
-                };
-                defaultStats;
-              };
-              case (?stats) { stats };
-            };
-
-            let updatedStats = {
-              currentStats with
-              repliesTotal = currentStats.repliesTotal + 1;
-              lastActivityAt = Time.now();
-            };
-
-            tagStats := textMap.put(tagStats, canonicalTag, updatedStats);
-          };
-          case (null) {};
-        };
-      };
-      case (null) {};
-    };
-
-    ribbitId;
-  };
-
-  public shared func createRibbitByPhraseHash(userId : Text, postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
 
     let ribbit : Ribbit = {
@@ -1712,10 +1272,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func joinPond(pondName : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can join ponds");
-    };
-
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
@@ -1752,10 +1308,6 @@ actor Ribbit {
   };
 
   public shared func joinPondByPhraseHash(userId : Text, pondName : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     switch (textMap.get(userIdLinkage, userId)) {
       case (?principal) {
         switch (textMap.get(ponds, pondName)) {
@@ -1779,10 +1331,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func leavePond(pondName : Text) : async () {
-    if (getUserRoleText(caller) != #user) {
-      Debug.trap("Unauthorized: Only users can leave ponds");
-    };
-
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
@@ -1814,10 +1362,6 @@ actor Ribbit {
   };
 
   public shared func leavePondByPhraseHash(userId : Text, pondName : Text) : async () {
-    if (not isFroggyPhraseUser(userId)) {
-      Debug.trap("Unauthorized: Invalid Froggy Phrase user");
-    };
-
     switch (textMap.get(userIdLinkage, userId)) {
       case (?principal) {
         switch (textMap.get(ponds, pondName)) {
@@ -1841,8 +1385,8 @@ actor Ribbit {
     };
   };
 
-  public query func getJoinedPonds() : async [Text] {
-    switch (principalMap.get(userProfiles, Principal.fromActor(Ribbit))) {
+  public query ({ caller }) func getJoinedPonds() : async [Text] {
+    switch (principalMap.get(userProfiles, caller)) {
       case (null) { [] };
       case (?profile) { profile.joinedPonds };
     };
@@ -2156,13 +1700,5 @@ actor Ribbit {
     };
     subcategories;
   };
-
-  func principalToUserId(caller : Principal) : ?Text {
-    for ((userId, principal) in textMap.entries(userIdLinkage)) {
-      if (principal == caller) {
-        return ?userId;
-      };
-    };
-    null;
-  };
 };
+
