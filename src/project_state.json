@@ -1,65 +1,40 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Fix pond creation so only the creator joins the new pond, and adjust mobile UI to relocate the Join Pond button to the About page.",
+  "projectStateVersion": 3,
+  "summary": "Anonymous site where all users have full access (no authorization checks enforced).",
   "architectural_notes": [
-    "Root cause hypothesis: pond creation is (directly or indirectly) initializing new pond `members` from a global list like `initializedUsers : [Principal]`, causing all known principals to be added to every newly created pond. Correct behavior is `members = [caller]` and `memberCount = 1`, with no other principals added on creation."
+    "Project requirement: site is anonymous; backend should not enforce user roles/authorization checks for core actions."
   ],
   "known_issues": [
-    "Bug: On pond creation, all users are automatically added as members instead of only the pond creator."
+    "Authorization checks are currently (re)appearing/enforced, blocking anonymous full access."
   ],
-  "isFixRequest": false,
-  "existing_features": [
-    {
-      "id": "feature-for-mobile-layouts-only-remove-the-join-pond-button-from-the-pond-feed-page-and-instead-render-a-join-pond-button-on-the-pond-about-page-in-the-same-ui-location-where-the-leave-pond-button-appears-i-e-within-the-about-page-s-membership-controls-section",
-      "title": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    }
-  ],
+  "isFixRequest": true,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update the backend pond-creation logic so that when a new pond is created, only the creating principal (the update call `caller`) is added to the new pond’s `members` list (and therefore counted in `memberCount`). No other principals (including any global tracked/initialized users list) may be automatically added as members during pond creation.",
+      "summary": "Remove/disable backend authorization checks so the site is fully anonymous with full access for everyone.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
       "reqIds": [
         "REQ-1"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Ensure pond creation only updates membership-related state for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not append the new pond to every user’s profile or any global per-user membership list for other principals.",
+      "id": "AR-3",
+      "summary": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Update the backend pond-creation logic so that when a new pond is created, the new Pond record’s membership is initialized with exactly one member: the creating principal (the shared update call `caller`). Do not use or copy any global principal list (e.g., `initializedUsers`) when populating `Pond.members`, and set `memberCount` to match the initialized membership.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Ensure pond creation updates membership-related user state only for the creating principal’s profile (e.g., `UserProfile.joinedPonds`) and does not append the new pond to any other user profile or any global per-user membership list for other principals.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Mobile-only UI change: relocate the \"Join Pond\" button from the Feed page to the About page, placing it in the same location where the \"Leave Pond\" button appears.",
-      "reqIds": [],
-      "status": "pending"
     }
   ],
-  "projectName": "Fix pond creation so only the creator joins the new pond",
+  "projectName": "Disable backend authorization so Ribbit is fully anonymous with full access",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,44 +1,67 @@
 {
   "kind": "build_request",
-  "title": "Mobile-only: Move “Join Pond” button from Pond Feed to Pond About page",
-  "priority": "normal",
+  "title": "Disable backend authorization so Ribbit is fully anonymous with full access",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-5",
-      "text": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
-      "target": "frontend",
+      "id": "REQ-1",
+      "text": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5",
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "this is just for mobile version, can you relocate the join pond button from the feed page to the about page. put it in the same place the leave pond button shows up."
+          "its supposed to be an anonymous site. everyone should have full access/authorization",
+          "yes remove them.",
+          "Try it again idiot"
         ]
       },
       "acceptanceCriteria": [
-        "On mobile (lg:hidden) in frontend/src/pages/PondPage.tsx, the Join Pond button is no longer displayed.",
-        "On mobile (lg:hidden) in frontend/src/pages/PondAboutPage.tsx, when the user is not a member, a Join Pond button is displayed in the same section where the Leave Pond button is displayed for members.",
-        "On mobile in PondAboutPage, when the user is a member, the existing Leave Pond button behavior remains unchanged (including loading/disabled state).",
-        "Joining from the About page triggers the existing join mutation and displays the existing success/error toast messaging consistent with the current app patterns (e.g., “Successfully joined the pond!” / “Failed to join pond”).",
-        "Desktop behavior is unchanged: the feed’s desktop right sidebar join/leave control (frontend/src/components/PondAboutSidebar.tsx) continues to work as before, and no new desktop-only Join button is introduced on the About page unless it already existed."
+        "No backend method traps or denies requests due to role/permission checks for anonymous callers.",
+        "Calls that previously required #user or #admin (e.g., getCallerUserProfile, saveCallerUserProfile, incrementLilyViewCount, registerUsername, releaseUsername, canChangeUsername, mergeSimilarTags, and any other permission-guarded operations in backend/main.mo) succeed for anonymous callers when given otherwise-valid inputs.",
+        "The canister no longer produces \"Unauthorized:\" trap messages during normal site usage by anonymous visitors."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-5",
+          "msg-6"
+        ],
+        "quotes": [
+          "why are authorization checks showing up again? i thought you removed them long time ago? its supposed to be an anonymous site.",
+          "yes remove them."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend calls to initializeAccessControl (triggered by frontend/src/hooks/useActor.ts) do not introduce any authorization requirements and do not cause traps for either authenticated or anonymous actors.",
+        "isCallerAdmin and getCallerUserRole return values that do not prevent the UI from operating for anonymous users (e.g., avoid triggering admin/user-only blocking flows in the app)."
       ]
     }
   ],
   "constraints": [
-    "Frontend change must be mobile-only (use existing responsive patterns such as lg:hidden).",
-    "Do not edit any files under frontend/src/components/ui or any other immutable paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
+    "Do not modify any files under frontend immutablePaths (per SYSTEM_CONTEXT).",
+    "Use English for any user-facing text surfaced by the app or traps; avoid introducing new non-English strings."
   ],
   "nonGoals": [
-    "Fixing or changing backend pond-creation/membership logic.",
-    "Changing desktop layout or relocating desktop join/leave controls.",
-    "Changing the text labels beyond the existing English strings already used for Join/Leave toasts and buttons."
+    "Implementing a new authentication system (Internet Identity remains optional but must not be required).",
+    "Adding new product features unrelated to removing/disabling authorization checks."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
   },
   "userProfileUpdate": {
-    "goalsToAdd": [],
+    "goalsToAdd": [
+      "Keep Ribbit fully anonymous: everyone has full access and no authorization checks are enforced."
+    ],
     "goalsToRemove": [],
     "preferencesToAdd": [],
     "preferencesToRemove": [],

@@ -220,6 +220,11 @@ export const idlService = IDL.Service({
   'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+  'getSubcategoriesForTag' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(IDL.Text)],
+      ['query'],
+    ),
   'getTagRank' : IDL.Func(
       [IDL.Text],
       [
@@ -531,6 +536,11 @@ export const idlFactory = ({ IDL }) => {
     'getRibbitCountForPost' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getRibbitLikeCount' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getRibbitsByUsername' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
+    'getSubcategoriesForTag' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(IDL.Text)],
+        ['query'],
+      ),
     'getTagRank' : IDL.Func(
         [IDL.Text],
         [

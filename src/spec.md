@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** For mobile layouts only, move the “Join Pond” action from the Pond Feed page to the Pond About page, aligning it with the existing membership controls placement.
+**Goal:** Make Ribbit fully anonymous by disabling all backend authorization enforcement so unauthenticated callers have full access to all canister functionality.
 
 **Planned changes:**
-- Remove the mobile-only (lg:hidden) “Join Pond” button from `frontend/src/pages/PondPage.tsx`.
-- Add a mobile-only (lg:hidden) “Join Pond” button to `frontend/src/pages/PondAboutPage.tsx` in the membership controls section where “Leave Pond” appears for members.
-- Wire the new About-page Join button to the existing join mutation and existing success/error toast messaging; keep the member “Leave Pond” behavior unchanged.
-- Leave desktop behavior unchanged, including the existing desktop sidebar join/leave control in `frontend/src/components/PondAboutSidebar.tsx`.
+- Remove/disable all role/permission checks in backend canister methods so anonymous callers can perform all actions (pond/post/ribbit creation, likes, join/leave ponds, username management, profile read/write, view count increments, and previously admin-only utilities).
+- Keep existing access-control-related Candid methods in the backend interface for frontend compatibility, but ensure they do not gate functionality or cause traps in anonymous mode.
+- Eliminate “Unauthorized:” traps during normal anonymous site usage by removing or bypassing authorization enforcement paths in `backend/main.mo`.
 
-**User-visible outcome:** On mobile, users join a pond from the Pond About page (in the same area as the Leave control), and the Pond Feed page no longer shows a Join button; desktop behavior remains the same.
+**User-visible outcome:** Visitors can use the full Ribbit app anonymously (without authenticating) and no features fail due to authorization/role checks.

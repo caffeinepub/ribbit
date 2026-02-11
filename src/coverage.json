@@ -1,37 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T01:30:02.435Z",
+  "generatedAt": "2026-02-11T12:26:32.415Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 2,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-5",
-        "summary": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/PondPage.tsx",
-          "frontend/src/pages/PondAboutPage.tsx"
-        ]
+        "id": "REQ-1",
+        "summary": "Remove/disable all backend authorization enforcement so anonymous callers (unauthenticated principals) have full access to all canister functionality, including creating ponds/posts/ribbits, liking, joining/leaving ponds, username management, profile read/write, view count increments, and admin-only utilities.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Preserve frontend compatibility by keeping existing access-control-related Candid methods present in the backend interface (e.g., initializeAccessControl, getCallerUserRole, assignCallerUserRole, isCallerAdmin), but ensure they do not gate or block any functionality in an anonymous mode.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/pages/PondAboutPage.tsx",
-    "frontend/src/pages/PondPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

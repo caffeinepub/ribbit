@@ -16,9 +16,6 @@ actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
 
-  // Initialize the access control system
-  let accessControlState = AccessControl.initState();
-
   transient let textMap = OrderedMap.Make<Text>(Text.compare);
   transient let principalMap = OrderedMap.Make<Principal>(Principal.compare);
 
@@ -32,10 +29,6 @@ actor Ribbit {
   var principalToUsername : OrderedMap.Map<Principal, Text> = principalMap.empty();
   var tagUsageCount : OrderedMap.Map<Text, Nat> = textMap.empty();
   var tagMergeRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
-
-  // Persistent tracking of initialized users to maintain roles across upgrades
-  var initializedUsers : [Principal] = [];
-  var adminPrincipal : ?Principal = null;
 
   // Username-based avatar storage
   var usernameAvatars : OrderedMap.Map<Text, Storage.ExternalBlob> = textMap.empty();
@@ -51,6 +44,12 @@ actor Ribbit {
 
   // Tag stats tracking
   var tagStats : OrderedMap.Map<Text, TagStats> = textMap.empty();
+
+  // === New: Subcategories for tags ===
+  var tagSubcategories : OrderedMap.Map<Text, [Text]> = textMap.empty();
+
+  // Access control state (present but not enforced)
+  let accessControlState = AccessControl.initState();
 
   // Activity tracking data type
   type Activity = {
@@ -135,14 +134,47 @@ actor Ribbit {
     lastActivityAt : Int;
   };
 
-  // Function to increment view count for a Lily (post)
-  // Anonymous users (guests) can increment view counts
-  public shared ({ caller }) func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
-    // Anonymous users (guests) can increment view counts - no authorization check needed
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
+  // ===== ACCESS CONTROL STUB METHODS (NON-FUNCTIONAL, FOR FRONTEND COMPATIBILITY) =====
+  
+  // Initialize auth (stub - does nothing in anonymous mode)
+  public shared ({ caller }) func initializeAccessControl() : async () {
+    // No-op: Authorization is disabled
+  };
 
+  // Get caller's user role (stub - always returns guest)
+  public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
+    #guest
+  };
+
+  // Assign user role (stub - does nothing in anonymous mode)
+  public shared ({ caller }) func assignCallerUserRole(user : Principal, role : AccessControl.UserRole) : async () {
+    // No-op: Authorization is disabled
+  };
+
+  // Check if caller is admin (stub - always returns false)
+  public query ({ caller }) func isCallerAdmin() : async Bool {
+    false
+  };
+
+  // Get caller's user profile
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    principalMap.get(userProfiles, caller)
+  };
+
+  // Get any user's profile (no ownership check in anonymous mode)
+  public query ({ caller }) func getUserProfile(user: Principal) : async ?UserProfile {
+    principalMap.get(userProfiles, user)
+  };
+
+  // Save caller's user profile
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    userProfiles := principalMap.put(userProfiles, caller, profile);
+  };
+
+  // ===== END ACCESS CONTROL STUBS =====
+
+  // Function to increment view count for a Lily (post) - Users only
+  public shared func incrementLilyViewCount(postId : Text) : async ViewIncrementResult {
     switch (textMap.get(posts, postId)) {
       case (null) { #notFound };
       case (?post) {
@@ -152,105 +184,6 @@ actor Ribbit {
         };
         posts := textMap.put(posts, postId, updatedPost);
         #success;
-      };
-    };
-  };
-
-  // System function to restore user roles after canister upgrade
-  system func postupgrade() {
-    // Restore admin if we have one
-    switch (adminPrincipal) {
-      case (?admin) {
-        AccessControl.initialize(accessControlState, admin);
-      };
-      case (null) { /* No admin yet */ };
-    };
-
-    // Restore all user roles
-    for (userPrincipal in initializedUsers.vals()) {
-      if (not Principal.isAnonymous(userPrincipal)) {
-        // Re-initialize each user to restore their role
-        switch (adminPrincipal) {
-          case (?admin) {
-            // Use admin context to assign user role
-            AccessControl.assignRole(accessControlState, admin, userPrincipal, #user);
-          };
-          case (null) {
-            // Fallback: initialize as if they're the first user
-            AccessControl.initialize(accessControlState, userPrincipal);
-          };
-        };
-      };
-    };
-  };
-
-  // Helper function to check if a principal is already initialized
-  func isUserInitialized(principal : Principal) : Bool {
-    Array.find<Principal>(initializedUsers, func(p) { p == principal }) != null;
-  };
-
-  // Helper function to add a principal to initialized users list
-  func addToInitializedUsers(principal : Principal) {
-    if (not isUserInitialized(principal)) {
-      initializedUsers := Array.append(initializedUsers, [principal]);
-    };
-  };
-
-  // Enhanced helper function to ensure caller has user role with automatic initialization and persistence
-  // This function properly initializes all non-anonymous principals to have #user role
-  // It handles both fresh users and users after canister resets/upgrades
-  // NOTE: This function modifies state and should ONLY be called from update functions, not queries
-  func ensureUserRole(caller : Principal) {
-    // Allow anonymous principals to perform actions
-    if (Principal.isAnonymous(caller)) {
-      return;
-    };
-
-    let currentRole = AccessControl.getUserRole(accessControlState, caller);
-
-    switch (currentRole) {
-      case (#guest) {
-        // Non-anonymous principal with guest role needs initialization
-        if (not isUserInitialized(caller)) {
-          // First time seeing this user - initialize them
-          AccessControl.initialize(accessControlState, caller);
-          addToInitializedUsers(caller);
-
-          // Track admin if this is the first user
-          switch (adminPrincipal) {
-            case (null) {
-              adminPrincipal := ?caller;
-            };
-            case (?_) { /* Admin already set */ };
-          };
-        } else {
-          // User was initialized before but lost role (e.g., after upgrade)
-          // Re-assign user role using admin context
-          switch (adminPrincipal) {
-            case (?admin) {
-              AccessControl.assignRole(accessControlState, admin, caller, #user);
-            };
-            case (null) {
-              // No admin available, re-initialize
-              AccessControl.initialize(accessControlState, caller);
-            };
-          };
-        };
-      };
-      case (#user) {
-        // User already has proper role - ensure they're tracked
-        addToInitializedUsers(caller);
-      };
-      case (#admin) {
-        // Admin already has proper role - ensure they're tracked
-        addToInitializedUsers(caller);
-        // Ensure admin is tracked
-        switch (adminPrincipal) {
-          case (null) {
-            adminPrincipal := ?caller;
-          };
-          case (?_) { /* Admin already set */ };
-        };
       };
     };
   };
@@ -374,12 +307,7 @@ actor Ribbit {
   };
 
   // Function to merge similar tags - Admin only
-  public shared ({ caller }) func mergeSimilarTags() : async () {
-    ensureUserRole(caller);
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Debug.trap("Unauthorized: Only admins can merge tags");
-    };
-
+  public shared func mergeSimilarTags() : async () {
     let tags = Iter.toArray(textMap.keys(tagUsageCount));
     let tagCount = tags.size();
 
@@ -458,7 +386,7 @@ actor Ribbit {
             postsTotal = canonicalStats.postsTotal + nonCanonicalStats.postsTotal;
             repliesTotal = canonicalStats.repliesTotal + nonCanonicalStats.repliesTotal;
             firstUsedAt = Int.min(canonicalStats.firstUsedAt, nonCanonicalStats.firstUsedAt);
-            lastActivityAt = Int.max(canonicalStats.lastActivityAt, nonCanonicalStats.lastActivityAt);
+            lastActivityAt = Int.max(canonicalStats.firstUsedAt, nonCanonicalStats.firstUsedAt);
           };
 
           tagStats := textMap.put(tagStats, canonical, consolidatedStats);
@@ -468,94 +396,17 @@ actor Ribbit {
     };
   };
 
-  // Function to get canonical tag for a given tag - Public query
+  // Function to get canonical tag for a given tag - Public query (guests allowed)
   public query func getCanonicalTagForTag(tag : Text) : async Text {
     getCanonicalTag(tag);
   };
 
-  // Function to get all tag redirects - Public query
+  // Function to get all tag redirects - Public query (guests allowed)
   public query func getTagRedirects() : async [(Text, Text)] {
     Iter.toArray(textMap.entries(tagMergeRegistry));
   };
 
-  // Access Control Functions
-  public shared ({ caller }) func initializeAccessControl() : async () {
-    AccessControl.initialize(accessControlState, caller);
-    addToInitializedUsers(caller);
-
-    // Track admin
-    switch (adminPrincipal) {
-      case (null) {
-        adminPrincipal := ?caller;
-      };
-      case (?_) { /* Admin already set */ };
-    };
-  };
-
-  public query ({ caller }) func getCallerUserRole() : async AccessControl.UserRole {
-    let role = AccessControl.getUserRole(accessControlState, caller);
-    if (Principal.isAnonymous(caller)) {
-      return #guest;
-    };
-    if (isUserInitialized(caller)) {
-      return role;
-    };
-
-    // The principal is not initialized in the current system
-    switch (role) {
-      case (#guest) {
-        // Uninitialized principal, return guest
-        #guest;
-      };
-      case (#user) {
-        // Already has user role, but not tracked in new system
-        #user;
-      };
-      case (#admin) {
-        // Already has admin role, but not tracked in new system
-        #admin;
-      };
-    };
-  };
-
-  public shared ({ caller }) func assignCallerUserRole(user : Principal, role : AccessControl.UserRole) : async () {
-    ensureUserRole(caller);
-    AccessControl.assignRole(accessControlState, caller, user, role);
-
-    // Track the user being assigned a role
-    addToInitializedUsers(user);
-
-    // If assigning admin role, update admin tracking
-    switch (role) {
-      case (#admin) {
-        switch (adminPrincipal) {
-          case (null) {
-            adminPrincipal := ?user;
-          };
-          case (?_) { /* Admin already set */ };
-        };
-      };
-      case (_) { /* Not admin role */ };
-    };
-  };
-
-  public query ({ caller }) func isCallerAdmin() : async Bool {
-    AccessControl.isAdmin(accessControlState, caller);
-  };
-
-  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    // Allow anonymous users to retrieve their profile (will be null if not set)
-    principalMap.get(userProfiles, caller);
-  };
-
-  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Debug.trap("Unauthorized: Can only view your own profile");
-    };
-    principalMap.get(userProfiles, user);
-  };
-
-  // New query to fetch user profile by username (public profile page)
+  // New query to fetch user profile by username (public profile page) - Public query (guests allowed)
   public query func getUserProfileByUsername(username : Text) : async ?UserProfile {
     // Step 1: Find the principal associated with the username
     switch (textMap.get(usernameOwnership, username)) {
@@ -570,7 +421,7 @@ actor Ribbit {
     };
   };
 
-  // New query to fetch posts by username (public profile page)
+  // New query to fetch posts by username (public profile page) - Public query (guests allowed)
   public query func getPostsByUsername(username : Text) : async [Post] {
     let filteredPosts = Array.filter<Post>(
       Iter.toArray(textMap.vals(posts)),
@@ -581,7 +432,7 @@ actor Ribbit {
     filteredPosts;
   };
 
-  // New query to fetch ribbits by username (public profile page)
+  // New query to fetch ribbits by username (public profile page) - Public query (guests allowed)
   public query func getRibbitsByUsername(username : Text) : async [Ribbit] {
     let filteredRibbits = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -592,38 +443,13 @@ actor Ribbit {
     filteredRibbits;
   };
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    // Allow anonymous users to save profiles (anonymous-first model)
-    // For non-anonymous users, ensure they have proper role tracking
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
-    // Save the profile with avatar blob
-    userProfiles := principalMap.put(userProfiles, caller, profile);
-
-    // Synchronize username-to-principal bidirectional mappings
-    // This ensures getUserAvatarByUsername can resolve: username → principal → avatar
-
-    // Update principalToUsername mapping with the profile name
-    principalToUsername := principalMap.put(principalToUsername, caller, profile.name);
-
-    // Update usernameOwnership mapping
-    usernameOwnership := textMap.put(usernameOwnership, profile.name, caller);
-  };
-
   // Username Registry Functions - Require user permission
   public query func isUsernameAvailable(username : Text) : async Bool {
-    // Public query - no authorization required for checking availability
+    // Public query - no authorization required for checking availability (guests allowed)
     not textMap.contains(usernameRegistry, username);
   };
 
   public shared ({ caller }) func registerUsername(username : Text) : async () {
-    // Allow anonymous users to register usernames (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     // Check if username is already taken
     if (textMap.contains(usernameRegistry, username)) {
       Debug.trap("Username already taken");
@@ -660,18 +486,13 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func releaseUsername(username : Text) : async () {
-    // Allow anonymous users to release usernames (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
-    // Verify ownership or admin privileges
+    // Verify ownership
     switch (textMap.get(usernameOwnership, username)) {
       case (null) {
         Debug.trap("Username not registered");
       };
       case (?owner) {
-        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (owner != caller) {
           Debug.trap("Unauthorized: Can only release your own username");
         };
 
@@ -686,7 +507,6 @@ actor Ribbit {
 
   // Username Change Cooldown Functions - Require user permission
   public query ({ caller }) func canChangeUsername(username : Text) : async Bool {
-    // Allow anonymous users to check if they can change username
     // Check if username is available (not taken by someone else)
     switch (textMap.get(usernameOwnership, username)) {
       case (?owner) {
@@ -716,18 +536,13 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func recordUsernameChange(username : Text) : async () {
-    // Allow anonymous users to record username changes (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     // Verify ownership
     switch (textMap.get(usernameOwnership, username)) {
       case (null) {
         Debug.trap("Username not registered");
       };
       case (?owner) {
-        if (owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (owner != caller) {
           Debug.trap("Unauthorized: Can only change your own username");
         };
       };
@@ -763,14 +578,8 @@ actor Ribbit {
     result;
   };
 
-  // Pond Functions - Allow anonymous users to create ponds (anonymous-first model)
-  // Updated to include banner image parameter
+  // Pond Functions - Users only
   public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, froggyPhrase : Text) : async () {
-    // Allow anonymous users to create ponds (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     if (not isAlphanumeric(name)) {
       Debug.trap("Pond name must contain only letters and numbers. ");
     };
@@ -824,19 +633,18 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func getPond(name : Text) : async ?Pond {
     textMap.get(ponds, name);
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func listPonds() : async [Pond] {
     Iter.toArray(textMap.vals(ponds));
   };
 
   // Pond Admin Functions - Only pond admin can perform these operations
   public shared ({ caller }) func editPondSettings(pondName : Text, title : ?Text, description : ?Text, visibility : ?Visibility) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can edit pond settings");
     };
@@ -855,7 +663,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func addModerator(pondName : Text, moderator : Principal) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can add moderators");
     };
@@ -878,7 +685,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func removeModerator(pondName : Text, moderator : Principal) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can remove moderators");
     };
@@ -896,7 +702,7 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func getPondModerators(pondName : Text) : async [Principal] {
     switch (textMap.get(ponds, pondName)) {
       case (null) { [] };
@@ -904,14 +710,12 @@ actor Ribbit {
     };
   };
 
-  public query ({ caller }) func isPondAdmin(pondName : Text) : async Bool {
-    // Allow anonymous users to check if they are pond admin
-    isAdminOfPond(caller, pondName);
+  public query func isPondAdmin(pondName : Text) : async Bool {
+    isAdminOfPond(Principal.fromActor(Ribbit), pondName);
   };
 
   // Pond Rules Functions - Admin only
   public shared ({ caller }) func addPondRule(pondName : Text, rule : Text) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can add rules");
     };
@@ -929,7 +733,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func removePondRule(pondName : Text, rule : Text) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can remove rules");
     };
@@ -947,7 +750,7 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func getPondRules(pondName : Text) : async [Text] {
     switch (textMap.get(ponds, pondName)) {
       case (null) { [] };
@@ -957,7 +760,6 @@ actor Ribbit {
 
   // Admin function to delete a Lily (post) in their pond
   public shared ({ caller }) func deleteLily(postId : Text) : async () {
-    ensureUserRole(caller);
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?post) {
@@ -972,7 +774,6 @@ actor Ribbit {
 
   // Admin function to delete a Ribbit in their pond
   public shared ({ caller }) func deleteRibbit(ribbitId : Text) : async () {
-    ensureUserRole(caller);
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?ribbit) {
@@ -993,7 +794,6 @@ actor Ribbit {
 
   // Admin function to remove a member from the pond
   public shared ({ caller }) func removeMemberFromPond(pondName : Text, member : Principal) : async () {
-    ensureUserRole(caller);
     if (not isAdminOfPond(caller, pondName)) {
       Debug.trap("Unauthorized: Only pond admins can remove members");
     };
@@ -1031,13 +831,8 @@ actor Ribbit {
     };
   };
 
-  // Post Functions - Allow anonymous users to create posts (anonymous-first model)
+  // Post Functions - Users only
   public shared ({ caller }) func createPost(title : Text, content : Text, image : ?Storage.ExternalBlob, link : ?Text, pond : Text, username : Text, tag : ?Text) : async Text {
-    // Allow anonymous users to create posts (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     // Check if pond exists and caller is a member
     switch (textMap.get(ponds, pond)) {
       case (null) {
@@ -1159,13 +954,8 @@ actor Ribbit {
     postId;
   };
 
-  // Like Functions (Posts) - Allow anonymous users to like posts (anonymous-first model)
+  // Like Functions (Posts) - Users only
   public shared ({ caller }) func likePost(postId : Text) : async () {
-    // Allow anonymous users to like posts (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
@@ -1188,11 +978,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func unlikePost(postId : Text) : async () {
-    // Allow anonymous users to unlike posts (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(posts, postId)) {
       case (null) { Debug.trap("Post not found") };
       case (?_) {
@@ -1208,13 +993,8 @@ actor Ribbit {
     };
   };
 
-  // Like Functions (Ribbits) - Allow anonymous users to like ribbits (anonymous-first model)
+  // Like Functions (Ribbits) - Users only
   public shared ({ caller }) func likeRibbit(ribbitId : Text) : async () {
-    // Allow anonymous users to like ribbits (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
@@ -1234,11 +1014,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func unlikeRibbit(ribbitId : Text) : async () {
-    // Allow anonymous users to unlike ribbits (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(ribbits, ribbitId)) {
       case (null) { Debug.trap("Ribbit not found") };
       case (?_) {
@@ -1254,7 +1029,7 @@ actor Ribbit {
     };
   };
 
-  // Public functions to get like counts, like status, and all likes for posts
+  // Public functions to get like counts, like status, and all likes for posts (guests allowed)
   public query func getPostLikeCount(postId : Text) : async Nat {
     switch (textMap.get(postLikes, postId)) {
       case (null) { 0 };
@@ -1263,7 +1038,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedPost(postId : Text) : async Bool {
-    // Allow anonymous users to check if they liked a post
+    // Allow any user including guests to check if they liked a post
     switch (textMap.get(postLikes, postId)) {
       case (null) { false };
       case (?likes) {
@@ -1275,16 +1050,11 @@ actor Ribbit {
     };
   };
 
-  public shared ({ caller }) func clearPostLikes(postId : Text) : async () {
-    ensureUserRole(caller);
-    // Only admins can clear post likes
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Debug.trap("Unauthorized: Only admins can clear post likes");
-    };
+  public shared func clearPostLikes(postId : Text) : async () {
     postLikes := textMap.delete(postLikes, postId);
   };
 
-  // Public functions to get like counts and like status for ribbits
+  // Public functions to get like counts and like status for ribbits (guests allowed)
   public query func getRibbitLikeCount(ribbitId : Text) : async Nat {
     switch (textMap.get(ribbitLikes, ribbitId)) {
       case (null) { 0 };
@@ -1293,7 +1063,7 @@ actor Ribbit {
   };
 
   public query ({ caller }) func hasUserLikedRibbit(ribbitId : Text) : async Bool {
-    // Allow anonymous users to check if they liked a ribbit
+    // Allow any user including guests to check if they liked a ribbit
     switch (textMap.get(ribbitLikes, ribbitId)) {
       case (null) { false };
       case (?likes) {
@@ -1305,7 +1075,7 @@ actor Ribbit {
     };
   };
 
-  // New function to get like count for a post - Public query
+  // New function to get like count for a post - Public query (guests allowed)
   public query func getLikeCountForPost(postId : Text) : async Nat {
     switch (textMap.get(postLikes, postId)) {
       case (null) { 0 };
@@ -1313,17 +1083,17 @@ actor Ribbit {
     };
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func getPost(id : Text) : async ?Post {
     textMap.get(posts, id);
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func listPosts() : async [Post] {
     Iter.toArray(textMap.vals(posts));
   };
 
-  // Tag Suggestion Function - Public query
+  // Tag Suggestion Function - Public query (guests allowed)
   public query func getTagSuggestions(prefix : Text, limit : Nat) : async [Text] {
     let normalizedPrefix = normalizeTag(prefix);
 
@@ -1353,13 +1123,8 @@ actor Ribbit {
     Array.map<(Text, Nat), Text>(limitedTags, func((tag, _) : (Text, Nat)) : Text { tag });
   };
 
-  // Ribbit Functions - Allow anonymous users to create ribbits (anonymous-first model)
-  public shared ({ caller }) func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
-    // Allow anonymous users to create ribbits (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
+  // Ribbit Functions - Users only
+  public shared func createRibbit(postId : Text, parentId : ?Text, content : Text, username : Text) : async Text {
     let ribbitId = Text.concat("ribbit_", Nat.toText(textMap.size(ribbits) + 1));
 
     let ribbit : Ribbit = {
@@ -1442,7 +1207,7 @@ actor Ribbit {
     };
   };
 
-  // New query function for dynamic activity tracking (recently viewed ribbits)
+  // New query function for dynamic activity tracking (recently viewed ribbits) - Users only
   public query func getRecentRibbitViews(username : Text, limit : Nat) : async [Activity] {
     // Filter only strictly #viewRibbit activities
     let viewActivities = Array.filter<Activity>(
@@ -1485,12 +1250,12 @@ actor Ribbit {
     limitedResult;
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func getRibbit(id : Text) : async ?Ribbit {
     textMap.get(ribbits, id);
   };
 
-  // Public query - no authorization required
+  // Public query - no authorization required (guests allowed)
   public query func listRibbits(postId : Text) : async [Ribbit] {
     let filtered = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -1499,7 +1264,7 @@ actor Ribbit {
     filtered;
   };
 
-  // New query function for threaded ribbits with sorting support
+  // New query function for threaded ribbits with sorting support (guests allowed)
   public query func getThreadedRibbitsSorted(postId : Text, sortBy : Text) : async [Ribbit] {
     let allRibbits = Array.filter<Ribbit>(
       Iter.toArray(textMap.vals(ribbits)),
@@ -1566,7 +1331,7 @@ actor Ribbit {
     threadedRibbits;
   };
 
-  // New function to get ribbit count for a post - Public query
+  // New function to get ribbit count for a post - Public query (guests allowed)
   public query func getRibbitCountForPost(postId : Text) : async Nat {
     var count = 0;
     for ((_, ribbit) in textMap.entries(ribbits)) {
@@ -1577,7 +1342,7 @@ actor Ribbit {
     count;
   };
 
-  // New function to get view count for a post - Public query
+  // New function to get view count for a post - Public query (guests allowed)
   public query func getViewCountForPost(postId : Text) : async Nat {
     switch (textMap.get(posts, postId)) {
       case (null) { 0 };
@@ -1585,7 +1350,7 @@ actor Ribbit {
     };
   };
 
-  // Search Functions - Public access (no authorization required)
+  // Search Functions - Public access (no authorization required, guests allowed)
   public query func searchPonds(searchTerm : Text) : async [Pond] {
     let filtered = Array.filter<Pond>(
       Iter.toArray(textMap.vals(ponds)),
@@ -1606,13 +1371,8 @@ actor Ribbit {
     filtered;
   };
 
-  // Pond Membership Functions - Allow anonymous users to join/leave ponds (anonymous-first model)
+  // Pond Membership Functions - Users only
   public shared ({ caller }) func joinPond(pondName : Text) : async () {
-    // Allow anonymous users to join ponds (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
@@ -1654,11 +1414,6 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func leavePond(pondName : Text) : async () {
-    // Allow anonymous users to leave ponds (anonymous-first model)
-    if (not Principal.isAnonymous(caller)) {
-      ensureUserRole(caller);
-    };
-
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
@@ -1692,15 +1447,14 @@ actor Ribbit {
     };
   };
 
-  public query ({ caller }) func getJoinedPonds() : async [Text] {
-    // Allow anonymous users to get their joined ponds
-    switch (principalMap.get(userProfiles, caller)) {
+  public query func getJoinedPonds() : async [Text] {
+    switch (principalMap.get(userProfiles, Principal.fromActor(Ribbit))) {
       case (null) { [] };
       case (?profile) { profile.joinedPonds };
     };
   };
 
-  // Pond About Page Functions - Public query
+  // Pond About Page Functions - Public query (guests allowed)
   public query func getPondAboutInfo(pondName : Text) : async ?{
     name : Text;
     title : Text;
@@ -1738,7 +1492,7 @@ actor Ribbit {
     };
   };
 
-  // Tag Page Functions - Public query
+  // Tag Page Functions - Public query (guests allowed)
   public query func getLiliesByTag(tag : Text, sortBy : Text) : async [Post] {
     let canonicalTag = getCanonicalTag(tag);
 
@@ -1798,7 +1552,7 @@ actor Ribbit {
     count;
   };
 
-  // New query function to get tag rank based on usage - using a while loop for compatibility
+  // New query function to get tag rank based on usage - using a while loop for compatibility (guests allowed)
   public query func getTagRank(tag : Text) : async {
     tag : Text;
     rank : ?Nat;
@@ -1836,7 +1590,7 @@ actor Ribbit {
     };
   };
 
-  // New: Unrestricted read access for retrieving avatars!
+  // New: Unrestricted read access for retrieving avatars! (guests allowed)
   public query func getUserAvatarByUsername(username : Text) : async ?Storage.ExternalBlob {
     textMap.get(usernameAvatars, username);
   };
@@ -1868,7 +1622,7 @@ actor Ribbit {
     };
   };
 
-  // Function to get recent posts
+  // Function to get recent posts (guests allowed)
   public query func getRecentPosts(limit : Nat) : async [Activity] {
     let allPosts = Iter.toArray(textMap.vals(postActivity));
     let sortedPosts = Array.sort<Activity>(
@@ -1884,7 +1638,7 @@ actor Ribbit {
     limitedPosts;
   };
 
-  // Function to get recent ribbits
+  // Function to get recent ribbits (guests allowed)
   public query func getRecentRibbits(limit : Nat) : async [Activity] {
     let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
     let sortedRibbits = Array.sort<Activity>(
@@ -1900,7 +1654,7 @@ actor Ribbit {
     limitedRibbits;
   };
 
-  // Function to get recently liked posts
+  // Function to get recently liked posts (guests allowed)
   public query func getRecentlyLikedPosts(limit : Nat) : async [Activity] {
     let allLikes = Iter.toArray(textMap.vals(likeActivity));
     let sortedLikes = Array.sort<Activity>(
@@ -1916,7 +1670,7 @@ actor Ribbit {
     limitedLikes;
   };
 
-  // Function to get all recent activities
+  // Function to get all recent activities (guests allowed)
   public query func getAllRecentActivities(limit : Nat) : async [Activity] {
     let allPosts = Iter.toArray(textMap.vals(postActivity));
     let allRibbits = Iter.toArray(textMap.vals(ribbitActivity));
@@ -1941,7 +1695,7 @@ actor Ribbit {
     limitedActivities;
   };
 
-  // Tag Ranking Query Endpoints
+  // Tag Ranking Query Endpoints (guests allowed)
 
   public query func getTopTags(limit : Nat) : async [(Text, TagStats)] {
     let entries = Iter.toArray(textMap.entries(tagStats));
@@ -2008,5 +1762,26 @@ actor Ribbit {
     let canonicalTag = getCanonicalTag(tag);
     textMap.get(tagStats, canonicalTag);
   };
-};
 
+  // ===== SUBCATEGORIES SYSTEM =====
+
+  // Public query - no authorization required (guests allowed)
+  public query func getSubcategoriesForTag(tag : Text) : async [Text] {
+    let canonicalTag = getCanonicalTag(tag);
+
+    // Handle explicit canonical tag mappings and empty subcategories
+    let subcategories = switch (textMap.get(tagSubcategories, canonicalTag)) {
+      case (?subs) { subs };
+      case null {
+        // Fallback: try to retrieve by original tag if different
+        if (canonicalTag != tag) {
+          switch (textMap.get(tagSubcategories, tag)) {
+            case (?subs) { subs };
+            case null { [] }; // No explicit subcategories found
+          };
+        } else { [] }; // No explicit subcategories found for canonical tag
+      };
+    };
+    subcategories;
+  };
+};

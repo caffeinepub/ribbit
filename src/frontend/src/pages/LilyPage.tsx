@@ -15,7 +15,7 @@ import {
   useHasUserLikedPost,
   useLikePost,
   useUnlikePost,
-  useIncrementViewCount,
+  useIncrementLilyViewCount,
   useGetPond
 } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -50,7 +50,7 @@ export default function LilyPage() {
   const { mutate: createRibbit, isPending: isCreatingRibbit } = useCreateRibbit();
   const { mutate: likePost, isPending: isLiking } = useLikePost();
   const { mutate: unlikePost, isPending: isUnliking } = useUnlikePost();
-  const { mutate: incrementViewCount } = useIncrementViewCount();
+  const { mutate: incrementViewCount } = useIncrementLilyViewCount();
 
   // Increment view count immediately on page open (with cooldown guard)
   useEffect(() => {

@@ -176,6 +176,7 @@ export interface _SERVICE {
   'getRibbitCountForPost' : ActorMethod<[string], bigint>,
   'getRibbitLikeCount' : ActorMethod<[string], bigint>,
   'getRibbitsByUsername' : ActorMethod<[string], Array<Ribbit>>,
+  'getSubcategoriesForTag' : ActorMethod<[string], Array<string>>,
   'getTagRank' : ActorMethod<
     [string],
     { 'tag' : string, 'rank' : [] | [bigint], 'canonicalTag' : string }

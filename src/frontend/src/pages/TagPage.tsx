@@ -4,7 +4,7 @@ import { Tabs } from '@/components/ui/tabs';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
-import { useGetLiliesByTag, useGetCanonicalTag } from '@/hooks/useQueries';
+import { useGetLiliesByTag, useGetCanonicalTag, useGetTagSubcategories } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tag } from 'lucide-react';
 
@@ -17,6 +17,7 @@ export default function TagPage() {
   
   const { data: canonicalTag, isLoading: isLoadingCanonical } = useGetCanonicalTag(tag);
   const { data: lilies, isLoading: isLoadingLilies } = useGetLiliesByTag(canonicalTag || tag, sortBy);
+  const { data: subcategories, isLoading: isLoadingSubcategories } = useGetTagSubcategories(canonicalTag || tag);
 
   // Redirect to canonical tag if different
   useEffect(() => {
@@ -59,6 +60,32 @@ export default function TagPage() {
                       </p>
                     </div>
                   </div>
+                </div>
+
+                {/* Subcategories Section */}
+                <div className="mb-6 px-4 lg:px-0">
+                  <h2 className="text-lg font-semibold mb-3">Subcategories</h2>
+                  {isLoadingSubcategories ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-3/4" />
+                    </div>
+                  ) : !subcategories || subcategories.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">
+                      No subcategories yet
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {subcategories.map((subcategory) => (
+                        <div
+                          key={subcategory}
+                          className="px-3 py-2 bg-muted rounded-md text-sm"
+                        >
+                          {subcategory}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)} className="mb-0">

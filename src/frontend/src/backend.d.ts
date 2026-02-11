@@ -139,6 +139,7 @@ export interface backendInterface {
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
     getRibbitsByUsername(username: string): Promise<Array<Ribbit>>;
+    getSubcategoriesForTag(tag: string): Promise<Array<string>>;
     getTagRank(tag: string): Promise<{
         tag: string;
         rank?: bigint;

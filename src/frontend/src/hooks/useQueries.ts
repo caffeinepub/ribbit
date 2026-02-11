@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { Post, Pond, Ribbit, UserProfile, Activity, TagStats } from '@/backend';
 import { ExternalBlob } from '@/backend';
+import type { Principal } from '@icp-sdk/core/principal';
 
 // Pond queries
 export function useGetAllPonds() {
@@ -509,6 +510,20 @@ export function useGetUserAvatarByUsername(username: string) {
   });
 }
 
+// Placeholder hook for fetching multiple user profiles by principals
+// Backend doesn't have this method, so we return empty array
+export function useGetUserProfiles(principals: Principal[]) {
+  return useQuery<(UserProfile | null)[]>({
+    queryKey: ['userProfiles', principals],
+    queryFn: async () => {
+      // Placeholder: backend doesn't support batch profile fetching
+      // Return empty array to prevent errors
+      return [];
+    },
+    enabled: principals.length > 0,
+  });
+}
+
 // Username queries
 export function useIsUsernameAvailable(username: string) {
   const { actor, isFetching } = useActor();
@@ -640,6 +655,32 @@ export function useGetTagSuggestions(prefix: string, limit: number = 10) {
   });
 }
 
+export function useGetTagStats(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<TagStats | null>({
+    queryKey: ['tagStats', tag],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getTagStatsForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagRank(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
+    queryKey: ['tagRank', tag],
+    queryFn: async () => {
+      if (!actor) return { tag, rank: undefined, canonicalTag: tag };
+      return actor.getTagRank(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
 export function useGetTopTags(limit: number = 10) {
   const { actor, isFetching } = useActor();
 
@@ -679,8 +720,22 @@ export function useGetNewestTags(limit: number = 10) {
   });
 }
 
+// Tag subcategories query
+export function useGetTagSubcategories(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSubcategories', tag],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getSubcategoriesForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
 // Activity queries
-export function useGetRecentActivities(limit: number = 30) {
+export function useGetRecentActivities(limit: number = 10) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Activity[]>({
@@ -693,30 +748,12 @@ export function useGetRecentActivities(limit: number = 30) {
   });
 }
 
-// View count mutation
-export function useIncrementViewCount() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.incrementLilyViewCount(postId);
-    },
-    onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
-      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
-    },
-  });
-}
-
-// Profile page queries
+// Profile queries
 export function useGetUserProfileByUsername(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<UserProfile | null>({
-    queryKey: ['userProfile', username],
+    queryKey: ['userProfileByUsername', username],
     queryFn: async () => {
       if (!actor) return null;
       return actor.getUserProfileByUsername(username);
@@ -729,7 +766,7 @@ export function useGetPostsByUsername(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Post[]>({
-    queryKey: ['userPosts', username],
+    queryKey: ['postsByUsername', username],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getPostsByUsername(username);
@@ -742,7 +779,7 @@ export function useGetRibbitsByUsername(username: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Ribbit[]>({
-    queryKey: ['userRibbits', username],
+    queryKey: ['ribbitsByUsername', username],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getRibbitsByUsername(username);
@@ -751,55 +788,51 @@ export function useGetRibbitsByUsername(username: string) {
   });
 }
 
-// Search queries (placeholder implementations - backend doesn't have these yet)
-export function useGetTrendingSearches(limit: number = 10) {
-  const { actor, isFetching } = useActor();
+// View increment mutation
+export function useIncrementLilyViewCount() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
 
-  return useQuery<string[]>({
-    queryKey: ['trendingSearches', limit],
-    queryFn: async () => {
-      // Placeholder: return empty array since backend doesn't have this
-      return [];
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.incrementLilyViewCount(postId);
     },
-    enabled: !!actor && !isFetching,
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
   });
 }
 
-export function useGetSearchSuggestions(query: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
+// Placeholder hooks for search features (backend not yet implemented)
+export function useGetTrendingSearches() {
   return useQuery<string[]>({
-    queryKey: ['searchSuggestions', query, limit],
+    queryKey: ['trendingSearches'],
     queryFn: async () => {
-      // Placeholder: return empty array since backend doesn't have this
+      // Placeholder: backend doesn't support trending searches yet
       return [];
     },
-    enabled: !!actor && !isFetching && !!query,
+  });
+}
+
+export function useGetSearchSuggestions(query: string) {
+  return useQuery<string[]>({
+    queryKey: ['searchSuggestions', query],
+    queryFn: async () => {
+      // Placeholder: backend doesn't support search suggestions yet
+      return [];
+    },
+    enabled: !!query,
   });
 }
 
 export function useRecordSearchTerm() {
-  const { actor } = useActor();
-
   return useMutation({
-    mutationFn: async (searchTerm: string) => {
-      // Placeholder: no-op since backend doesn't have this
+    mutationFn: async (term: string) => {
+      // Placeholder: backend doesn't support recording search terms yet
       return;
     },
-  });
-}
-
-// Placeholder for useGetUserProfiles (not in backend, but used in components)
-// Note: This accepts Principal[] but backend doesn't have batch profile fetch
-export function useGetUserProfiles(principals: any[]) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<UserProfile[]>({
-    queryKey: ['userProfiles', principals],
-    queryFn: async () => {
-      // Placeholder: return empty array since backend doesn't have batch profile fetch
-      return [];
-    },
-    enabled: !!actor && !isFetching && principals.length > 0,
   });
 }

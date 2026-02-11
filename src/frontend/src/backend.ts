@@ -231,6 +231,7 @@ export interface backendInterface {
     getRibbitCountForPost(postId: string): Promise<bigint>;
     getRibbitLikeCount(ribbitId: string): Promise<bigint>;
     getRibbitsByUsername(username: string): Promise<Array<Ribbit>>;
+    getSubcategoriesForTag(tag: string): Promise<Array<string>>;
     getTagRank(tag: string): Promise<{
         tag: string;
         rank?: bigint;
@@ -848,6 +849,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getRibbitsByUsername(arg0);
             return from_candid_vec_n43(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getSubcategoriesForTag(arg0: string): Promise<Array<string>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSubcategoriesForTag(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSubcategoriesForTag(arg0);
+            return result;
         }
     }
     async getTagRank(arg0: string): Promise<{

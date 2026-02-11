@@ -1,26 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-for-mobile-layouts-only-remove-the-join-pond-button-from-the-pond-feed-page-and-instead-render-a-join-pond-button-on-the-pond-about-page-in-the-same-ui-location-where-the-leave-pond-button-appears-i-e-within-the-about-page-s-membership-controls-section",
-      "featureTitle": "For mobile layouts only, remove the \"Join Pond\" button from the Pond Feed page and instead render a \"Join Pond\" button on the Pond About page in the same UI location where the \"Leave Pond\" button appears (i.e., within the About page’s membership controls section).",
-      "files": [
-        "frontend/src/pages/PondAboutPage.tsx",
-        "frontend/src/pages/PondPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }
