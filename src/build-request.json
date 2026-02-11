@@ -1,50 +1,55 @@
 {
   "kind": "build_request",
-  "title": "Update desktop search bar logo image and set logo badge background to accent color",
+  "title": "Fix pond creation so only the creator becomes a member",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "In the desktop header search input, replace the decorative logo image (the badge icon shown inside the search bar on md+ screens) with the provided image URL: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png.",
-      "target": "frontend",
+      "text": "Fix the backend pond-creation logic so that when a new pond is created, only the creating principal (`caller`) is added as a member (and optionally as the initial moderator/admin per existing behavior), rather than adding all known/initialized users.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4",
+          "msg-6"
         ],
         "quotes": [
-          "can you change the logo in desktop (the one in the search bar) to this: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png"
+          "for some reason when a new pond is created, all users become members of that pond automatically. why? dont code yet",
+          "ok fix it"
         ]
       },
       "acceptanceCriteria": [
-        "On desktop (md+), the icon displayed inside the search input uses the provided Cloudinary URL.",
-        "The change only affects the desktop search bar badge icon and does not change the mobile centered logo image."
+        "After calling the existing `createPond(...)` update method, the created pond’s `members` list contains the creator principal and does not contain unrelated principals.",
+        "The created pond’s `memberCount` matches the length of the `members` array (e.g., 1 if only the creator is added).",
+        "No code path during pond creation populates `members` from global user registries such as `initializedUsers` or equivalent principal collections."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Change the background color of the desktop search bar logo badge container div to use the app accent color (matching the text logo and the Create button styling), using the theme accent token/class rather than a hard-coded color.",
-      "target": "frontend",
+      "text": "Ensure pond creation updates user membership state only for the creating principal (e.g., the creator’s `UserProfile.joinedPonds`), and does not append the new pond to every user’s profile or any global joined-pond list for other principals.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "also change the background color of the div the logo is in to the accent color (the same color as the text logo and create button)"
+          "for some reason when a new pond is created, all users become members of that pond automatically. why? dont code yet"
         ]
       },
       "acceptanceCriteria": [
-        "On desktop (md+), the circular badge behind the search bar logo uses the theme accent color (e.g., Tailwind bg-accent / CSS variable --accent), not an inline hard-coded oklch value.",
-        "The badge remains circular, positioned inside the search input, and remains non-interactive (pointer-events-none)."
+        "Immediately after pond creation, `getJoinedPonds()` (or equivalent membership query) for the creator includes the new pond.",
+        "Immediately after pond creation, `getJoinedPonds()` (or equivalent membership query) for a different authenticated principal does not include the new pond unless they explicitly joined it.",
+        "Existing join/leave behavior continues to work as before for non-creators."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (read-only shadcn components).",
-    "Keep all changes scoped to the desktop search bar logo badge in frontend/src/components/Header.tsx."
+    "Backend must remain a single Motoko actor with logic in backend/main.mo (no additional backend services).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not redesign the header layout or change the mobile header logo.",
-    "Do not introduce backend changes or new assets generated/stored in the repo for the logo (use the provided external URL)."
+    "Do not redesign the pond membership/join UX.",
+    "Do not change unrelated hover/styling behavior or other frontend components.",
+    "Do not introduce new authentication providers beyond existing Internet Identity support."
   ],
   "imageRequirements": {
     "required": [],

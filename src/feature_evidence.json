@@ -1,45 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-in-the-desktop-header-search-input-replace-the-decorative-logo-image-the-badge-icon-shown-inside-the-search-bar-on-md-screens-with-the-provided-image-url-https-res-cloudinary-com-dbnj80s9g-image-upload-v1770762364-newribbitlogo-hcnzwy-png",
-      "featureTitle": "In the desktop header search input, replace the decorative logo image (the badge icon shown inside the search bar on md+ screens) with the provided image URL: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png.",
-      "files": [
-        "frontend/src/components/Header.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-change-the-background-color-of-the-desktop-search-bar-logo-badge-container-div-to-use-the-app-accent-color-matching-the-text-logo-and-the-create-button-styling-using-the-theme-accent-token-class-rather-than-a-hard-coded-color",
-      "featureTitle": "Change the background color of the desktop search bar logo badge container div to use the app accent color (matching the text logo and the Create button styling), using the theme accent token/class rather than a hard-coded color.",
-      "files": [
-        "frontend/src/components/Header.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

@@ -1,45 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T22:43:14.717Z",
+  "generatedAt": "2026-02-11T00:42:53.371Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 2,
-    "implemented": 2,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "In the desktop header search input, replace the decorative logo image (the badge icon shown inside the search bar on md+ screens) with the provided image URL: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Header.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Header.tsx"
-        ]
+        "summary": "Fix the backend pond-creation logic so that when a new pond is created, only the creating principal (`caller`) is added as a member (and optionally as the initial moderator/admin per existing behavior), rather than adding all known/initialized users.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Change the background color of the desktop search bar logo badge container div to use the app accent color (matching the text logo and the Create button styling), using the theme accent token/class rather than a hard-coded color.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Header.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Header.tsx"
-        ]
+        "summary": "Ensure pond creation updates user membership state only for the creating principal (e.g., the creator’s `UserProfile.joinedPonds`), and does not append the new pond to every user’s profile or any global joined-pond list for other principals.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Header.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

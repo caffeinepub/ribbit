@@ -12,8 +12,6 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 
-
-
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -1990,5 +1988,4 @@ actor Ribbit {
     textMap.get(tagStats, canonicalTag);
   };
 };
-
 

@@ -1,37 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update desktop search badge logo image and badge background to theme accent",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "summary": "Replace the desktop header search input’s decorative badge icon image with the provided Cloudinary logo URL, without affecting the mobile centered logo.",
-      "acceptanceCriteria": [
-        "On desktop (md+), the icon displayed inside the search input uses the provided Cloudinary URL.",
-        "The change only affects the desktop search bar badge icon and does not change the mobile centered logo image."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "In the desktop search input decorative badge (the absolute-positioned, pointer-events-none icon inside the input), replace the <img> src currently pointing to the local frog-face asset with https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png. Keep the mobile centered logo (<Link ... md:hidden> image) unchanged and keep the badge image decorative (empty alt)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Update the desktop search badge container background to use the app’s accent theme token/class rather than a hard-coded color, keeping the badge circular and non-interactive.",
-      "acceptanceCriteria": [
-        "On desktop (md+), the circular badge behind the search bar logo uses the theme accent color (e.g., Tailwind bg-accent / CSS variable --accent), not an inline hard-coded oklch value.",
-        "The badge remains circular, positioned inside the search input, and remains non-interactive (pointer-events-none)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Update the decorative badge container div inside the desktop search input to use the theme accent color via Tailwind (e.g., add bg-accent) instead of the current inline backgroundColor oklch value. Preserve existing absolute positioning, sizing (1.75rem square), rounded-full for circular shape, and pointer-events-none behavior; remove only the hard-coded background color while keeping width/height styling as-is (or replace with equivalent Tailwind sizing utilities if already used elsewhere in this file)."
-        }
-      ]
-    }
-  ]
+  "title": "Fix pond creation so only the creator becomes a member (frontend scope)",
+  "requirements": []
 }

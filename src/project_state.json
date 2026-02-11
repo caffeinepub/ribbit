@@ -3,35 +3,30 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [
-    {
-      "id": "feature-in-the-desktop-header-search-input-replace-the-decorative-logo-image-the-badge-icon-shown-inside-the-search-bar-on-md-screens-with-the-provided-image-url-https-res-cloudinary-com-dbnj80s9g-image-upload-v1770762364-newribbitlogo-hcnzwy-png",
-      "title": "In the desktop header search input, replace the decorative logo image (the badge icon shown inside the search bar on md+ screens) with the provided image URL: https://res.cloudinary.com/dbnj80s9g/image/upload/v1770762364/newribbitlogo_hcnzwy.png.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-change-the-background-color-of-the-desktop-search-bar-logo-badge-container-div-to-use-the-app-accent-color-matching-the-text-logo-and-the-create-button-styling-using-the-theme-accent-token-class-rather-than-a-hard-coded-color",
-      "title": "Change the background color of the desktop search bar logo badge container div to use the app accent color (matching the text logo and the Create button styling), using the theme accent token/class rather than a hard-coded color.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    }
+  "known_issues": [
+    "Bug: Creating a new pond automatically adds all users as members; expected only creator/caller to be added."
   ],
+  "isFixRequest": true,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update desktop search bar logo to provided image URL and set the logo container div background to the accent color (matching text logo and Create button)",
-      "reqIds": [],
+      "summary": "Fix the backend pond-creation logic so that when a new pond is created, only the creating principal (`caller`) is added as a member (and optionally as the initial moderator/admin per existing behavior), rather than adding all known/initialized users.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Ensure pond creation updates user membership state only for the creating principal (e.g., the creator’s `UserProfile.joinedPonds`), and does not append the new pond to every user’s profile or any global joined-pond list for other principals.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Update desktop search bar logo image and set logo badge background to accent color",
+  "projectName": "Fix pond creation so only the creator becomes a member",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
