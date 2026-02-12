@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 7,
   "summary": "New project",
   "architectural_notes": [
     "AccessControl currently still enforces role/principal-based permissions; should be stripped or bypassed for all non-admin user flows while keeping explicit admin functions protected."
@@ -8,7 +8,7 @@
   "known_issues": [
     "Users intermittently see \"not authorized\" due to leftover AccessControl permission checks conflicting with anonymous/phrase-hash identity flow."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [],
   "new_feature_requests": [
     {
@@ -44,6 +44,30 @@
       "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time (i.e., the creator immediately “joins” the pond they just created).",
       "reqIds": [
         "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update backend/main.mo to remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive any \"Unauthorized\" traps during standard usage (profiles, usernames, pond membership, posting, liking, etc.). Keep explicit admin-only operations protected.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so first-time phrase-hash users can establish linkage and perform normal phrase-hash operations without relying on AccessControl.initialize or any #user permission state.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Update the backend pond creation flow in backend/main.mo so the pond creator is automatically added as a member of the pond at creation time (auto-join), using the creator’s phrase-hash userId membership model.",
+      "reqIds": [
+        "REQ-10"
       ],
       "status": "pending"
     }

@@ -1,36 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Auto-join pond creators to their newly created ponds",
+  "title": "Neutralize AccessControl for normal phrase-hash user flows and auto-join pond creators",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-7",
-      "text": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time (i.e., the creator immediately “joins” the pond they just created).",
+      "id": "REQ-8",
+      "text": "Update backend/main.mo to remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive any \"Unauthorized\" traps during standard usage (profiles, usernames, pond membership, posting, liking, etc.). Keep explicit admin-only operations protected.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-8"
         ],
         "quotes": [
-          "make it so pond creators automatically join their ponds"
+          "ok go ahead and do it"
         ]
       },
       "acceptanceCriteria": [
-        "When createPond is called successfully, the newly created Pond record includes the creator in Pond.members.",
-        "The newly created Pond record has memberCount that reflects the creator’s membership (i.e., at least 1 on creation).",
-        "The creator’s profile joinedPonds (phrase-hash based user profile storage) includes the newly created pond name immediately after creation.",
-        "If the creator is already present in the pond membership list due to any edge case, the backend does not add a duplicate membership entry and does not double-increment memberCount.",
-        "Existing createPond behavior (pond metadata, images, admin/moderator assignment, etc.) continues to work as before."
+        "Normal user actions (e.g., create/update profile, register/release username, join/leave pond, create posts/ribbits, like/unlike) do not call AccessControl.hasPermission(..., #user) and do not trap with \"Unauthorized\" for anonymous/phrase-hash callers.",
+        "Admin-only actions (e.g., role assignment, tag merging, any operation guarded by #admin) still trap/reject when caller is not an admin.",
+        "Backend no longer emits \"Unauthorized: Only users can ...\" for normal user flows during typical app usage."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so first-time phrase-hash users can establish linkage and perform normal phrase-hash operations without relying on AccessControl.initialize or any #user permission state.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "ok go ahead and do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Operations that create or update userIdLinkage entries (e.g., initializeFroggyPhrase and first-time phrase-hash profile/username flows) do not require AccessControl.initialize and do not depend on AccessControl roles.",
+        "Phrase-hash endpoints that currently gate on AccessControl.hasPermission(..., #user) are adjusted so first-time users can proceed without an authorization trap.",
+        "Where ownership checks are needed, they are enforced via userIdLinkage (caller must match the linked principal for that userId), with admin override where appropriate—without requiring a #user role."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Update the backend pond creation flow in backend/main.mo so the pond creator is automatically added as a member of the pond at creation time (auto-join), using the creator’s phrase-hash userId membership model.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "ok go ahead and do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After creating a pond, the newly created pond’s members list includes the creator’s userId and memberCount reflects the membership.",
+        "The creator can immediately perform member-only pond actions (if any) without needing to manually join.",
+        "Auto-join does not require AccessControl #user permission and does not introduce new \"Unauthorized\" traps."
       ]
     }
   ],
   "constraints": [
     "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit frontend files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT."
+    "Do not introduce external databases or third-party auth providers; Internet Identity remains as-is on the frontend.",
+    "Only generate/modify backend/migration.mo if state shape changes require a migration (otherwise leave state intact).",
+    "Do not modify frontend immutable paths listed in SYSTEM_CONTEXT (if frontend changes become necessary, work around via non-immutable files)."
   ],
   "nonGoals": [
-    "Changing the pond join/leave UI behavior or adding new UI screens.",
-    "Adding new authentication providers beyond the existing Internet Identity/phrase-hash identity approach."
+    "Implementing a new authentication system or adding third-party login providers.",
+    "Adding new product features unrelated to removing recurring authorization failures and pond creator auto-join.",
+    "Major UI redesign or visual theme changes (unless required to address authorization error messaging)."
   ],
   "imageRequirements": {
     "required": [],

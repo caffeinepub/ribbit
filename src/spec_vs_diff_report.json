@@ -1,30 +1,38 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T00:58:19.686Z",
-  "summary": "REQ-7 (auto-join pond creator on createPond) is not evidenced as implemented in the provided diff summary. The diff shows an added migration module and a backend import/wiring for migration, plus a project_state.json update—none of which directly demonstrate changes to the pond creation flow or membership updates.",
+  "generatedAt": "2026-02-12T01:27:33.527Z",
+  "summary": "The diff does not show any implemented logic changes in backend/main.mo that neutralize AccessControl checks, adjust phrase-hash linkage authorization, or auto-join pond creators. The only clear non-requested change is an update to project_state.json (adding/updating feature-request tracking entries).",
   "missing_requirements": [
     {
-      "id": "REQ-7",
-      "requirement": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time, including updating Pond.members, memberCount, and the creator profile joinedPonds without duplicates, while preserving existing createPond behavior.",
-      "reason": "The diff summary for backend/main.mo is truncated and does not include any createPond implementation changes or any logic that adds the creator to Pond.members, sets memberCount to at least 1 on creation, or updates the creator’s profile joinedPonds. No other changed file shows this behavior.",
+      "id": "REQ-8",
+      "requirement": "Remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive \"Unauthorized\" traps during standard usage; keep admin-only operations protected.",
+      "reason": "In the provided (truncated) backend/main.mo diff content, AccessControl is still imported and initialized (accessControlState = AccessControl.initState()), and there is no visible evidence of removing/bypassing AccessControl.hasPermission(..., #user) checks or eliminating \"Unauthorized\" traps for normal user flows.",
       "evidence": [
-        "backend/main.mo (truncated; no createPond changes shown in excerpt)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "requirement": "Adjust phrase-hash identity linkage logic so first-time phrase-hash users can establish linkage and perform normal operations without relying on AccessControl.initialize or #user permission state; enforce ownership via userIdLinkage with admin override where appropriate.",
+      "reason": "The diff excerpt shows the phrase-hash linkage maps (userIdLinkage, userIdUsernameLinkage, etc.) but contains no visible logic changes to authorization/linkage flows (e.g., initializeFroggyPhrase or first-time profile/username flows) that would remove dependency on AccessControl role state.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "requirement": "Auto-join pond creators: when creating a pond, include the creator’s userId in the pond members list and reflect it in memberCount without requiring AccessControl #user permission.",
+      "reason": "The provided backend/main.mo excerpt includes the Pond type (members as [Text], memberCount) but does not include or show any pond creation function changes that add the creator to members and update memberCount at creation time.",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a backend migration module and wired migration into the main actor (import Migration \"migration\" and actor declaration with migration run).",
-      "reason": "BuildRequest only asks to modify the pond creation flow to auto-join the creator; it does not request introducing migrations or adding new backend modules unrelated to pond creation behavior.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (truncated; shows `import Migration \"migration\";` and `(with migration = Migration.run)` )"
-      ]
-    },
-    {
-      "description": "Updated project_state.json with new feature request entries (AR-4/AR-5) and other unrelated metadata.",
-      "reason": "The BuildRequest does not ask for changes to project_state.json; this appears to be out of scope for implementing REQ-7 backend behavior.",
+      "description": "Added/updated project tracking entries in project_state.json (AR-1..AR-8) describing the requested work as pending feature requests.",
+      "reason": "The BuildRequest constraints and requirements do not request modifications to project_state.json or addition of feature-request tracking metadata; requested changes are specifically backend logic changes in backend/main.mo (and backend/migration.mo only if state shape changes require it).",
       "evidence": [
         "project_state.json"
       ]
@@ -33,7 +41,6 @@
   "confidence": 0.74,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "project_state.json"
   ]
 }

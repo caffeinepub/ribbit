@@ -1,6 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Auto-join pond creators to their newly created ponds (frontend-only scope)",
+  "title": "Neutralize AccessControl for normal phrase-hash user flows and auto-join pond creators (frontend-only)",
   "requirements": []
 }
