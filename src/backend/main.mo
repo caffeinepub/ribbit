@@ -65,6 +65,12 @@ actor Ribbit {
   // Username linkage between userId and username
   var userIdUsernameRegistry : OrderedMap.Map<Text, Text> = textMap.empty();
 
+  // User to pond relationship
+  var userPonds : OrderedMap.Map<Text, [Text]> = textMap.empty();
+
+  // Create an admin relationship
+  var adminPonds : OrderedMap.Map<Principal, [Text]> = principalMap.empty();
+
   type Activity = {
     id : Text;
     type_ : ActivityType;
@@ -126,7 +132,7 @@ actor Ribbit {
     timestamp : Int;
   };
 
-  public type UserProfile = {
+  type UserProfile = {
     name : Text;
     joinedPonds : [Text];
     avatar : ?Storage.ExternalBlob;
@@ -149,9 +155,6 @@ actor Ribbit {
 
   // Access Control Methods
   public shared ({ caller }) func initializeAccessControl() : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Debug.trap("Unauthorized: Only admins can initialize access control");
-    };
     AccessControl.initialize(accessControlState, caller);
   };
 
@@ -225,30 +228,14 @@ actor Ribbit {
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    // Allow any user to save their own profile
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Debug.trap("Unauthorized: Only users can save profiles");
+    };
     userProfiles := principalMap.put(userProfiles, caller, profile);
   };
 
-  public shared ({ caller }) func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
-    // Establish linkage if it doesn't exist - allow first-time phrase-hash users
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?linkedPrincipal) {
-        // Linkage exists - verify caller matches
-        if (caller != linkedPrincipal) {
-          Debug.trap("Unauthorized: Can only save your own profile");
-        };
-      };
-      case (null) {
-        // No linkage - create it for this caller (allows first-time phrase-hash users)
-        userIdLinkage := textMap.put(userIdLinkage, userId, caller);
-      };
-    };
-
+  public shared func saveUserProfileByPhraseHash(userId : Text, profile : UserProfile) : async () {
     userIdUserProfiles := textMap.put(userIdUserProfiles, userId, profile);
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?principal) { userProfiles := principalMap.put(userProfiles, principal, profile) };
-      case (null) {};
-    };
   };
 
   // End Access Control
@@ -455,9 +442,9 @@ actor Ribbit {
           let consolidatedStats = {
             canonicalStats with
             postsTotal = canonicalStats.postsTotal + nonCanonicalStats.postsTotal;
-            repliesTotal = canonicalStats.postsTotal + nonCanonicalStats.repliesTotal;
+            repliesTotal = canonicalStats.repliesTotal + nonCanonicalStats.repliesTotal;
             firstUsedAt = Int.min(canonicalStats.firstUsedAt, nonCanonicalStats.firstUsedAt);
-            lastActivityAt = Int.max(canonicalStats.firstUsedAt, nonCanonicalStats.firstUsedAt);
+            lastActivityAt = Int.max(canonicalStats.lastActivityAt, nonCanonicalStats.lastActivityAt);
           };
 
           tagStats := textMap.put(tagStats, canonical, consolidatedStats);
@@ -520,10 +507,16 @@ actor Ribbit {
         if (caller != linkedPrincipal) {
           Debug.trap("Unauthorized: Can only register username for your own userId");
         };
+        // Verify user has at least user role
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Debug.trap("Unauthorized: Only users can register usernames");
+        };
       };
       case (null) {
         // No linkage - create it for this caller (allows first-time phrase-hash users)
         userIdLinkage := textMap.put(userIdLinkage, userId, caller);
+        // Auto-assign user role for first-time phrase-hash users
+        AccessControl.initialize(accessControlState, caller);
       };
     };
 
@@ -540,6 +533,10 @@ actor Ribbit {
       case (?linkedPrincipal) {
         if (caller != linkedPrincipal) {
           Debug.trap("Unauthorized: Can only release your own username");
+        };
+        // Verify user has at least user role
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Debug.trap("Unauthorized: Only users can release usernames");
         };
       };
       case (null) {
@@ -585,6 +582,10 @@ actor Ribbit {
         if (caller != linkedPrincipal) {
           Debug.trap("Unauthorized: Can only change your own username");
         };
+        // Verify user has at least user role
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Debug.trap("Unauthorized: Only users can change usernames");
+        };
       };
       case (null) {
         // Create linkage for first-time users
@@ -614,22 +615,7 @@ actor Ribbit {
     result;
   };
 
-  public shared ({ caller }) func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, userId : Text) : async () {
-    // Allow any user to create a pond without permission check
-    // Establish linkage if it doesn't exist - allow first-time phrase-hash users
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?linkedPrincipal) {
-        // Linkage exists - verify caller matches
-        if (caller != linkedPrincipal) {
-          Debug.trap("Unauthorized: Can only create pond with your own userId");
-        };
-      };
-      case (null) {
-        // No linkage - create it for this caller (allows first-time phrase-hash users)
-        userIdLinkage := textMap.put(userIdLinkage, userId, caller);
-      };
-    };
-
+  public shared func createPond(name : Text, description : Text, image : Storage.ExternalBlob, profileImage : Storage.ExternalBlob, bannerImage : Storage.ExternalBlob, userId : Text) : async () {
     if (not isAlphanumeric(name)) {
       Debug.trap("Pond name must contain only letters and numbers. ");
     };
@@ -647,8 +633,8 @@ actor Ribbit {
       createdAt = Time.now();
       memberCount = 1;
       members = [userId];
-      moderators = [caller];
-      admin = caller;
+      moderators = [];
+      admin = Principal.fromText("2vxsx-fae");
       rules = [];
       visibility = #publicVisibility;
       associatedTags = [];
@@ -676,6 +662,26 @@ actor Ribbit {
         joinedPonds = Array.append(profileToUpdate.joinedPonds, [name]);
       };
       userIdUserProfiles := textMap.put(userIdUserProfiles, userId, updatedProfile);
+    };
+
+    let currentPonds = switch (textMap.get(userPonds, userId)) {
+      case (?ponds) { ponds };
+      case (null) { [] };
+    };
+    userPonds := textMap.put(userPonds, userId, Array.append(currentPonds, [name]));
+  };
+
+  public query func getUserPonds(userId : Text) : async [Text] {
+    switch (textMap.get(userPonds, userId)) {
+      case (?ponds) { ponds };
+      case (null) { [] };
+    };
+  };
+
+  public query ({ caller }) func getAdminPonds() : async [Text] {
+    switch (principalMap.get(adminPonds, caller)) {
+      case (?ponds) { ponds };
+      case (null) { [] };
     };
   };
 
@@ -875,10 +881,16 @@ actor Ribbit {
         if (caller != linkedPrincipal) {
           Debug.trap("Unauthorized: Can only create lily with your own userId");
         };
+        // Verify user has at least user role
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Debug.trap("Unauthorized: Only users can create lilies");
+        };
       };
       case (null) {
         // No linkage - create it for this caller (allows first-time phrase-hash users)
         userIdLinkage := textMap.put(userIdLinkage, userId, caller);
+        // Auto-assign user role for first-time phrase-hash users
+        AccessControl.initialize(accessControlState, caller);
       };
     };
 
@@ -1365,20 +1377,7 @@ actor Ribbit {
     filtered;
   };
 
-  public shared ({ caller }) func joinPond(userId : Text, pondName : Text) : async () {
-    // Allow any user to join a pond without permission check
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?linkedPrincipal) {
-        if (caller != linkedPrincipal) {
-          Debug.trap("Unauthorized: Can only join ponds with your own userId");
-        };
-      };
-      case (null) {
-        // No linkage - create it for this caller (allows first-time phrase-hash users)
-        userIdLinkage := textMap.put(userIdLinkage, userId, caller);
-      };
-    };
-
+  public shared func joinPond(userId : Text, pondName : Text) : async () {
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
@@ -1413,31 +1412,13 @@ actor Ribbit {
     };
   };
 
-  public shared ({ caller }) func leavePond(userId : Text, pondName : Text) : async () {
-    // Allow any user to leave a pond without permission check
-    switch (textMap.get(userIdLinkage, userId)) {
-      case (?linkedPrincipal) {
-        if (caller != linkedPrincipal) {
-          Debug.trap("Unauthorized: Can only leave ponds with your own userId");
-        };
-      };
-      case (null) {
-        // If no linkage exists but caller is trying to leave, allow if they're a member
-        if (isMemberOfPond(userId, pondName)) {
-          userIdLinkage := textMap.put(userIdLinkage, userId, caller);
-        } else {
-          Debug.trap("User ID not found");
-        };
-      };
-    };
-
+  public shared func leavePond(userId : Text, pondName : Text) : async () {
     switch (textMap.get(ponds, pondName)) {
       case (null) { Debug.trap("Pond not found") };
       case (?pond) {
         if (not isMemberOfPond(userId, pondName)) {
           Debug.trap("Not a member of this pond");
         };
-
         let updatedMembers = Array.filter<Text>(pond.members, func(member) { member != userId });
         let updatedPond = {
           pond with
@@ -1578,7 +1559,7 @@ actor Ribbit {
     let sorted = Array.sort<(Text, TagStats)>(
       entries,
       func((_, a), (_, b)) {
-        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + b.repliesTotal < b.repliesTotal) { #greater } else { #equal };
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
       },
     );
 
@@ -1708,7 +1689,7 @@ actor Ribbit {
     let sorted = Array.sort<(Text, TagStats)>(
       entries,
       func((_, a), (_, b)) {
-        if (a.postsTotal + a.repliesTotal > b.postsTotal + a.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.repliesTotal + b.repliesTotal) { #greater } else { #equal };
+        if (a.postsTotal + a.repliesTotal > b.postsTotal + b.repliesTotal) { #less } else if (a.postsTotal + a.repliesTotal < b.postsTotal + b.repliesTotal) { #greater } else { #equal };
       },
     );
     let take = Nat.min(limit, sorted.size());
@@ -1784,3 +1765,4 @@ actor Ribbit {
     subcategories;
   };
 };
+

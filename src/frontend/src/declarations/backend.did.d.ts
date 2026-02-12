@@ -136,6 +136,7 @@ export interface _SERVICE {
     [string, [] | [string], [] | [string], [] | [Visibility]],
     undefined
   >,
+  'getAdminPonds' : ActorMethod<[], Array<string>>,
   'getAllRecentActivities' : ActorMethod<[bigint], Array<Activity>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -190,6 +191,7 @@ export interface _SERVICE {
   'getTopTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
   'getTrendingTags' : ActorMethod<[bigint], Array<[string, TagStats]>>,
   'getUserAvatarByUsername' : ActorMethod<[string], [] | [ExternalBlob]>,
+  'getUserPonds' : ActorMethod<[string], Array<string>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserProfileByPhraseHash' : ActorMethod<[string], [] | [UserProfile]>,
   'getUserProfileByUsername' : ActorMethod<[string], [] | [UserProfile]>,

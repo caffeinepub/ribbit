@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Upload, X } from 'lucide-react';
 import { normalizePondName, getPondNameValidationError } from '@/lib/pondNameValidation';
 import { compressImageFile, revokePreviewUrl } from '@/lib/imageCompression';
+import { getPhraseHashUserId } from '@/lib/user';
 
 export default function CreatePondPage() {
   const navigate = useNavigate();
@@ -175,6 +176,14 @@ export default function CreatePondPage() {
       return;
     }
 
+    // Get the current user's phrase-hash userId
+    const userId = await getPhraseHashUserId();
+    
+    if (!userId) {
+      toast.error('Unable to compute user identity. Please refresh the page.');
+      return;
+    }
+
     // Create ExternalBlob instances from compressed bytes
     const bannerBlob = ExternalBlob.fromBytes(bannerCompressedBytes);
     const profileBlob = ExternalBlob.fromBytes(profileCompressedBytes);
@@ -187,7 +196,7 @@ export default function CreatePondPage() {
         image: imageBlob,
         profileImage: profileBlob,
         bannerImage: bannerBlob,
-        froggyPhrase,
+        userId,
       },
       {
         onSuccess: () => {

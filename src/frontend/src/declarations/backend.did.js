@@ -165,6 +165,7 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'getAdminPonds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getAllRecentActivities' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(Activity)],
@@ -273,6 +274,7 @@ export const idlService = IDL.Service({
       [IDL.Opt(ExternalBlob)],
       ['query'],
     ),
+  'getUserPonds' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -493,6 +495,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'getAdminPonds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getAllRecentActivities' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(Activity)],
@@ -609,6 +612,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(ExternalBlob)],
         ['query'],
       ),
+    'getUserPonds' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],

@@ -208,9 +208,6 @@ export default function UserSettingsPage() {
 
       toast.success('Avatar updated successfully!');
       
-      // Update the header avatar cache immediately with the new blob
-      queryClient.setQueryData(['userAvatar', currentUsername], avatarBlob);
-      
       // Invalidate queries to refresh avatar display
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
       queryClient.invalidateQueries({ queryKey: ['userAvatar', currentUsername] });
@@ -324,7 +321,7 @@ export default function UserSettingsPage() {
 
         {/* Desktop: Vertical Tabs */}
         <div className="hidden md:block">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="settings-tabs-container">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex gap-8">
             <TabsList className="vertical-tabs-list">
               <TabsTrigger value="username" className="vertical-tabs-trigger">
                 <User className="w-4 h-4 mr-2" />
@@ -350,7 +347,7 @@ export default function UserSettingsPage() {
               )}
             </TabsList>
 
-            <div className="settings-content-area">
+            <div className="flex-1">
               <TabsContent value="username" className="mt-0">
                 <div className="space-y-6">
                   <div>
@@ -434,22 +431,31 @@ export default function UserSettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    {/* Avatar Display - always show with fallback */}
-                    <div>
-                      <Label>{avatarPreview ? 'Preview' : 'Current Avatar'}</Label>
-                      <div className="mt-2">
-                        <Avatar className="w-24 h-24">
-                          {avatarPreview ? (
-                            <AvatarImage src={avatarPreview} alt="Preview" />
-                          ) : userProfile?.avatar ? (
+                    {/* Current Avatar Display */}
+                    {userProfile?.avatar && !avatarPreview && (
+                      <div>
+                        <Label>Current Avatar</Label>
+                        <div className="mt-2">
+                          <Avatar className="w-24 h-24">
                             <AvatarImage src={userProfile.avatar.getDirectURL()} alt={currentUsername} />
-                          ) : null}
-                          <AvatarFallback className="text-2xl">
-                            {currentUsername.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                            <AvatarFallback>{currentUsername.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Avatar Preview */}
+                    {avatarPreview && (
+                      <div>
+                        <Label>Preview</Label>
+                        <div className="mt-2">
+                          <Avatar className="w-24 h-24">
+                            <AvatarImage src={avatarPreview} alt="Preview" />
+                            <AvatarFallback>{currentUsername.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <Label htmlFor="avatar-upload">Choose Avatar</Label>
@@ -465,7 +471,7 @@ export default function UserSettingsPage() {
                     {uploadProgress > 0 && uploadProgress < 100 && (
                       <div className="space-y-2">
                         <Label>Upload Progress</Label>
-                        <Progress value={uploadProgress} className="w-full" />
+                        <Progress value={uploadProgress} />
                         <p className="text-sm text-muted-foreground">{uploadProgress}%</p>
                       </div>
                     )}
@@ -474,10 +480,10 @@ export default function UserSettingsPage() {
                       onClick={handleSaveAvatar}
                       disabled={!avatarCompressedBytes || saveProfile.isPending || uploadProgress > 0}
                     >
-                      {saveProfile.isPending ? (
+                      {saveProfile.isPending || uploadProgress > 0 ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Saving...
+                          Uploading...
                         </>
                       ) : (
                         'Save Avatar'
@@ -492,67 +498,74 @@ export default function UserSettingsPage() {
                   <div>
                     <h2 className="text-2xl font-semibold mb-4">Froggy Phrase</h2>
                     <p className="text-muted-foreground mb-6">
-                      Your Froggy Phrase is a permanent 12-word recovery phrase. Keep it safe and never share it with anyone.
+                      Your Froggy Phrase is a permanent 12-word identifier that was automatically generated when you first used Ribbit. 
+                      It cannot be changed or removed once created.
                     </p>
                   </div>
 
-                  <Alert>
-                    <Key className="h-4 w-4" />
-                    <AlertTitle>Important</AlertTitle>
-                    <AlertDescription>
-                      This phrase cannot be changed. Store it securely - it's the only way to recover your account.
-                    </AlertDescription>
-                  </Alert>
+                  {existingPhrase ? (
+                    <div className="space-y-4">
+                      <Alert>
+                        <Key className="h-4 w-4" />
+                        <AlertTitle>Permanent Phrase</AlertTitle>
+                        <AlertDescription>
+                          This phrase is permanent and cannot be changed. Keep it safe as a backup of your identity.
+                        </AlertDescription>
+                      </Alert>
 
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Your Froggy Phrase</Label>
-                      <div className="mt-2 p-4 bg-muted rounded-lg border border-border">
-                        {showPhrase ? (
-                          <p className="font-mono text-sm break-words">{existingPhrase}</p>
-                        ) : (
-                          <p className="text-muted-foreground">••••••••••••••••••••••••••••••••</p>
-                        )}
+                      <div>
+                        <Label>Your Froggy Phrase</Label>
+                        <div className="mt-2 p-4 bg-muted rounded-md font-mono text-sm relative">
+                          {showPhrase ? existingPhrase : '•••• •••• •••• •••• •••• •••• •••• •••• •••• •••• •••• ••••'}
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowPhrase(!showPhrase)}
+                            >
+                              {showPhrase ? (
+                                <>
+                                  <EyeOff className="w-4 h-4 mr-2" />
+                                  Hide
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Reveal
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCopyPhrase}
+                              disabled={!showPhrase}
+                            >
+                              {copied ? (
+                                <>
+                                  <Check className="w-4 h-4 mr-2" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-4 h-4 mr-2" />
+                                  Copy
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowPhrase(!showPhrase)}
-                      >
-                        {showPhrase ? (
-                          <>
-                            <EyeOff className="w-4 h-4 mr-2" />
-                            Hide Phrase
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Reveal Phrase
-                          </>
-                        )}
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        onClick={handleCopyPhrase}
-                        disabled={!existingPhrase}
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy Phrase
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                  ) : (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>No Phrase Found</AlertTitle>
+                      <AlertDescription>
+                        A Froggy Phrase will be automatically generated for you.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               </TabsContent>
 
@@ -568,33 +581,33 @@ export default function UserSettingsPage() {
                   {isLoadingJoined || isLoadingAllPonds ? (
                     <div className="space-y-4">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
                           <Skeleton className="h-6 w-32" />
                           <Skeleton className="h-9 w-20" />
                         </div>
                       ))}
                     </div>
                   ) : joinedPonds.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Waves className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
-                      <Button asChild>
-                        <Link to="/ponds">
-                          Browse Ponds
-                          <ArrowRight className="w-4 h-4 ml-2" />
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>No Ponds Joined</AlertTitle>
+                      <AlertDescription>
+                        You haven't joined any ponds yet.{' '}
+                        <Link to="/ponds" className="text-primary hover:underline">
+                          Browse ponds
                         </Link>
-                      </Button>
-                    </div>
+                      </AlertDescription>
+                    </Alert>
                   ) : (
                     <div className="space-y-4">
                       {joinedPonds.map((pond) => (
                         <div
                           key={pond.name}
-                          className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             {pond.profileImage && (
-                              <Avatar className="w-10 h-10">
+                              <Avatar className="w-12 h-12">
                                 <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
                                 <AvatarFallback>{pond.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                               </Avatar>
@@ -612,7 +625,6 @@ export default function UserSettingsPage() {
                               </p>
                             </div>
                           </div>
-
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="outline" size="sm">
@@ -629,18 +641,8 @@ export default function UserSettingsPage() {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleLeavePond(pond.name)}
-                                  disabled={leavePondMutation.isPending}
-                                >
-                                  {leavePondMutation.isPending ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                      Leaving...
-                                    </>
-                                  ) : (
-                                    'Leave Pond'
-                                  )}
+                                <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
+                                  Leave Pond
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -663,15 +665,12 @@ export default function UserSettingsPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="p-4 border border-border rounded-lg">
+                      <div className="p-4 border rounded-lg">
                         <h3 className="font-semibold mb-2">Merge Similar Tags</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Automatically merge tags that are similar (e.g., "frog" and "frogs", "web-dev" and "webdev").
+                          Automatically merge tags that are similar (e.g., plurals, hyphens, repeated letters).
                         </p>
-                        <Button
-                          onClick={handleMergeTags}
-                          disabled={mergeTags.isPending}
-                        >
+                        <Button onClick={handleMergeTags} disabled={mergeTags.isPending}>
                           {mergeTags.isPending ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -683,15 +682,13 @@ export default function UserSettingsPage() {
                         </Button>
                       </div>
 
-                      <div className="p-4 border border-border rounded-lg">
-                        <h3 className="font-semibold mb-2">Tag Redirects</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          View all tag redirects created by the merge operation.
-                        </p>
-                        {isLoadingRedirects ? (
-                          <Skeleton className="h-20 w-full" />
-                        ) : tagRedirects && tagRedirects.length > 0 ? (
-                          <div className="max-h-60 overflow-y-auto space-y-2">
+                      {tagRedirects && tagRedirects.length > 0 && (
+                        <div className="p-4 border rounded-lg">
+                          <h3 className="font-semibold mb-2">Tag Redirects</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Tags that have been merged into canonical versions.
+                          </p>
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
                             {tagRedirects.map(([from, to]) => (
                               <div key={from} className="flex items-center gap-2 text-sm">
                                 <Badge variant="outline">{from}</Badge>
@@ -700,10 +697,8 @@ export default function UserSettingsPage() {
                               </div>
                             ))}
                           </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">No tag redirects yet.</p>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
@@ -712,47 +707,50 @@ export default function UserSettingsPage() {
           </Tabs>
         </div>
 
-        {/* Mobile: Dropdown Tabs */}
+        {/* Mobile: Dropdown + Content */}
         <div className="md:hidden space-y-6">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="username">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Username
-                </div>
-              </SelectItem>
-              <SelectItem value="avatar">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" />
-                  Avatar
-                </div>
-              </SelectItem>
-              <SelectItem value="froggy-phrase">
-                <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4" />
-                  Froggy Phrase
-                </div>
-              </SelectItem>
-              <SelectItem value="ponds">
-                <div className="flex items-center gap-2">
-                  <Waves className="w-4 h-4" />
-                  Joined Ponds
-                </div>
-              </SelectItem>
-              {isAdmin && (
-                <SelectItem value="admin">
+          <div>
+            <Label htmlFor="mobile-tab-select">Section</Label>
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger id="mobile-tab-select" className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="username">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4" />
-                    Admin Tools
+                    <User className="w-4 h-4" />
+                    Username
                   </div>
                 </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+                <SelectItem value="avatar">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4" />
+                    Avatar
+                  </div>
+                </SelectItem>
+                <SelectItem value="froggy-phrase">
+                  <div className="flex items-center gap-2">
+                    <Key className="w-4 h-4" />
+                    Froggy Phrase
+                  </div>
+                </SelectItem>
+                <SelectItem value="ponds">
+                  <div className="flex items-center gap-2">
+                    <Waves className="w-4 h-4" />
+                    Joined Ponds
+                  </div>
+                </SelectItem>
+                {isAdmin && (
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      Admin Tools
+                    </div>
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="username" className="mt-0">
@@ -839,22 +837,29 @@ export default function UserSettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* Avatar Display - always show with fallback */}
-                  <div>
-                    <Label>{avatarPreview ? 'Preview' : 'Current Avatar'}</Label>
-                    <div className="mt-2">
-                      <Avatar className="w-24 h-24">
-                        {avatarPreview ? (
-                          <AvatarImage src={avatarPreview} alt="Preview" />
-                        ) : userProfile?.avatar ? (
+                  {userProfile?.avatar && !avatarPreview && (
+                    <div>
+                      <Label>Current Avatar</Label>
+                      <div className="mt-2">
+                        <Avatar className="w-24 h-24">
                           <AvatarImage src={userProfile.avatar.getDirectURL()} alt={currentUsername} />
-                        ) : null}
-                        <AvatarFallback className="text-2xl">
-                          {currentUsername.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                          <AvatarFallback>{currentUsername.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {avatarPreview && (
+                    <div>
+                      <Label>Preview</Label>
+                      <div className="mt-2">
+                        <Avatar className="w-24 h-24">
+                          <AvatarImage src={avatarPreview} alt="Preview" />
+                          <AvatarFallback>{currentUsername.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <Label htmlFor="avatar-upload-mobile">Choose Avatar</Label>
@@ -870,7 +875,7 @@ export default function UserSettingsPage() {
                   {uploadProgress > 0 && uploadProgress < 100 && (
                     <div className="space-y-2">
                       <Label>Upload Progress</Label>
-                      <Progress value={uploadProgress} className="w-full" />
+                      <Progress value={uploadProgress} />
                       <p className="text-sm text-muted-foreground">{uploadProgress}%</p>
                     </div>
                   )}
@@ -880,10 +885,10 @@ export default function UserSettingsPage() {
                     disabled={!avatarCompressedBytes || saveProfile.isPending || uploadProgress > 0}
                     className="w-full"
                   >
-                    {saveProfile.isPending ? (
+                    {saveProfile.isPending || uploadProgress > 0 ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
+                        Uploading...
                       </>
                     ) : (
                       'Save Avatar'
@@ -898,69 +903,74 @@ export default function UserSettingsPage() {
                 <div>
                   <h2 className="text-2xl font-semibold mb-4">Froggy Phrase</h2>
                   <p className="text-muted-foreground mb-6">
-                    Your Froggy Phrase is a permanent 12-word recovery phrase. Keep it safe and never share it with anyone.
+                    Your Froggy Phrase is a permanent 12-word identifier that was automatically generated when you first used Ribbit. 
+                    It cannot be changed or removed once created.
                   </p>
                 </div>
 
-                <Alert>
-                  <Key className="h-4 w-4" />
-                  <AlertTitle>Important</AlertTitle>
-                  <AlertDescription>
-                    This phrase cannot be changed. Store it securely - it's the only way to recover your account.
-                  </AlertDescription>
-                </Alert>
+                {existingPhrase ? (
+                  <div className="space-y-4">
+                    <Alert>
+                      <Key className="h-4 w-4" />
+                      <AlertTitle>Permanent Phrase</AlertTitle>
+                      <AlertDescription>
+                        This phrase is permanent and cannot be changed. Keep it safe as a backup of your identity.
+                      </AlertDescription>
+                    </Alert>
 
-                <div className="space-y-4">
-                  <div>
-                    <Label>Your Froggy Phrase</Label>
-                    <div className="mt-2 p-4 bg-muted rounded-lg border border-border">
-                      {showPhrase ? (
-                        <p className="font-mono text-sm break-words">{existingPhrase}</p>
-                      ) : (
-                        <p className="text-muted-foreground">••••••••••••••••••••••••••••••••</p>
-                      )}
+                    <div>
+                      <Label>Your Froggy Phrase</Label>
+                      <div className="mt-2 p-4 bg-muted rounded-md font-mono text-sm relative">
+                        {showPhrase ? existingPhrase : '•••• •••• •••• •••• •••• •••• •••• •••• •••• •••• •••• ••••'}
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowPhrase(!showPhrase)}
+                          >
+                            {showPhrase ? (
+                              <>
+                                <EyeOff className="w-4 h-4 mr-2" />
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Reveal
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyPhrase}
+                            disabled={!showPhrase}
+                          >
+                            {copied ? (
+                              <>
+                                <Check className="w-4 h-4 mr-2" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4 mr-2" />
+                                Copy
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowPhrase(!showPhrase)}
-                      className="w-full"
-                    >
-                      {showPhrase ? (
-                        <>
-                          <EyeOff className="w-4 h-4 mr-2" />
-                          Hide Phrase
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Reveal Phrase
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={handleCopyPhrase}
-                      disabled={!existingPhrase}
-                      className="w-full"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Phrase
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+                ) : (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>No Phrase Found</AlertTitle>
+                    <AlertDescription>
+                      A Froggy Phrase will be automatically generated for you.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </TabsContent>
 
@@ -976,33 +986,33 @@ export default function UserSettingsPage() {
                 {isLoadingJoined || isLoadingAllPonds ? (
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                      <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
                         <Skeleton className="h-6 w-32" />
                         <Skeleton className="h-9 w-20" />
                       </div>
                     ))}
                   </div>
                 ) : joinedPonds.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Waves className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground mb-4">You haven't joined any ponds yet.</p>
-                    <Button asChild className="w-full">
-                      <Link to="/ponds">
-                        Browse Ponds
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>No Ponds Joined</AlertTitle>
+                    <AlertDescription>
+                      You haven't joined any ponds yet.{' '}
+                      <Link to="/ponds" className="text-primary hover:underline">
+                        Browse ponds
                       </Link>
-                    </Button>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 ) : (
                   <div className="space-y-4">
                     {joinedPonds.map((pond) => (
                       <div
                         key={pond.name}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg"
+                        className="flex items-center justify-between p-4 border rounded-lg"
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
                           {pond.profileImage && (
-                            <Avatar className="w-10 h-10 flex-shrink-0">
+                            <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={pond.profileImage.getDirectURL()} alt={pond.name} />
                               <AvatarFallback>{pond.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
@@ -1020,12 +1030,10 @@ export default function UserSettingsPage() {
                             </p>
                           </div>
                         </div>
-
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm" className="flex-shrink-0">
-                              <LogOut className="w-4 h-4 mr-2" />
-                              Leave
+                              <LogOut className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -1037,18 +1045,8 @@ export default function UserSettingsPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleLeavePond(pond.name)}
-                                disabled={leavePondMutation.isPending}
-                              >
-                                {leavePondMutation.isPending ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Leaving...
-                                  </>
-                                ) : (
-                                  'Leave Pond'
-                                )}
+                              <AlertDialogAction onClick={() => handleLeavePond(pond.name)}>
+                                Leave Pond
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -1071,16 +1069,12 @@ export default function UserSettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-4 border border-border rounded-lg">
+                    <div className="p-4 border rounded-lg">
                       <h3 className="font-semibold mb-2">Merge Similar Tags</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Automatically merge tags that are similar (e.g., "frog" and "frogs", "web-dev" and "webdev").
+                        Automatically merge tags that are similar (e.g., plurals, hyphens, repeated letters).
                       </p>
-                      <Button
-                        onClick={handleMergeTags}
-                        disabled={mergeTags.isPending}
-                        className="w-full"
-                      >
+                      <Button onClick={handleMergeTags} disabled={mergeTags.isPending} className="w-full">
                         {mergeTags.isPending ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1092,15 +1086,13 @@ export default function UserSettingsPage() {
                       </Button>
                     </div>
 
-                    <div className="p-4 border border-border rounded-lg">
-                      <h3 className="font-semibold mb-2">Tag Redirects</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        View all tag redirects created by the merge operation.
-                      </p>
-                      {isLoadingRedirects ? (
-                        <Skeleton className="h-20 w-full" />
-                      ) : tagRedirects && tagRedirects.length > 0 ? (
-                        <div className="max-h-60 overflow-y-auto space-y-2">
+                    {tagRedirects && tagRedirects.length > 0 && (
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold mb-2">Tag Redirects</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Tags that have been merged into canonical versions.
+                        </p>
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
                           {tagRedirects.map(([from, to]) => (
                             <div key={from} className="flex items-center gap-2 text-sm">
                               <Badge variant="outline">{from}</Badge>
@@ -1109,10 +1101,8 @@ export default function UserSettingsPage() {
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No tag redirects yet.</p>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>

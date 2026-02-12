@@ -1,57 +1,86 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 9,
   "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [
-    {
-      "id": "feature-adjust-the-desktop-layout-of-the-settings-page-so-the-vertical-settings-tabs-are-visually-aligned-to-the-left-edge-of-the-settings-content-block-desktop-mode-md-with-consistent-left-alignment-between-the-tabs-column-and-the-main-content-column",
-      "title": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-in-the-settings-avatar-tab-display-a-clear-placeholder-avatar-when-the-user-has-not-selected-an-avatar-yet-i-e-user-profile-has-no-avatar-and-there-is-no-local-preview-instead-of-showing-no-avatar-display",
-      "title": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (i.e., user profile has no avatar and there is no local preview), instead of showing no avatar display.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-header-avatar-updates-immediately-after-a-user-uploads-saves-a-new-avatar-in-settings-without-requiring-a-full-page-refresh-keep-react-query-cache-in-sync-so-header-re-renders-with-the-new-avatar",
-      "title": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings, without requiring a full page refresh (keep React Query cache in sync so Header re-renders with the new avatar).",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    }
+  "architectural_notes": [
+    "On pond creation, use phrase-hash userId identity (not principal/caller) for membership/authorization logic; avoid adding principal/caller checks.",
+    "User approved proceeding with the clean auto-join fix; must not introduce any principal/caller checks (keep phrase-hash userId membership model).",
+    "Root cause hypothesis: `createPond(...)` contains principal/caller-based linkage + AccessControl validation (`userIdLinkage` + `caller != linkedPrincipal`) that can `Debug.trap` before membership/joinedPonds updates run (notably for anonymous/phrase-hash users); desired fix is to remove/avoid these principal/caller checks in the pond-creation auto-join path and rely on phrase-hash `userId` membership model.",
+    "Confirmed by inspecting `main.mo`: `createPond(...)` already sets `memberCount = 1`, `members = [userId]`, updates `userIdUserProfiles.joinedPonds`, and updates `userPonds`; however, these updates are bypassed when the initial `userIdLinkage` + AccessControl checks `Debug.trap` (e.g., `caller != linkedPrincipal`), so pond creation/auto-join never executes for affected users."
   ],
+  "known_issues": [
+    "Bug: Pond creators are not automatically added as members of the ponds they create (pond.members, user.joinedPonds, and pond.memberCount not updated on create).",
+    "Confirmed: `createPond(...)` can `Debug.trap` in the initial `userIdLinkage`/AccessControl validation (notably `caller != linkedPrincipal`), preventing pond creation and therefore preventing auto-join updates from running."
+  ],
+  "isFixRequest": true,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Align Settings tabs to the left of the content block in desktop mode",
-      "reqIds": [],
+      "summary": "Update the backend pond creation flow (the `createPond(...)` method used by the frontend) so the pond creator is automatically added as a member at creation time using the phrase-hash userId membership model: (1) include the creator’s userId in `pond.members`, (2) set `pond.memberCount` to reflect the auto-join (at least 1 on new pond creation), and (3) update the creator’s phrase-hash `UserProfile.joinedPonds` to include the newly created pond name immediately after creation.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Show a placeholder avatar in Settings when the user has not selected an avatar yet",
-      "reqIds": [],
+      "summary": "Update the backend pond creation flow (`createPond(...)` in `backend/main.mo`) so that when a pond is created, the creator is automatically added as a member using the phrase-hash `userId` membership model: (1) include the creator’s `userId` in `pond.members`, (2) set `pond.memberCount` to reflect the auto-join (must be at least 1 on new pond creation), and (3) update the creator’s phrase-hash `UserProfile.joinedPonds` (and any other user→pond relationship maps used by the app, e.g. `userPonds`) to include the new pond name immediately after creation.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Update the header avatar immediately after a user uploads a new avatar",
-      "reqIds": [],
+      "summary": "Remove/avoid principal- or `caller`-based authorization/membership checks specifically in the pond-creator auto-join path so that the auto-join on `createPond(...)` is driven only by the phrase-hash `userId` provided for creation (i.e., do not require `caller` to match a linked principal in order for the creator to be added to the new pond and have `joinedPonds` updated).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Update `createPond(...)` in `backend/main.mo` so pond creation cannot be blocked by `caller`/principal linkage or access-control validation (e.g., `userIdLinkage` checks). Pond creation must proceed based on the provided phrase-hash `userId` even when the caller is anonymous, and must not `Debug.trap` due to `caller != linkedPrincipal` in the pond-creator path.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Ensure `createPond(...)` in `backend/main.mo` performs pond creator auto-join using the phrase-hash `userId` membership model: (1) include the creator’s `userId` in the new pond’s `members`, (2) set the new pond’s `memberCount` to reflect the creator membership (must be at least `1`), and (3) immediately update the creator’s phrase-hash `UserProfile.joinedPonds` and any other user→pond relationship map used by the app (e.g., `userPonds`) to include the newly created pond name.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update `createPond(...)` in `backend/main.mo` so pond creation is not blocked by `caller`/Principal linkage checks or AccessControl permission validation. Specifically, remove/disable the `userIdLinkage` + `caller != linkedPrincipal` authorization gate (and any related `AccessControl.hasPermission(...)` checks) in the pond-creation path so `createPond` can succeed based only on the provided phrase-hash `userId`, including when the caller is anonymous.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Update `createPond(...)` in `backend/main.mo` to auto-join the pond creator using the phrase-hash `userId` membership model at creation time: (1) include the creator’s `userId` in the new pond’s `members`, (2) set the new pond’s `memberCount` to reflect this auto-join (must be at least `1` on creation), and (3) immediately update the creator’s phrase-hash `UserProfile.joinedPonds` to include the newly created pond name.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Ensure `createPond(...)` updates any additional user↔pond relationship indexes used by the app for phrase-hash users. In particular, update the `userPonds` map in `backend/main.mo` so the creator’s `userPonds[userId]` includes the newly created pond name immediately after pond creation (without requiring any Principal-based linkage).",
+      "reqIds": [
+        "REQ-8"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix Settings desktop tab alignment and avatar placeholder + header avatar refresh",
+  "projectName": "Fix pond creator auto-join on pond creation (phrase-hash userId)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

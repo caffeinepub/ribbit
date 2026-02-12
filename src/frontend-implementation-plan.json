@@ -1,63 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Settings layout + avatar placeholder + header avatar immediate refresh",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "summary": "Align desktop Settings vertical tabs column to the left edge of the Settings content block on md+ viewports.",
-      "acceptanceCriteria": [
-        "On md+ viewports, the Settings tabs column and the Settings content area share a consistent left alignment within the Settings page container (no unintended horizontal offset/centering of the tabs relative to the content block).",
-        "The desktop Settings tabs remain vertical and usable; no regressions to mobile tabs behavior."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
-          "operation": "modify",
-          "description": "Adjust the md+ Tabs container layout (e.g., flex/grid sizing and alignment) so the TabsList column and the content column share the same left edge within the page container, removing any centering/offset caused by current wrappers."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Update/override styling for the existing Settings desktop tab classes (e.g., .vertical-tabs-list / .vertical-tabs-trigger) to ensure the TabsList aligns to the left and does not introduce extra horizontal padding/margins that shift it relative to the content. Do not edit files under frontend/src/components/ui."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Show an avatar placeholder in Settings > Avatar when no saved avatar exists and no local preview is selected.",
-      "acceptanceCriteria": [
-        "When the logged-in user has no saved avatar and has not chosen a new file to preview, the Settings > Avatar section still renders an avatar placeholder (e.g., fallback initials or existing fallback styling).",
-        "When the user selects a file, the preview continues to show as it does today, and when an avatar exists on the profile it continues to display correctly."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
-          "operation": "modify",
-          "description": "Refactor the Avatar tab rendering to always display an Avatar component block, choosing the image source in priority order (local preview > saved profile avatar) and otherwise rendering a clear placeholder via AvatarFallback (e.g., initials). Keep existing preview and saved-avatar behaviors intact."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Keep React Query cache in sync so the Header avatar updates immediately after saving a new avatar in Settings.",
-      "acceptanceCriteria": [
-        "After successfully saving an avatar in Settings, the avatar shown in the main Header updates to the newly saved avatar without requiring navigation or hard refresh.",
-        "The update works even if the user remains on the Settings page after saving (i.e., Header reflects the new avatar immediately).",
-        "React Query cache keys used for the header avatar (e.g., ['userAvatar', username]) are refreshed/updated as part of the avatar-save flow so the header query is not left stale."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/UserSettingsPage.tsx",
-          "operation": "modify",
-          "description": "After a successful avatar save, proactively update the React Query cache for the header avatar key (['userAvatar', currentUsername]) using setQueryData (store the newly created ExternalBlob used for saving) and then invalidate/refetch as needed. This ensures Header re-renders immediately. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Ensure the header avatar rendering reacts cleanly to query cache updates (including transitions between null -> avatar) and maintains an appropriate fallback when no avatar is available."
-        }
-      ]
-    }
-  ]
+  "title": "Fix pond creation authorization trap and auto-join behavior (frontend scope)",
+  "requirements": []
 }

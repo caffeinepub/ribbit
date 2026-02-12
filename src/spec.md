@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Settings desktop tab alignment, ensure a visible avatar placeholder in Settings when none is set, and refresh the header avatar immediately after avatar updates.
+**Goal:** Allow ponds to be created via phrase-hash `userId` without Principal/caller authorization traps, and ensure the creator is automatically joined and indexed at creation time.
 
 **Planned changes:**
-- Adjust the md+ Settings page layout so the vertical tabs column aligns flush with the left edge of the Settings content block (consistent left alignment between tabs and main content).
-- In Settings > Avatar, render a clear placeholder avatar when the user has no saved avatar and no local preview selected.
-- After a successful avatar save, update/refresh the relevant React Query cache so the Header avatar re-renders immediately without a page refresh.
+- Update `createPond(...)` in `backend/main.mo` to remove/disable the `userIdLinkage` + `caller != linkedPrincipal` authorization gate and any `AccessControl.hasPermission(...)` checks in the pond-creation path, so creation can succeed based on provided phrase-hash `userId` (including anonymous callers).
+- Update `createPond(...)` to auto-join the creator on creation by adding the creator `userId` to `pond.members` (exactly once) and setting `pond.memberCount` to match the unique member total (at least `1`).
+- Update phrase-hash user↔pond indexes on creation: add the new pond name to the creator’s `UserProfile.joinedPonds` (via `getUserProfileByPhraseHash(userId)` data model) and to `userPonds[userId]`, avoiding duplicates on retries.
 
-**User-visible outcome:** On desktop, Settings tabs line up correctly with the Settings content; the Avatar tab always shows an avatar placeholder when none is selected; and the Header avatar updates right after saving a new avatar.
+**User-visible outcome:** Users can create a pond using a phrase-hash `userId` even when anonymous, and the creator will immediately appear as a member with their profile and user-pond listings updated to include the new pond.

@@ -1,59 +1,46 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T02:45:19.913Z",
-  "summary": "Diff shows some new global CSS utilities (including vertical/underline tabs styles) and Header UI/search behavior changes, but the provided truncated excerpts do not contain clear evidence that the Settings desktop tab alignment, Settings avatar placeholder rendering, or React Query cache refresh for the header avatar after saving were fully implemented.",
+  "generatedAt": "2026-02-12T04:33:57.375Z",
+  "summary": "The provided diff summary does not show any changes to `createPond(...)` (the relevant section of `backend/main.mo` is not included in the truncated excerpt), so there is no evidence that REQ-6/7/8 were implemented. The diff does show edits to `project_state.json` adding new feature request tracking entries, which were not part of the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
-      "reason": "While new CSS classes for vertical tabs were added, the diff excerpt does not show the actual md+ Settings page container/grid/flex layout changes needed to guarantee left-edge alignment between the tabs column and the content column.",
+      "id": "REQ-6",
+      "requirement": "Update `createPond(...)` in `backend/main.mo` so pond creation is not blocked by `caller`/Principal linkage checks or AccessControl permission validation (remove/disable `userIdLinkage` + `caller != linkedPrincipal` gate and related `AccessControl.hasPermission(...)` checks), allowing anonymous callers with a provided `userId`.",
+      "reason": "No visible diff evidence that `createPond(...)` logic was modified; the `backend/main.mo` excerpt is truncated before the `createPond(...)` implementation.",
       "evidence": [
-        "frontend/src/index.css",
-        "frontend/src/pages/UserSettingsPage.tsx"
+        "backend/main.mo (truncated; no `createPond(...)` changes shown)"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (no saved avatar and no local preview).",
-      "reason": "UserSettingsPage.tsx is truncated before the Avatar tab rendering; there is no visible conditional render showing an AvatarFallback/placeholder when both profile avatar and local preview are absent.",
+      "id": "REQ-7",
+      "requirement": "Update `createPond(...)` to auto-join the creator by phrase-hash `userId`: add creator `userId` to `pond.members`, set `memberCount` accordingly (>= 1), and update phrase-hash `UserProfile.joinedPonds` to include the new pond name.",
+      "reason": "No visible diff evidence of changes in pond creation flow or updates to `pond.members`, `memberCount`, or `UserProfile.joinedPonds` during creation; `createPond(...)` is not shown in the truncated snippet.",
       "evidence": [
-        "frontend/src/pages/UserSettingsPage.tsx"
+        "backend/main.mo (truncated; no `createPond(...)` changes shown)"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings (keep React Query cache in sync).",
-      "reason": "The diff excerpt does not show any React Query cache invalidation/setQueryData/refetch for the header avatar query key being triggered after the avatar save mutation succeeds; Header.tsx only reads avatar data via useGetUserAvatarByUsername.",
+      "id": "REQ-8",
+      "requirement": "Ensure `createPond(...)` updates phrase-hash user↔pond indexes, specifically updating `userPonds[userId]` to include the new pond name without duplication and without Principal/caller checks.",
+      "reason": "Although `userPonds` is declared in the shown snippet, there is no evidence in the diff summary that `createPond(...)` updates `userPonds` on pond creation or handles deduplication; relevant code is not shown.",
       "evidence": [
-        "frontend/src/pages/UserSettingsPage.tsx",
-        "frontend/src/components/Header.tsx"
+        "backend/main.mo (truncated; no `createPond(...)` changes shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Header search UX changes (click-outside handler for desktop dropdown, search execution behavior, centered mobile logo positioning, and related UI adjustments).",
-      "reason": "The BuildRequest is scoped to Settings tab alignment and avatar placeholder/refresh behavior; it does not request changes to header search UI/behavior.",
+      "description": "Added/expanded internal project tracking entries in `project_state.json` (e.g., AR-1..AR-7 with reqIds/status).",
+      "reason": "The BuildRequest only asks for backend behavior changes in `backend/main.mo` (and only to add `backend/migration.mo` if needed). It does not request updates to `project_state.json` or introduction of new feature-request tracking metadata.",
       "evidence": [
-        "frontend/src/components/Header.tsx",
-        "frontend/src/index.css"
-      ]
-    },
-    {
-      "description": "Global CSS utilities unrelated to Settings alignment/avatar behavior (e.g., action-icon sizing, tag icon circle background, global search input styling).",
-      "reason": "The BuildRequest constraints allow app-level CSS, but these specific utilities are not requested as part of the Settings/Avatar fixes.",
-      "evidence": [
-        "frontend/src/index.css"
+        "project_state.json (modified; new_feature_requests entries added/updated)"
       ]
     }
   ],
-  "confidence": 0.55,
+  "confidence": 0.42,
   "changed_files": [
-    "frontend-file-summaries.txt",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/UserSettingsPage.tsx",
+    "backend/main.mo",
     "project_state.json"
   ]
 }

@@ -195,6 +195,7 @@ export interface backendInterface {
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;
+    getAdminPonds(): Promise<Array<string>>;
     getAllRecentActivities(limit: bigint): Promise<Array<Activity>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -245,6 +246,7 @@ export interface backendInterface {
     getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
+    getUserPonds(userId: string): Promise<Array<string>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getUserProfileByPhraseHash(userId: string): Promise<UserProfile | null>;
     getUserProfileByUsername(username: string): Promise<UserProfile | null>;
@@ -533,6 +535,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.editPondSettings(arg0, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n13(this._uploadFile, this._downloadFile, arg3));
+            return result;
+        }
+    }
+    async getAdminPonds(): Promise<Array<string>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAdminPonds();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAdminPonds();
             return result;
         }
     }
@@ -1000,6 +1016,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getUserAvatarByUsername(arg0);
             return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getUserPonds(arg0: string): Promise<Array<string>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserPonds(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserPonds(arg0);
+            return result;
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {

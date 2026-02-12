@@ -56,7 +56,7 @@ export function useCreatePond() {
       image: ExternalBlob;
       profileImage: ExternalBlob;
       bannerImage: ExternalBlob;
-      froggyPhrase: string;
+      userId: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.createPond(
@@ -65,7 +65,7 @@ export function useCreatePond() {
         params.image,
         params.profileImage,
         params.bannerImage,
-        params.froggyPhrase
+        params.userId
       );
     },
     onSuccess: () => {
@@ -637,26 +637,7 @@ export function useIsUsernameAvailable(username: string) {
       
       return actor.isUsernameAvailableByPhraseHash(userId, username);
     },
-    enabled: !!actor && !isFetching && !!username && username.length > 0,
-  });
-}
-
-export function useCanChangeUsername(username: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['canChangeUsername', username],
-    queryFn: async () => {
-      if (!actor) return false;
-      const userId = await getPhraseHashUserId();
-      
-      if (!userId) {
-        return false;
-      }
-      
-      return actor.canChangeUsernameByPhraseHash(userId, username);
-    },
-    enabled: !!actor && !isFetching && !!username && username.length > 0,
+    enabled: !!actor && !isFetching && !!username,
   });
 }
 
@@ -677,7 +658,6 @@ export function useRegisterUsername() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -699,13 +679,32 @@ export function useReleaseUsername() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
+  });
+}
+
+export function useCanChangeUsername(username: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['canChangeUsername', username],
+    queryFn: async () => {
+      if (!actor) return false;
+      const userId = await getPhraseHashUserId();
+      
+      if (!userId) {
+        return false;
+      }
+      
+      return actor.canChangeUsernameByPhraseHash(userId, username);
+    },
+    enabled: !!actor && !isFetching && !!username,
   });
 }
 
 export function useRecordUsernameChange() {
   const { actor } = useActor();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
@@ -717,6 +716,9 @@ export function useRecordUsernameChange() {
       }
       
       return actor.recordUsernameChangeByPhraseHash(userId, username);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -788,14 +790,14 @@ export function useGetTagStats(tag: string) {
   });
 }
 
-export function useGetCanonicalTag(tag: string) {
+export function useGetTagRank(tag: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<string>({
-    queryKey: ['canonicalTag', tag],
+  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
+    queryKey: ['tagRank', tag],
     queryFn: async () => {
-      if (!actor) return tag;
-      return actor.getCanonicalTagForTag(tag);
+      if (!actor) return { tag, canonicalTag: tag };
+      return actor.getTagRank(tag);
     },
     enabled: !!actor && !isFetching && !!tag,
   });
@@ -805,7 +807,7 @@ export function useGetSubcategoriesForTag(tag: string) {
   const { actor, isFetching } = useActor();
 
   return useQuery<string[]>({
-    queryKey: ['subcategories', tag],
+    queryKey: ['tagSubcategories', tag],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getSubcategoriesForTag(tag);
@@ -821,28 +823,9 @@ export function useGetTagSuggestions(prefix: string, limit: number = 10) {
     queryKey: ['tagSuggestions', prefix, limit],
     queryFn: async () => {
       if (!actor) return [];
-      if (!prefix.trim()) return [];
       return actor.getTagSuggestions(prefix, BigInt(limit));
     },
-    enabled: !!actor && !isFetching && !!prefix.trim(),
-  });
-}
-
-// View count increment
-export function useIncrementLilyViewCount() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.incrementLilyViewCount(postId);
-    },
-    onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
-    },
+    enabled: !!actor && !isFetching && !!prefix,
   });
 }
 
@@ -876,10 +859,12 @@ export function useMergeSimilarTags() {
       return actor.mergeSimilarTags();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
       queryClient.invalidateQueries({ queryKey: ['topTags'] });
       queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
       queryClient.invalidateQueries({ queryKey: ['newestTags'] });
+      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
+      queryClient.invalidateQueries({ queryKey: ['lilies'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 }
@@ -897,13 +882,32 @@ export function useGetTagRedirects() {
   });
 }
 
-// Search suggestions (placeholder hooks - no parameters)
+// View count increment
+export function useIncrementLilyViewCount() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.incrementLilyViewCount(postId);
+    },
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
+  });
+}
+
+// Search placeholder hooks (backend search not yet implemented)
 export function useGetTrendingSearches() {
   return useQuery<string[]>({
     queryKey: ['trendingSearches'],
     queryFn: async () => {
       return [];
     },
+    enabled: false,
   });
 }
 
@@ -913,5 +917,6 @@ export function useGetSearchSuggestions() {
     queryFn: async () => {
       return [];
     },
+    enabled: false,
   });
 }

@@ -103,6 +103,7 @@ export interface backendInterface {
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
     editPondSettings(pondName: string, title: string | null, description: string | null, visibility: Visibility | null): Promise<void>;
+    getAdminPonds(): Promise<Array<string>>;
     getAllRecentActivities(limit: bigint): Promise<Array<Activity>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -153,6 +154,7 @@ export interface backendInterface {
     getTopTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getTrendingTags(limit: bigint): Promise<Array<[string, TagStats]>>;
     getUserAvatarByUsername(username: string): Promise<ExternalBlob | null>;
+    getUserPonds(userId: string): Promise<Array<string>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getUserProfileByPhraseHash(userId: string): Promise<UserProfile | null>;
     getUserProfileByUsername(username: string): Promise<UserProfile | null>;

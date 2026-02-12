@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { Tabs } from '@/components/ui/tabs';
 import LilyCard from '@/components/LilyCard';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
-import { useGetLiliesByTag, useGetCanonicalTag, useGetSubcategoriesForTag } from '@/hooks/useQueries';
+import { useGetLiliesByTag, useGetSubcategoriesForTag } from '@/hooks/useQueries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tag } from 'lucide-react';
 
@@ -12,21 +12,12 @@ type SortOption = 'newest' | 'most_viewed' | 'most_replied';
 
 export default function TagPage() {
   const { tag } = useParams({ strict: false }) as { tag: string };
-  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   
-  const { data: canonicalTag, isLoading: isLoadingCanonical } = useGetCanonicalTag(tag);
-  const { data: lilies, isLoading: isLoadingLilies } = useGetLiliesByTag(canonicalTag || tag, sortBy);
-  const { data: subcategories, isLoading: isLoadingSubcategories } = useGetSubcategoriesForTag(canonicalTag || tag);
+  const { data: lilies, isLoading: isLoadingLilies } = useGetLiliesByTag(tag, sortBy);
+  const { data: subcategories, isLoading: isLoadingSubcategories } = useGetSubcategoriesForTag(tag);
 
-  // Redirect to canonical tag if different
-  useEffect(() => {
-    if (canonicalTag && canonicalTag !== tag) {
-      navigate({ to: '/tag/$tag', params: { tag: canonicalTag }, replace: true });
-    }
-  }, [canonicalTag, tag, navigate]);
-
-  const isLoading = isLoadingCanonical || isLoadingLilies;
+  const isLoading = isLoadingLilies;
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,7 +44,7 @@ export default function TagPage() {
                     {/* Tag Name and Count */}
                     <div className="flex-1 min-w-0">
                       <h1 className="text-3xl font-bold mb-0.5">
-                        #{canonicalTag || tag}
+                        #{tag}
                       </h1>
                       <p className="text-muted-foreground">
                         {lilies ? `${lilies.length} ${lilies.length === 1 ? 'lily' : 'lilies'}` : 'Loading...'}
@@ -142,7 +133,7 @@ export default function TagPage() {
                     </div>
                     <p className="text-muted-foreground mb-2" style={{ fontSize: '1rem' }}>No lilies found with this tag</p>
                     <p className="text-muted-foreground" style={{ fontSize: '1rem' }}>
-                      Be the first to create a lily with the tag "#{canonicalTag || tag}"
+                      Be the first to create a lily with the tag "#{tag}"
                     </p>
                   </div>
                 ) : (

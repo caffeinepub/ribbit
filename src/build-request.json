@@ -1,71 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Fix Settings desktop tab alignment and avatar placeholder + header avatar refresh",
+  "title": "Fix pond creation: remove caller/principal linkage trap and auto-join creator by phrase-hash userId",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
-      "target": "frontend",
+      "id": "REQ-6",
+      "text": "Update `createPond(...)` in `backend/main.mo` so pond creation is not blocked by `caller`/Principal linkage checks or AccessControl permission validation. Specifically, remove/disable the `userIdLinkage` + `caller != linkedPrincipal` authorization gate (and any related `AccessControl.hasPermission(...)` checks) in the pond-creation path so `createPond` can succeed based only on the provided phrase-hash `userId`, including when the caller is anonymous.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "make sure the tabs in settings are aligned to the left of the content block in desktop mode."
+          "This is the blocker.",
+          "ok then fix it then"
         ]
       },
       "acceptanceCriteria": [
-        "On md+ viewports, the Settings tabs column and the Settings content area share a consistent left alignment within the Settings page container (no unintended horizontal offset/centering of the tabs relative to the content block).",
-        "The desktop Settings tabs remain vertical and usable; no regressions to mobile tabs behavior."
+        "Calling `createPond(...)` no longer traps due to `caller != linkedPrincipal` for users whose `userId` was previously linked to a different Principal.",
+        "`createPond(...)` does not require `AccessControl.hasPermission(... #user)` to succeed for phrase-hash creation flows.",
+        "`createPond(...)` can successfully create a pond when called by an anonymous identity, as long as a `userId` is provided."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (i.e., user profile has no avatar and there is no local preview), instead of showing no avatar display.",
-      "target": "frontend",
+      "id": "REQ-7",
+      "text": "Update `createPond(...)` in `backend/main.mo` to auto-join the pond creator using the phrase-hash `userId` membership model at creation time: (1) include the creator’s `userId` in the new pond’s `members`, (2) set the new pond’s `memberCount` to reflect this auto-join (must be at least `1` on creation), and (3) immediately update the creator’s phrase-hash `UserProfile.joinedPonds` to include the newly created pond name.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "also make sure the user avatar in settings has a placeholder when no avatar has been selected yet."
+          "Therefore the creator is never added to `pond.members`, never added to their profile, never added to `userPonds`.",
+          "ok then fix it then"
         ]
       },
       "acceptanceCriteria": [
-        "When the logged-in user has no saved avatar and has not chosen a new file to preview, the Settings > Avatar section still renders an avatar placeholder (e.g., fallback initials or existing fallback styling).",
-        "When the user selects a file, the preview continues to show as it does today, and when an avatar exists on the profile it continues to display correctly."
+        "After a successful `createPond(...)` call, `pond.members` contains the creator `userId` exactly once.",
+        "After a successful `createPond(...)` call, `pond.memberCount` is `>= 1` and matches the number of unique entries in `pond.members` for a newly created pond.",
+        "After a successful `createPond(...)` call, `getUserProfileByPhraseHash(userId)` returns a profile whose `joinedPonds` includes the new pond name."
       ]
     },
     {
-      "id": "REQ-3",
-      "text": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings, without requiring a full page refresh (keep React Query cache in sync so Header re-renders with the new avatar).",
-      "target": "frontend",
+      "id": "REQ-8",
+      "text": "Ensure `createPond(...)` updates any additional user↔pond relationship indexes used by the app for phrase-hash users. In particular, update the `userPonds` map in `backend/main.mo` so the creator’s `userPonds[userId]` includes the newly created pond name immediately after pond creation (without requiring any Principal-based linkage).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "also make sure to update the avatar in the header when a user uploads an avatar."
+          "never added to `userPonds`.",
+          "ok then fix it then"
         ]
       },
       "acceptanceCriteria": [
-        "After successfully saving an avatar in Settings, the avatar shown in the main Header updates to the newly saved avatar without requiring navigation or hard refresh.",
-        "The update works even if the user remains on the Settings page after saving (i.e., Header reflects the new avatar immediately).",
-        "React Query cache keys used for the header avatar (e.g., ['userAvatar', username]) are refreshed/updated as part of the avatar-save flow so the header query is not left stale."
+        "After a successful `createPond(...)` call, the `userPonds` entry for the creator `userId` exists and includes the new pond name.",
+        "The new pond name is not duplicated in `userPonds[userId]` if `createPond(...)` is retried or if the user already has entries.",
+        "No Principal/caller-based checks are required for updating `userPonds` in the pond-creation path."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn UI sources); compose and override via page/component classes or app-level CSS instead.",
-    "Keep all changes within the existing React + TypeScript + Tailwind + React Query stack."
+    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
+    "Do not add third-party auth; only Internet Identity is supported (but `createPond` must work for anonymous callers in phrase-hash flow).",
+    "Use English for any user-facing text (e.g., trap/error messages returned to the UI, if any are changed/added).",
+    "Only create `backend/migration.mo` if a state upgrade is required; otherwise do not add migrations."
   ],
   "nonGoals": [
-    "No backend (Motoko) changes are required for these UI behavior fixes.",
-    "No redesign of the Settings information architecture or adding new settings features."
+    "Do not redesign the frontend pond creation UI.",
+    "Do not change the overall authentication model across the app; this change is limited to removing caller/principal gating from the pond-creation path and ensuring phrase-hash auto-join behavior.",
+    "Do not introduce new databases or external storage beyond the existing canister state."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

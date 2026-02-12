@@ -1,62 +1,47 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T02:45:19.916Z",
+  "generatedAt": "2026-02-12T04:33:57.377Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 3,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx",
-          "frontend/src/index.css"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx",
-          "frontend/src/index.css"
-        ]
+        "id": "REQ-6",
+        "summary": "Update `createPond(...)` in `backend/main.mo` so pond creation is not blocked by `caller`/Principal linkage checks or AccessControl permission validation. Specifically, remove/disable the `userIdLinkage` + `caller != linkedPrincipal` authorization gate (and any related `AccessControl.hasPermission(...)` checks) in the pond-creation path so `createPond` can succeed based only on the provided phrase-hash `userId`, including when the caller is anonymous.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-2",
-        "summary": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (i.e., user profile has no avatar and there is no local preview), instead of showing no avatar display.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx"
-        ]
+        "id": "REQ-7",
+        "summary": "Update `createPond(...)` in `backend/main.mo` to auto-join the pond creator using the phrase-hash `userId` membership model at creation time: (1) include the creator’s `userId` in the new pond’s `members`, (2) set the new pond’s `memberCount` to reflect this auto-join (must be at least `1` on creation), and (3) immediately update the creator’s phrase-hash `UserProfile.joinedPonds` to include the newly created pond name.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-3",
-        "summary": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings, without requiring a full page refresh (keep React Query cache in sync so Header re-renders with the new avatar).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx",
-          "frontend/src/components/Header.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/UserSettingsPage.tsx",
-          "frontend/src/components/Header.tsx"
-        ]
+        "id": "REQ-8",
+        "summary": "Ensure `createPond(...)` updates any additional user↔pond relationship indexes used by the app for phrase-hash users. In particular, update the `userPonds` map in `backend/main.mo` so the creator’s `userPonds[userId]` includes the newly created pond name immediately after pond creation (without requiring any Principal-based linkage).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/UserSettingsPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
