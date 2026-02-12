@@ -16,7 +16,7 @@ export class ExternalBlob {
 }
 export interface Pond {
     associatedTags: Array<string>;
-    members: Array<Principal>;
+    members: Array<string>;
     admin: Principal;
     lilyCount: bigint;
     profileImage?: ExternalBlob;
@@ -108,7 +108,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCanonicalTagForTag(tag: string): Promise<string>;
-    getJoinedPonds(): Promise<Array<string>>;
+    getJoinedPonds(userId: string): Promise<Array<string>>;
     getLikeCountForPost(postId: string): Promise<bigint>;
     getLiliesByTag(tag: string, sortBy: string): Promise<Array<Post>>;
     getNewestTags(limit: bigint): Promise<Array<[string, TagStats]>>;
@@ -169,10 +169,8 @@ export interface backendInterface {
     isUserAdminByPhraseHash(userId: string): Promise<boolean>;
     isUsernameAvailable(username: string): Promise<boolean>;
     isUsernameAvailableByPhraseHash(_userId: string, username: string): Promise<boolean>;
-    joinPond(pondName: string): Promise<void>;
-    joinPondByPhraseHash(userId: string, pondName: string): Promise<void>;
-    leavePond(pondName: string): Promise<void>;
-    leavePondByPhraseHash(userId: string, pondName: string): Promise<void>;
+    joinPond(userId: string, pondName: string): Promise<void>;
+    leavePond(userId: string, pondName: string): Promise<void>;
     likePost(postId: string): Promise<void>;
     likeRibbit(ribbitId: string): Promise<void>;
     listPonds(): Promise<Array<Pond>>;
@@ -183,7 +181,7 @@ export interface backendInterface {
     registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
-    removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
+    removeMemberFromPond(pondName: string, member: string): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
     removePondRule(pondName: string, rule: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

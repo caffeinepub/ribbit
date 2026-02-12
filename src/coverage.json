@@ -1,50 +1,70 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T22:54:39.679Z",
+  "generatedAt": "2026-02-12T00:28:55.181Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 4,
     "implemented": 1,
     "items": [
       {
-        "id": "REQ-5",
-        "summary": "Update pond membership logic to use Froggy Phrase hash (userId) instead of caller Principal, so anonymous users (shared principal `2vxsx-fae`) do not appear as the same member across all ponds. This includes updating the Pond storage model and all membership-related backend methods (join/leave/check/get joined ponds) to read/write membership by userId.",
+        "id": "REQ-1",
+        "summary": "Update backend pond membership storage and logic so joining/leaving a pond uses Froggy Phrase hash identity (userId: Text) end-to-end, without requiring a userId→Principal lookup (userIdLinkage) and without relying on caller Principal for membership.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-6",
-        "summary": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
+        "id": "REQ-2",
+        "summary": "Ensure backend join/leave pond operations correctly update the user profile’s joinedPonds list for the phrase-hash identity (userIdUserProfiles / getUserProfileByPhraseHash), creating a default profile if none exists for that userId, and never failing due to missing linkage records.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement a conditional Motoko state migration (backend/migration.mo) if required by the membership storage change, so existing deployed state upgrades safely and existing ponds remain readable after upgrade.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/PondAboutSidebar.tsx",
+          "frontend/src/components/PondCardJoinControl.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/PondAboutSidebar.tsx",
+          "frontend/src/components/PondCardJoinControl.tsx",
+          "frontend/src/pages/PondAboutPage.tsx"
         ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "If changing the stored type/schema for ponds is required to move from principal-based membership to userId-based membership, implement a conditional Motoko state migration so existing deployed state upgrades safely without trapping, and existing ponds remain readable after upgrade.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/PondAboutSidebar.tsx",
+    "frontend/src/components/PondCardJoinControl.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/PondAboutPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

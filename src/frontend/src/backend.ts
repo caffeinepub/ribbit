@@ -91,7 +91,7 @@ export class ExternalBlob {
 }
 export interface Pond {
     associatedTags: Array<string>;
-    members: Array<Principal>;
+    members: Array<string>;
     admin: Principal;
     lilyCount: bigint;
     profileImage?: ExternalBlob;
@@ -200,7 +200,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCanonicalTagForTag(tag: string): Promise<string>;
-    getJoinedPonds(): Promise<Array<string>>;
+    getJoinedPonds(userId: string): Promise<Array<string>>;
     getLikeCountForPost(postId: string): Promise<bigint>;
     getLiliesByTag(tag: string, sortBy: string): Promise<Array<Post>>;
     getNewestTags(limit: bigint): Promise<Array<[string, TagStats]>>;
@@ -261,10 +261,8 @@ export interface backendInterface {
     isUserAdminByPhraseHash(userId: string): Promise<boolean>;
     isUsernameAvailable(username: string): Promise<boolean>;
     isUsernameAvailableByPhraseHash(_userId: string, username: string): Promise<boolean>;
-    joinPond(pondName: string): Promise<void>;
-    joinPondByPhraseHash(userId: string, pondName: string): Promise<void>;
-    leavePond(pondName: string): Promise<void>;
-    leavePondByPhraseHash(userId: string, pondName: string): Promise<void>;
+    joinPond(userId: string, pondName: string): Promise<void>;
+    leavePond(userId: string, pondName: string): Promise<void>;
     likePost(postId: string): Promise<void>;
     likeRibbit(ribbitId: string): Promise<void>;
     listPonds(): Promise<Array<Pond>>;
@@ -275,7 +273,7 @@ export interface backendInterface {
     registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
-    removeMemberFromPond(pondName: string, member: Principal): Promise<void>;
+    removeMemberFromPond(pondName: string, member: string): Promise<void>;
     removeModerator(pondName: string, moderator: Principal): Promise<void>;
     removePondRule(pondName: string, rule: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
@@ -610,17 +608,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getJoinedPonds(): Promise<Array<string>> {
+    async getJoinedPonds(arg0: string): Promise<Array<string>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getJoinedPonds();
+                const result = await this.actor.getJoinedPonds(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getJoinedPonds();
+            const result = await this.actor.getJoinedPonds(arg0);
             return result;
         }
     }
@@ -1230,59 +1228,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async joinPond(arg0: string): Promise<void> {
+    async joinPond(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.joinPond(arg0);
+                const result = await this.actor.joinPond(arg0, arg1);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.joinPond(arg0);
+            const result = await this.actor.joinPond(arg0, arg1);
             return result;
         }
     }
-    async joinPondByPhraseHash(arg0: string, arg1: string): Promise<void> {
+    async leavePond(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.joinPondByPhraseHash(arg0, arg1);
+                const result = await this.actor.leavePond(arg0, arg1);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.joinPondByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
-    async leavePond(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.leavePond(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.leavePond(arg0);
-            return result;
-        }
-    }
-    async leavePondByPhraseHash(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.leavePondByPhraseHash(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.leavePondByPhraseHash(arg0, arg1);
+            const result = await this.actor.leavePond(arg0, arg1);
             return result;
         }
     }
@@ -1426,7 +1396,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async removeMemberFromPond(arg0: string, arg1: Principal): Promise<void> {
+    async removeMemberFromPond(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
                 const result = await this.actor.removeMemberFromPond(arg0, arg1);
@@ -1721,7 +1691,7 @@ async function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promi
 }
 async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     associatedTags: Array<string>;
-    members: Array<Principal>;
+    members: Array<string>;
     admin: Principal;
     lilyCount: bigint;
     profileImage: [] | [_ExternalBlob];
@@ -1736,7 +1706,7 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
     rules: Array<string>;
 }): Promise<{
     associatedTags: Array<string>;
-    members: Array<Principal>;
+    members: Array<string>;
     admin: Principal;
     lilyCount: bigint;
     profileImage?: ExternalBlob;

@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Prevent anonymous users from appearing as the same pond member by switching pond membership to use Froggy Phrase hash identity (userId) instead of the anonymous caller Principal.
+**Goal:** Fix pond join/leave failures by making pond membership and related profile updates use Froggy Phrase hash identity (userId: Text) end-to-end.
 
 **Planned changes:**
-- Update the backend pond storage model to store membership by userId (phrase hash) rather than by Principal, and adjust all membership-related methods (join/leave/check/get joined ponds) to read/write using userId.
-- Add/adjust backend membership endpoints that accept phrase hash (userId) and update frontend React Query hooks to use these phrase-hash endpoints for join/leave and joined-ponds queries (no principal-based fallback for pond membership).
-- If the pond storage schema changes, implement a conditional Motoko state migration so upgrades succeed and existing ponds remain readable, while ensuring legacy principal-based membership does not cause anonymous users to appear as members after upgrade.
-- Keep admin-only authorization enforcement intact and return clear English error messages for unauthorized operations.
+- Update backend pond membership storage and join/leave logic to be userId-based (phrase-hash), removing reliance on userId→Principal linkage and caller Principal for membership.
+- Ensure backend join/leave updates the phrase-hash user profile’s joinedPonds list via getUserProfileByPhraseHash behavior, creating a default profile when missing.
+- Add a conditional backend state migration (migration.mo) only if required to safely upgrade existing deployed membership state and keep existing ponds readable.
+- Update frontend join/leave pond flows to work with the backend changes and refresh membership-dependent queries so UI state updates after join/leave without showing the prior error.
 
-**User-visible outcome:** Joining or leaving a pond is scoped to the current Froggy Phrase identity; different browsers/devices with different phrase hashes no longer share pond membership, and the UI reflects membership changes immediately after join/leave.
+**User-visible outcome:** Users can join and leave ponds without seeing “user id not found”, membership is tracked per userId (not shared anonymous principal), and pond member counts/button state update correctly after join/leave.

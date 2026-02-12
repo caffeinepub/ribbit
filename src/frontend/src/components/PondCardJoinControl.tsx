@@ -20,7 +20,8 @@ export default function PondCardJoinControl({ pondName, isMember }: PondCardJoin
         toast.success(`Joined ${pondName}!`);
       },
       onError: (error) => {
-        toast.error(`Failed to join pond: ${error.message}`);
+        console.error('Join pond error:', error);
+        toast.error('Failed to join pond. Please try again.');
       },
     });
   };

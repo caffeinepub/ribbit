@@ -2,10 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-adjust-phrase-hash-based-membership-endpoints-used-by-the-frontend-so-that-the-ui-can-fetch-joined-ponds-and-membership-status-using-userid-froggy-phrase-hash-and-update-the-frontend-react-query-hooks-to-call-those-phrase-hash-endpoints-no-principal-based-fallback-for-pond-membership",
-      "featureTitle": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
+      "featureId": "feature-update-frontend-join-leave-pond-flows-react-query-hooks-and-any-ui-components-that-surface-join-errors-so-that-after-the-backend-fix-joining-leaving-works-without-showing-the-previous-user-id-not-found-failure-and-the-ui-refreshes-membership-dependent-queries-correctly",
+      "featureTitle": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/components/PondAboutSidebar.tsx",
+        "frontend/src/components/PondCardJoinControl.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/PondAboutPage.tsx"
       ],
       "components": [
         "blob-storage@2.0.3",
@@ -17,7 +20,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-4"
       ],
       "confidence": "high"
     }

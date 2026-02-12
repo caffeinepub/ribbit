@@ -1,23 +1,20 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "Anonymous-access site where Froggy Phrase hash is the primary identity; remove principal-based authorization checks that cause Unauthorized for anonymous callers, and migrate any user-specific data models (e.g., pond membership) off principal so anonymous users don’t collapse into one identity.",
+  "projectStateVersion": 3,
+  "summary": "New project",
   "architectural_notes": [
-    "Authorization/identity must be based on Froggy Phrase hash, not the caller principal; anonymous principal (2vxsx-fae) should not affect permissions.",
-    "Remove/avoid AccessControl.hasPermission(caller, #user) style checks across backend methods to prevent Unauthorized for anonymous access.",
-    "Any per-user state (e.g., pond membership) must not be keyed by caller principal; use Froggy Phrase hash/app-level identity to avoid all anonymous users collapsing into principal 2vxsx-fae."
+    "Backend currently mixes two identity systems (phrase-hash userId linkage vs principal-based calls); membership join/leave must use a consistent identity source across flows."
   ],
   "known_issues": [
-    "Backend currently returns Unauthorized for anonymous callers due to principal-based permission checks; must be removed/disabled in favor of Froggy Phrase identity.",
-    "All users appear to auto-join all ponds because pond membership is stored by caller principal; with anonymous access enabled, everyone shares principal 2vxsx-fae."
+    "Joining a pond can fail with error: \"failed to join pond: user id not found\" due to mismatch between phrase-hash userId expectations and principal-based join flow."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-adjust-phrase-hash-based-membership-endpoints-used-by-the-frontend-so-that-the-ui-can-fetch-joined-ponds-and-membership-status-using-userid-froggy-phrase-hash-and-update-the-frontend-react-query-hooks-to-call-those-phrase-hash-endpoints-no-principal-based-fallback-for-pond-membership",
-      "title": "Add/adjust phrase-hash-based membership endpoints used by the frontend so that the UI can fetch joined ponds and membership status using userId (Froggy Phrase hash), and update the frontend React Query hooks to call those phrase-hash endpoints (no principal-based fallback for pond membership).",
+      "id": "feature-update-frontend-join-leave-pond-flows-react-query-hooks-and-any-ui-components-that-surface-join-errors-so-that-after-the-backend-fix-joining-leaving-works-without-showing-the-previous-user-id-not-found-failure-and-the-ui-refreshes-membership-dependent-queries-correctly",
+      "title": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
       "reqIds": [
-        "REQ-6"
+        "REQ-4"
       ],
       "version": 1
     }
@@ -25,13 +22,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove principal-based authorization guards (msg.caller/AccessControl.hasPermission) and use Froggy Phrase hash as the identity so anonymous users are not blocked",
+      "summary": "Fix join/leave pond membership failing due to identity mismatch (phrase-hash userId vs principal), resulting in 'user id not found' error",
       "reqIds": [],
-      "status": "in_progress"
+      "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Remove principal-based authorization guards that cause anonymous callers to hit \"Unauthorized\" errors. Specifically, stop using `AccessControl.hasPermission(accessControlState, caller, #user)` (and any equivalent `msg.caller`/principal role checks) as a prerequisite for normal app actions, so calls from the anonymous principal (e.g., `2vxsx-fae`) can still succeed.",
+      "summary": "Update backend pond membership storage and logic so joining/leaving a pond uses Froggy Phrase hash identity (userId: Text) end-to-end, without requiring a userId→Principal lookup (userIdLinkage) and without relying on caller Principal for membership.",
       "reqIds": [
         "REQ-1"
       ],
@@ -39,7 +36,7 @@
     },
     {
       "id": "AR-3",
-      "summary": "Ensure all endpoints used by the anonymous-site UX work without principal-based authorization, including (at minimum) the methods currently guarded by `#user` checks in `backend/main.mo` such as `getCallerUserProfile`, `saveCallerUserProfile`, `incrementLilyViewCount`, `registerUsername`, and `releaseUsername`, plus any other app-action methods that still trap on `AccessControl.hasPermission(... caller ... #user)`.",
+      "summary": "Ensure backend join/leave pond operations correctly update the user profile’s joinedPonds list for the phrase-hash identity (userIdUserProfiles / getUserProfileByPhraseHash), creating a default profile if none exists for that userId, and never failing due to missing linkage records.",
       "reqIds": [
         "REQ-2"
       ],
@@ -47,44 +44,14 @@
     },
     {
       "id": "AR-4",
-      "summary": "Keep any genuinely admin-only operations restricted (e.g., `mergeSimilarTags` guarded by `#admin`), but do not use principal-based permissions to gate normal read/write actions for non-admin users on this anonymous site.",
+      "summary": "Implement a conditional Motoko state migration (backend/migration.mo) if required by the membership storage change, so existing deployed state upgrades safely and existing ponds remain readable after upgrade.",
       "reqIds": [
         "REQ-3"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Add/adjust backend error messages so that any remaining authorization failures (e.g., admin-only) clearly state the reason in English and do not mention the caller principal as the user identity.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Fix pond membership so users do not auto-join all ponds: store and evaluate membership using Froggy Phrase hash (or equivalent app identity) instead of caller principal, since anonymous users share principal 2vxsx-fae.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Update pond membership logic to use Froggy Phrase hash (userId) instead of caller Principal, so anonymous users (shared principal `2vxsx-fae`) do not appear as the same member across all ponds. This includes updating the Pond storage model and all membership-related backend methods (join/leave/check/get joined ponds) to read/write membership by userId.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "If changing the stored type/schema for ponds is required to move from principal-based membership to userId-based membership, implement a conditional Motoko state migration so existing deployed state upgrades safely without trapping, and existing ponds remain readable after upgrade.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "status": "pending"
     }
   ],
-  "projectName": "Remove principal-based authorization so anonymous users are never blocked (Froggy Phrase identity)",
+  "projectName": "Fix pond join/leave failing with 'user id not found' by making membership fully phrase-hash (userId) based",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

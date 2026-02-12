@@ -27,7 +27,8 @@ export default function PondAboutSidebar({ pondName }: PondAboutSidebarProps) {
       await joinPondMutation.mutateAsync(pondName);
       toast.success('Successfully joined the pond!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to join pond');
+      console.error('Join pond error:', error);
+      toast.error('Failed to join pond. Please try again.');
     }
   };
 
@@ -36,7 +37,8 @@ export default function PondAboutSidebar({ pondName }: PondAboutSidebarProps) {
       await leavePondMutation.mutateAsync(pondName);
       toast.success('Successfully left the pond');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to leave pond');
+      console.error('Leave pond error:', error);
+      toast.error('Failed to leave pond. Please try again.');
     }
   };
 

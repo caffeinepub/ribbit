@@ -28,7 +28,8 @@ export default function PondAboutPage() {
       await leavePondMutation.mutateAsync(name);
       toast.success('Successfully left the pond');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to leave pond');
+      console.error('Leave pond error:', error);
+      toast.error('Failed to leave pond. Please try again.');
     }
   };
 
@@ -37,7 +38,8 @@ export default function PondAboutPage() {
       await joinPondMutation.mutateAsync(name);
       toast.success('Successfully joined the pond!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to join pond');
+      console.error('Join pond error:', error);
+      toast.error('Failed to join pond. Please try again.');
     }
   };
 
@@ -205,9 +207,6 @@ export default function PondAboutPage() {
                       </Link>
                     ))}
                   </div>
-                  <p className="text-muted-foreground mt-3" style={{ fontSize: '0.875rem' }}>
-                    Tags from all Lilies posted in this pond
-                  </p>
                 </CardContent>
               </Card>
             )}
@@ -219,7 +218,7 @@ export default function PondAboutPage() {
               </CardHeader>
               <CardContent>
                 {pondInfo.rules.length > 0 ? (
-                  <ol className="space-y-3 list-decimal list-inside">
+                  <ol className="space-y-2 list-decimal list-inside">
                     {pondInfo.rules.map((rule, index) => (
                       <li key={index} className="text-sm text-muted-foreground">
                         {rule}
@@ -227,7 +226,9 @@ export default function PondAboutPage() {
                     ))}
                   </ol>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No rules have been set for this pond yet.</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    No rules have been set for this pond yet.
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -240,25 +241,22 @@ export default function PondAboutPage() {
               <CardContent>
                 {isLoadingModerators ? (
                   <div className="space-y-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
                   </div>
                 ) : moderatorProfiles && moderatorProfiles.length > 0 ? (
                   <div className="space-y-3">
-                    {moderatorProfiles.slice(0, 3).map((profile, index) => {
+                    {moderatorProfiles.map((profile, index) => {
                       const modUsername = profile?.name || 'Moderator';
                       return (
                         <ModeratorItem key={index} username={modUsername} />
                       );
                     })}
-                    {moderatorProfiles.length > 3 && (
-                      <Button variant="ghost" size="sm" className="w-full mt-2">
-                        View all moderators ({moderatorProfiles.length})
-                      </Button>
-                    )}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No moderators assigned yet.</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    No moderators listed.
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -273,22 +271,19 @@ function ModeratorItem({ username }: { username: string }) {
   const { data: avatar } = useGetUserAvatarByUsername(username);
 
   return (
-    <Link
-      to="/f/$username"
-      params={{ username }}
-      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
-    >
-      <Avatar className="h-10 w-10">
+    <div className="flex items-center gap-3">
+      <Avatar className="h-10 w-10 bg-primary/10">
         {avatar ? (
           <AvatarImage src={avatar.getDirectURL()} alt={username} />
-        ) : null}
-        <AvatarFallback className="bg-primary/10 text-primary">
-          {username.slice(0, 2).toUpperCase()}
-        </AvatarFallback>
+        ) : (
+          <AvatarFallback>
+            {username.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        )}
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">f/{username}</p>
-      </div>
-    </Link>
+      <span className="text-sm font-medium">
+        {username}
+      </span>
+    </div>
   );
 }
