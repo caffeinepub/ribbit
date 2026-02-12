@@ -128,7 +128,6 @@ export const idlService = IDL.Service({
   'addPondRule' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'assignUserRoleByPhraseHash' : IDL.Func([IDL.Text, UserRole], [], []),
-  'canChangeUsername' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'canChangeUsernameByPhraseHash' : IDL.Func(
       [IDL.Text, IDL.Text],
       [IDL.Bool],
@@ -313,7 +312,6 @@ export const idlService = IDL.Service({
   'listRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
   'mergeSimilarTags' : IDL.Func([], [], []),
   'recordUsernameChangeByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'registerUsername' : IDL.Func([IDL.Text], [], []),
   'registerUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'releaseUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'removeMemberFromPond' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -450,7 +448,6 @@ export const idlFactory = ({ IDL }) => {
     'addPondRule' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'assignUserRoleByPhraseHash' : IDL.Func([IDL.Text, UserRole], [], []),
-    'canChangeUsername' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'canChangeUsernameByPhraseHash' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Bool],
@@ -650,7 +647,6 @@ export const idlFactory = ({ IDL }) => {
     'listRibbits' : IDL.Func([IDL.Text], [IDL.Vec(Ribbit)], ['query']),
     'mergeSimilarTags' : IDL.Func([], [], []),
     'recordUsernameChangeByPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'registerUsername' : IDL.Func([IDL.Text], [], []),
     'registerUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'releaseUsernameWithPhraseHash' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'removeMemberFromPond' : IDL.Func([IDL.Text, IDL.Text], [], []),

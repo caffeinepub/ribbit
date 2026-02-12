@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix pond join/leave failures by making pond membership and related profile updates use Froggy Phrase hash identity (userId: Text) end-to-end.
+**Goal:** Ensure pond creators automatically become members of the pond at the moment the pond is created.
 
 **Planned changes:**
-- Update backend pond membership storage and join/leave logic to be userId-based (phrase-hash), removing reliance on userId→Principal linkage and caller Principal for membership.
-- Ensure backend join/leave updates the phrase-hash user profile’s joinedPonds list via getUserProfileByPhraseHash behavior, creating a default profile when missing.
-- Add a conditional backend state migration (migration.mo) only if required to safely upgrade existing deployed membership state and keep existing ponds readable.
-- Update frontend join/leave pond flows to work with the backend changes and refresh membership-dependent queries so UI state updates after join/leave without showing the prior error.
+- Update the backend `createPond` flow to add the creator to `Pond.members` on successful pond creation.
+- Ensure the new pond’s `memberCount` reflects the creator’s membership (at least 1 at creation) without double-counting.
+- Update the creator’s profile (`joinedPonds` in phrase-hash based user profile storage) to include the newly created pond name immediately after creation.
+- Add idempotency safeguards so the creator is not added twice and `memberCount` is not incremented twice in edge cases.
+- Preserve existing `createPond` behavior for pond metadata, images, and admin/moderator assignment.
 
-**User-visible outcome:** Users can join and leave ponds without seeing “user id not found”, membership is tracked per userId (not shared anonymous principal), and pond member counts/button state update correctly after join/leave.
+**User-visible outcome:** After creating a pond, the creator is immediately joined as a member of that pond (and their joined ponds list reflects it) without any extra UI steps.

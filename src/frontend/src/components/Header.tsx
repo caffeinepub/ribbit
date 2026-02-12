@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useGetUserAvatarByUsername, useRecordSearchTerm } from '@/hooks/useQueries';
+import { useGetUserAvatarByUsername } from '@/hooks/useQueries';
 import { getUsername } from '@/lib/user';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -34,7 +34,6 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
 
   const username = getUsername();
   const { data: userAvatar } = useGetUserAvatarByUsername(username);
-  const recordSearchMutation = useRecordSearchTerm();
 
   // Handle click outside for desktop dropdown
   useEffect(() => {
@@ -58,9 +57,6 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
 
   const executeSearch = (term: string) => {
     if (term.trim()) {
-      // Record the search term
-      recordSearchMutation.mutate(term.trim());
-      
       // Navigate to search results
       navigate({ to: '/', search: { q: term.trim() } });
       

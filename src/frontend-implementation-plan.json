@@ -1,38 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix frontend pond join/leave to use phrase-hash userId and refresh membership UI",
-  "requirements": [
-    {
-      "id": "REQ-4",
-      "summary": "Align join/leave pond React Query mutations with phrase-hash userId backend functions, refresh membership-dependent queries, and prevent surfacing the old 'user id not found' error text in UI toasts.",
-      "acceptanceCriteria": [
-        "From the pond join UI, a user can join a pond without receiving the 'user id not found' error.",
-        "After join or leave completes, the pond page/about sidebar reflects the new membership state without a manual refresh (member count and join/leave button state update).",
-        "No edits are made to frontend immutable paths (hooks/useInternetIdentity.ts(x), hooks/useActor.ts, main.tsx, components/ui)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update useJoinPond/useLeavePond mutations to call the phrase-hash userId-based backend capabilities (use actor.joinPond(userId, pondName) and actor.leavePond(userId, pondName) as defined in frontend/src/backend.d.ts) instead of non-existent joinPondByPhraseHash/leavePondByPhraseHash; keep/increase query invalidations so membership-dependent queries (pond, pondAbout, joinedPonds, currentUserProfile, ponds) refresh immediately after mutation."
-        },
-        {
-          "path": "frontend/src/components/PondAboutSidebar.tsx",
-          "operation": "modify",
-          "description": "Adjust join/leave error handling so toast errors do not display backend internal phrasing like 'user id not found' (map to a generic English message while optionally logging the raw error for debugging); ensure success continues to rely on React Query invalidations for immediate memberCount/button state updates."
-        },
-        {
-          "path": "frontend/src/components/PondCardJoinControl.tsx",
-          "operation": "modify",
-          "description": "Update the join error toast to avoid echoing raw error.message (which previously included 'user id not found'); show a generic English failure message while relying on the updated useJoinPond mutation for correct phrase-hash userId behavior and automatic UI refresh."
-        },
-        {
-          "path": "frontend/src/pages/PondAboutPage.tsx",
-          "operation": "modify",
-          "description": "Adjust join/leave error toasts to avoid surfacing raw backend error text like 'user id not found' and keep user-facing messaging in English; continue to use the shared join/leave hooks so that post-mutation invalidations refresh the about page membership state without manual reload."
-        }
-      ]
-    }
-  ]
+  "title": "Auto-join pond creators to their newly created ponds (frontend-only scope)",
+  "requirements": []
 }

@@ -1,57 +1,54 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 5,
   "summary": "New project",
   "architectural_notes": [
-    "Backend currently mixes two identity systems (phrase-hash userId linkage vs principal-based calls); membership join/leave must use a consistent identity source across flows."
+    "AccessControl currently still enforces role/principal-based permissions; should be stripped or bypassed for all non-admin user flows while keeping explicit admin functions protected."
   ],
   "known_issues": [
-    "Joining a pond can fail with error: \"failed to join pond: user id not found\" due to mismatch between phrase-hash userId expectations and principal-based join flow."
+    "Users intermittently see \"not authorized\" due to leftover AccessControl permission checks conflicting with anonymous/phrase-hash identity flow."
   ],
-  "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-update-frontend-join-leave-pond-flows-react-query-hooks-and-any-ui-components-that-surface-join-errors-so-that-after-the-backend-fix-joining-leaving-works-without-showing-the-previous-user-id-not-found-failure-and-the-ui-refreshes-membership-dependent-queries-correctly",
-      "title": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    }
-  ],
+  "isFixRequest": false,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix join/leave pond membership failing due to identity mismatch (phrase-hash userId vs principal), resulting in 'user id not found' error",
+      "summary": "Remove/neutralize AccessControl checks for normal user actions to prevent recurring \"not authorized\" errors (leave admin-only actions protected)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Update backend pond membership storage and logic so joining/leaving a pond uses Froggy Phrase hash identity (userId: Text) end-to-end, without requiring a userId→Principal lookup (userIdLinkage) and without relying on caller Principal for membership.",
+      "summary": "Update the Motoko backend (backend/main.mo) to fully neutralize/strip AccessControl permission checks for all normal user actions so that anonymous/phrase-hash users never see \"Unauthorized\" errors during standard usage (profiles, usernames, pond membership, posting, liking, etc.), while keeping explicit admin-only operations protected.",
       "reqIds": [
-        "REQ-1"
+        "REQ-5"
       ],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Ensure backend join/leave pond operations correctly update the user profile’s joinedPonds list for the phrase-hash identity (userIdUserProfiles / getUserProfileByPhraseHash), creating a default profile if none exists for that userId, and never failing due to missing linkage records.",
+      "summary": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so that normal phrase-hash operations do not depend on AccessControl role state (e.g., do not require AccessControl.initialize or #user permission to create userIdLinkage entries) and do not fallback into AccessControl-based rejection for first-time users.",
       "reqIds": [
-        "REQ-2"
+        "REQ-6"
       ],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Implement a conditional Motoko state migration (backend/migration.mo) if required by the membership storage change, so existing deployed state upgrades safely and existing ponds remain readable after upgrade.",
+      "summary": "Ensure pond creators automatically become members of the pond they create (auto-join on pond creation).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time (i.e., the creator immediately “joins” the pond they just created).",
       "reqIds": [
-        "REQ-3"
+        "REQ-7"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix pond join/leave failing with 'user id not found' by making membership fully phrase-hash (userId) based",
+  "projectName": "Remove recurring 'Unauthorized' errors by neutralizing AccessControl for normal user actions",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

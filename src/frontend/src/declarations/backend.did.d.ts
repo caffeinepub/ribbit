@@ -110,7 +110,6 @@ export interface _SERVICE {
   'addPondRule' : ActorMethod<[string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'assignUserRoleByPhraseHash' : ActorMethod<[string, UserRole], undefined>,
-  'canChangeUsername' : ActorMethod<[string], boolean>,
   'canChangeUsernameByPhraseHash' : ActorMethod<[string, string], boolean>,
   'clearPostLikes' : ActorMethod<[string], undefined>,
   'createPond' : ActorMethod<
@@ -214,7 +213,6 @@ export interface _SERVICE {
   'listRibbits' : ActorMethod<[string], Array<Ribbit>>,
   'mergeSimilarTags' : ActorMethod<[], undefined>,
   'recordUsernameChangeByPhraseHash' : ActorMethod<[string, string], undefined>,
-  'registerUsername' : ActorMethod<[string], undefined>,
   'registerUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
   'releaseUsernameWithPhraseHash' : ActorMethod<[string, string], undefined>,
   'removeMemberFromPond' : ActorMethod<[string, string], undefined>,

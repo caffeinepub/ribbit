@@ -95,7 +95,6 @@ export interface backendInterface {
     addPondRule(pondName: string, rule: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
-    canChangeUsername(_username: string): Promise<boolean>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
@@ -178,7 +177,6 @@ export interface backendInterface {
     listRibbits(postId: string): Promise<Array<Ribbit>>;
     mergeSimilarTags(): Promise<void>;
     recordUsernameChangeByPhraseHash(userId: string, username: string): Promise<void>;
-    registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     removeMemberFromPond(pondName: string, member: string): Promise<void>;

@@ -1,28 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-update-frontend-join-leave-pond-flows-react-query-hooks-and-any-ui-components-that-surface-join-errors-so-that-after-the-backend-fix-joining-leaving-works-without-showing-the-previous-user-id-not-found-failure-and-the-ui-refreshes-membership-dependent-queries-correctly",
-      "featureTitle": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
-      "files": [
-        "frontend/src/components/PondAboutSidebar.tsx",
-        "frontend/src/components/PondCardJoinControl.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/PondAboutPage.tsx"
-      ],
-      "components": [
-        "blob-storage@2.0.3",
-        "authorization@1.0.1",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

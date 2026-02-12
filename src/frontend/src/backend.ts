@@ -187,7 +187,6 @@ export interface backendInterface {
     addPondRule(pondName: string, rule: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
-    canChangeUsername(_username: string): Promise<boolean>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
     createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
@@ -270,7 +269,6 @@ export interface backendInterface {
     listRibbits(postId: string): Promise<Array<Ribbit>>;
     mergeSimilarTags(): Promise<void>;
     recordUsernameChangeByPhraseHash(userId: string, username: string): Promise<void>;
-    registerUsername(username: string): Promise<void>;
     registerUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     releaseUsernameWithPhraseHash(userId: string, username: string): Promise<void>;
     removeMemberFromPond(pondName: string, member: string): Promise<void>;
@@ -423,20 +421,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignUserRoleByPhraseHash(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
-            return result;
-        }
-    }
-    async canChangeUsername(arg0: string): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.canChangeUsername(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.canChangeUsername(arg0);
             return result;
         }
     }
@@ -1351,20 +1335,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.recordUsernameChangeByPhraseHash(arg0, arg1);
-            return result;
-        }
-    }
-    async registerUsername(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.registerUsername(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.registerUsername(arg0);
             return result;
         }
     }

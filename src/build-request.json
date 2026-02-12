@@ -1,102 +1,39 @@
 {
   "kind": "build_request",
-  "title": "Fix pond join/leave failing with 'user id not found' by making membership fully phrase-hash (userId) based",
+  "title": "Auto-join pond creators to their newly created ponds",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update backend pond membership storage and logic so joining/leaving a pond uses Froggy Phrase hash identity (userId: Text) end-to-end, without requiring a userId→Principal lookup (userIdLinkage) and without relying on caller Principal for membership.",
+      "id": "REQ-7",
+      "text": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time (i.e., the creator immediately “joins” the pond they just created).",
       "target": "backend",
       "source": {
         "messageIds": [
-          "conversation-recent-1"
+          "msg-1"
         ],
         "quotes": [
-          "now it says \"failed to join pond: user id not found\".",
-          "ok fix it"
+          "make it so pond creators automatically join their ponds"
         ]
       },
       "acceptanceCriteria": [
-        "Calling the backend join-pond flow with a valid userId no longer traps or returns an error mentioning that the userId was not found.",
-        "Anonymous users (shared principal 2vxsx-fae) do not appear as the same member; membership is determined by userId, not by caller principal.",
-        "Pond memberCount and any membership checks reflect userId-based membership consistently across join and leave operations."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Ensure backend join/leave pond operations correctly update the user profile’s joinedPonds list for the phrase-hash identity (userIdUserProfiles / getUserProfileByPhraseHash), creating a default profile if none exists for that userId, and never failing due to missing linkage records.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "conversation-recent-1"
-        ],
-        "quotes": [
-          "failed to join pond: user id not found"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After successfully joining a pond, getUserProfileByPhraseHash(userId) returns a profile whose joinedPonds includes the pond name.",
-        "After successfully leaving a pond, the pond name is removed from joinedPonds for that userId.",
-        "If a userId has no existing profile, join/leave does not trap; a profile is created/updated so joinedPonds remains correct."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Implement a conditional Motoko state migration (backend/migration.mo) if required by the membership storage change, so existing deployed state upgrades safely and existing ponds remain readable after upgrade.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "conversation-recent-1"
-        ],
-        "quotes": [
-          "failed to join pond: user id not found"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Upgrading the canister from the previous version does not trap during initialization or post-upgrade.",
-        "Existing ponds can still be fetched after upgrade (e.g., listPonds/getPond work) and have a valid memberCount/membership structure after migration."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Update frontend join/leave pond flows (React Query hooks and any UI components that surface join errors) so that after the backend fix, joining/leaving works without showing the previous 'user id not found' failure, and the UI refreshes membership-dependent queries correctly.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "conversation-recent-1"
-        ],
-        "quotes": [
-          "now it says \"failed to join pond: user id not found\"."
-        ]
-      },
-      "acceptanceCriteria": [
-        "From the pond join UI, a user can join a pond without receiving the 'user id not found' error.",
-        "After join or leave completes, the pond page/about sidebar reflects the new membership state without a manual refresh (member count and join/leave button state update).",
-        "No edits are made to frontend immutable paths (hooks/useInternetIdentity.ts(x), hooks/useActor.ts, main.tsx, components/ui)."
+        "When createPond is called successfully, the newly created Pond record includes the creator in Pond.members.",
+        "The newly created Pond record has memberCount that reflects the creator’s membership (i.e., at least 1 on creation).",
+        "The creator’s profile joinedPonds (phrase-hash based user profile storage) includes the newly created pond name immediately after creation.",
+        "If the creator is already present in the pond membership list due to any edge case, the backend does not add a duplicate membership entry and does not double-increment memberCount.",
+        "Existing createPond behavior (pond metadata, images, admin/moderator assignment, etc.) continues to work as before."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if a state upgrade is necessary.",
-    "Do not edit files under frontend/src/components/ui or any frontend immutable paths listed in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit frontend files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not implement new authentication providers or third-party auth; Internet Identity remains the only supported auth option.",
-    "Do not add new social features or redesign unrelated parts of the app; focus only on fixing pond membership join/leave identity mismatch."
+    "Changing the pond join/leave UI behavior or adding new UI screens.",
+    "Adding new authentication providers beyond the existing Internet Identity/phrase-hash identity approach."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

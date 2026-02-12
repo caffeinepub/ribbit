@@ -496,11 +496,11 @@ export function useGetCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.getUserProfileByPhraseHash(userId);
-      } else {
-        return actor.getCallerUserProfile();
+      if (!userId) {
+        return null;
       }
+      
+      return actor.getUserProfileByPhraseHash(userId);
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -522,11 +522,11 @@ export function useSaveCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.saveUserProfileByPhraseHash(userId, profile);
-      } else {
-        return actor.saveCallerUserProfile(profile);
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
+      
+      return actor.saveUserProfileByPhraseHash(userId, profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
@@ -615,11 +615,11 @@ export function useIsUsernameAvailable(username: string) {
       if (!actor) return false;
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.isUsernameAvailableByPhraseHash(userId, username);
-      } else {
-        return actor.isUsernameAvailable(username);
+      if (!userId) {
+        return false;
       }
+      
+      return actor.isUsernameAvailableByPhraseHash(userId, username);
     },
     enabled: !!actor && !isFetching && !!username && username.length > 0,
   });
@@ -634,11 +634,11 @@ export function useCanChangeUsername(username: string) {
       if (!actor) return false;
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.canChangeUsernameByPhraseHash(userId, username);
-      } else {
-        return actor.canChangeUsername(username);
+      if (!userId) {
+        return false;
       }
+      
+      return actor.canChangeUsernameByPhraseHash(userId, username);
     },
     enabled: !!actor && !isFetching && !!username && username.length > 0,
   });
@@ -653,15 +653,15 @@ export function useRegisterUsername() {
       if (!actor) throw new Error('Actor not available');
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.registerUsernameWithPhraseHash(userId, username);
-      } else {
-        return actor.registerUsername(username);
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
+      
+      return actor.registerUsernameWithPhraseHash(userId, username);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }
@@ -676,21 +676,20 @@ export function useReleaseUsername() {
       const userId = await getPhraseHashUserId();
       
       if (!userId) {
-        throw new Error('Unable to compute user identity');
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
       
       return actor.releaseUsernameWithPhraseHash(userId, username);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }
 
 export function useRecordUsernameChange() {
   const { actor } = useActor();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (username: string) => {
@@ -698,13 +697,10 @@ export function useRecordUsernameChange() {
       const userId = await getPhraseHashUserId();
       
       if (!userId) {
-        throw new Error('Unable to compute user identity');
+        throw new Error('Unable to compute user identity. Please refresh the page.');
       }
       
       return actor.recordUsernameChangeByPhraseHash(userId, username);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -776,13 +772,39 @@ export function useGetTagStats(tag: string) {
   });
 }
 
+export function useGetTagSuggestions(prefix: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagSuggestions(prefix, BigInt(limit));
+    },
+    enabled: !!actor && !isFetching && !!prefix && prefix.length > 0,
+  });
+}
+
+export function useGetSubcategoriesForTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSubcategories', tag],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getSubcategoriesForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
 export function useGetTagRank(tag: string) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<{ tag: string; rank?: bigint; canonicalTag: string }>({
+  return useQuery({
     queryKey: ['tagRank', tag],
     queryFn: async () => {
-      if (!actor) return { tag, canonicalTag: tag };
+      if (!actor) return null;
       return actor.getTagRank(tag);
     },
     enabled: !!actor && !isFetching && !!tag,
@@ -802,45 +824,6 @@ export function useGetCanonicalTag(tag: string) {
   });
 }
 
-export function useGetTagRedirects() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Array<[string, string]>>({
-    queryKey: ['tagRedirects'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagRedirects();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetSubcategoriesForTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSubcategories', tag],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getSubcategoriesForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagSuggestions(prefix, BigInt(limit));
-    },
-    enabled: !!actor && !isFetching && !!prefix && prefix.length > 0,
-  });
-}
-
 // Admin queries
 export function useIsAdmin() {
   const { actor, isFetching } = useActor();
@@ -851,11 +834,11 @@ export function useIsAdmin() {
       if (!actor) return false;
       const userId = await getPhraseHashUserId();
       
-      if (userId !== '') {
-        return actor.isUserAdminByPhraseHash(userId);
-      } else {
-        return actor.isCallerAdmin();
+      if (!userId) {
+        return false;
       }
+      
+      return actor.isUserAdminByPhraseHash(userId);
     },
     enabled: !!actor && !isFetching,
   });
@@ -875,9 +858,20 @@ export function useMergeSimilarTags() {
       queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
       queryClient.invalidateQueries({ queryKey: ['newestTags'] });
       queryClient.invalidateQueries({ queryKey: ['tagStats'] });
-      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
-      queryClient.invalidateQueries({ queryKey: ['liliesByTag'] });
     },
+  });
+}
+
+export function useGetTagRedirects() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[string, string]>>({
+    queryKey: ['tagRedirects'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTagRedirects();
+    },
+    enabled: !!actor && !isFetching,
   });
 }
 
@@ -899,30 +893,25 @@ export function useIncrementLilyViewCount() {
   });
 }
 
-// Search placeholder hooks (client-side only)
-export function useGetTrendingSearches() {
+// Search queries - placeholders that accept parameters
+export function useGetSearchSuggestions(query: string) {
+  // Placeholder for search suggestions - returns empty array
   return useQuery<string[]>({
-    queryKey: ['trendingSearches'],
-    queryFn: async () => {
-      return ['ribbit', 'pond', 'frog', 'lily', 'community'];
-    },
-  });
-}
-
-export function useGetSearchSuggestions(_query: string) {
-  return useQuery<string[]>({
-    queryKey: ['searchSuggestions', _query],
+    queryKey: ['searchSuggestions', query],
     queryFn: async () => {
       return [];
     },
+    enabled: false,
   });
 }
 
-export function useRecordSearchTerm() {
-  return useMutation({
-    mutationFn: async (_term: string) => {
-      // Client-side placeholder
-      return;
+export function useGetTrendingSearches() {
+  // Placeholder for trending searches - returns empty array
+  return useQuery<string[]>({
+    queryKey: ['trendingSearches'],
+    queryFn: async () => {
+      return [];
     },
+    enabled: false,
   });
 }
