@@ -186,7 +186,15 @@ export default function CreateLilyPage() {
         },
         onError: (error) => {
           const errorMessage = error instanceof Error ? error.message : 'Failed to create lily';
-          toast.error(errorMessage);
+          
+          // Detect membership-related errors
+          if (errorMessage.includes('must be a member') || 
+              errorMessage.includes('join the pond') ||
+              errorMessage.includes('not a member')) {
+            toast.error('You must join this pond before posting a Lily. Please join the pond first.');
+          } else {
+            toast.error(errorMessage);
+          }
         },
       }
     );
@@ -222,7 +230,7 @@ export default function CreateLilyPage() {
                   <Alert className="mt-2">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      You are posting to a pond you haven't joined yet.
+                      You must join this pond before posting. Please join the pond first.
                     </AlertDescription>
                   </Alert>
                 )}

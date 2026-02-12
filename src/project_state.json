@@ -1,104 +1,57 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
+  "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [
-    "AccessControl currently still enforces role/principal-based permissions; should be stripped or bypassed for all non-admin user flows while keeping explicit admin functions protected.",
-    "Pond creation currently initializes memberCount=1 without inserting the creator's userId into pond.members (and without updating creator.joinedPonds), causing a mismatch where UI shows 1 member but creator is not actually joined."
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-adjust-the-desktop-layout-of-the-settings-page-so-the-vertical-settings-tabs-are-visually-aligned-to-the-left-edge-of-the-settings-content-block-desktop-mode-md-with-consistent-left-alignment-between-the-tabs-column-and-the-main-content-column",
+      "title": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-settings-avatar-tab-display-a-clear-placeholder-avatar-when-the-user-has-not-selected-an-avatar-yet-i-e-user-profile-has-no-avatar-and-there-is-no-local-preview-instead-of-showing-no-avatar-display",
+      "title": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (i.e., user profile has no avatar and there is no local preview), instead of showing no avatar display.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-header-avatar-updates-immediately-after-a-user-uploads-saves-a-new-avatar-in-settings-without-requiring-a-full-page-refresh-keep-react-query-cache-in-sync-so-header-re-renders-with-the-new-avatar",
+      "title": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings, without requiring a full page refresh (keep React Query cache in sync so Header re-renders with the new avatar).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    }
   ],
-  "known_issues": [
-    "Users intermittently see \"not authorized\" due to leftover AccessControl permission checks conflicting with anonymous/phrase-hash identity flow.",
-    "Newly created ponds show memberCount=1 but the creator is not actually in pond.members (creator not auto-joined); memberCount appears preset/incremented without persisting membership."
-  ],
-  "isFixRequest": true,
-  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove/neutralize AccessControl checks for normal user actions to prevent recurring \"not authorized\" errors (leave admin-only actions protected)",
+      "summary": "Align Settings tabs to the left of the content block in desktop mode",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Update the Motoko backend (backend/main.mo) to fully neutralize/strip AccessControl permission checks for all normal user actions so that anonymous/phrase-hash users never see \"Unauthorized\" errors during standard usage (profiles, usernames, pond membership, posting, liking, etc.), while keeping explicit admin-only operations protected.",
-      "reqIds": [
-        "REQ-5"
-      ],
+      "summary": "Show a placeholder avatar in Settings when the user has not selected an avatar yet",
+      "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so that normal phrase-hash operations do not depend on AccessControl role state (e.g., do not require AccessControl.initialize or #user permission to create userIdLinkage entries) and do not fallback into AccessControl-based rejection for first-time users.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Update backend/main.mo to remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive any \"Unauthorized\" traps during standard usage (profiles, usernames, pond membership, posting, liking, etc.). Keep explicit admin-only operations protected.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so first-time phrase-hash users can establish linkage and perform normal phrase-hash operations without relying on AccessControl.initialize or any #user permission state.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Ensure pond creators automatically become members of the pond they create (auto-join on pond creation).",
+      "summary": "Update the header avatar immediately after a user uploads a new avatar",
       "reqIds": [],
-      "status": "in_progress"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time (i.e., the creator immediately “joins” the pond they just created).",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "status": "in_progress"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Update the backend pond creation flow in backend/main.mo so the pond creator is automatically added as a member of the pond at creation time (auto-join), using the creator’s phrase-hash userId membership model.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "status": "in_progress"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time, using the creator’s phrase-hash userId membership model (pond.members is [Text] of userIds). Ensure the new pond’s memberCount and the creator’s joinedPonds (in their UserProfile stored by phrase-hash) reflect this auto-join immediately after creation.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Fix the backend pond creation flow so that the pond creator is automatically added to the new pond’s `members : [Text]` (phrase-hash userId list) at creation time, and ensure `memberCount` accurately reflects actual membership (i.e., do not preset/increment `memberCount` without persisting the creator in `members`).",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "When a pond is created, update (or create if missing) the creator’s phrase-hash `UserProfile` so `joinedPonds` contains the newly created pond name immediately after creation (no separate join action required).",
-      "reqIds": [
-        "REQ-13"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Remove recurring 'Unauthorized' errors by neutralizing AccessControl for normal user actions",
+  "projectName": "Fix Settings desktop tab alignment and avatar placeholder + header avatar refresh",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

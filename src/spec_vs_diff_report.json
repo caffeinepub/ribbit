@@ -1,40 +1,59 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:59:58.626Z",
-  "summary": "The diff adds a new backend migration module and wires it into `backend/main.mo`, but the provided truncated diff does not show any changes to the pond creation flow or user profile updates needed to satisfy REQ-12/REQ-13. It also appears to introduce a migration/repair mechanism that was explicitly listed as a non-goal and adds an additional backend file beyond `backend/main.mo`.",
+  "generatedAt": "2026-02-12T02:45:19.913Z",
+  "summary": "Diff shows some new global CSS utilities (including vertical/underline tabs styles) and Header UI/search behavior changes, but the provided truncated excerpts do not contain clear evidence that the Settings desktop tab alignment, Settings avatar placeholder rendering, or React Query cache refresh for the header avatar after saving were fully implemented.",
   "missing_requirements": [
     {
-      "id": "REQ-12",
-      "requirement": "On pond creation, automatically add the creator’s phrase-hash userId to the new pond’s `members : [Text]` and ensure `memberCount` equals `members.length` immediately after creation (no preset/increment without persisting the creator).",
-      "reason": "The truncated `backend/main.mo` diff shows type/state declarations and migration wiring, but contains no visible changes to the pond creation function/logic that would insert the creator into `members` and set `memberCount` based on `members` at creation time.",
+      "id": "REQ-1",
+      "requirement": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
+      "reason": "While new CSS classes for vertical tabs were added, the diff excerpt does not show the actual md+ Settings page container/grid/flex layout changes needed to guarantee left-edge alignment between the tabs column and the content column.",
       "evidence": [
-        "backend/main.mo (truncated; no pond creation logic shown/changed)"
+        "frontend/src/index.css",
+        "frontend/src/pages/UserSettingsPage.tsx"
       ]
     },
     {
-      "id": "REQ-13",
-      "requirement": "On pond creation, update or create the creator’s phrase-hash `UserProfile` so `joinedPonds` includes the new pond name exactly once immediately after creation.",
-      "reason": "The diff does not show any code path in `backend/main.mo` that updates `userIdUserProfiles`/`UserProfile.joinedPonds` during pond creation; only migration wiring and type/state definitions are visible in the truncated excerpt.",
+      "id": "REQ-2",
+      "requirement": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (no saved avatar and no local preview).",
+      "reason": "UserSettingsPage.tsx is truncated before the Avatar tab rendering; there is no visible conditional render showing an AvatarFallback/placeholder when both profile avatar and local preview are absent.",
       "evidence": [
-        "backend/main.mo (truncated; no user profile update logic shown/changed)"
+        "frontend/src/pages/UserSettingsPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings (keep React Query cache in sync).",
+      "reason": "The diff excerpt does not show any React Query cache invalidation/setQueryData/refetch for the header avatar query key being triggered after the avatar save mutation succeeds; Header.tsx only reads avatar data via useGetUserAvatarByUsername.",
+      "evidence": [
+        "frontend/src/pages/UserSettingsPage.tsx",
+        "frontend/src/components/Header.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Introduced a migration/repair module (`backend/migration.mo`) that iterates existing ponds, upserts the admin/creator into `members`, and recomputes `memberCount`.",
-      "reason": "The BuildRequest explicitly lists as a non-goal implementing a one-off migration/repair job for ponds created before the change, and also constrains the backend to remain a single Motoko actor in `backend/main.mo` (no additional backend services/files).",
+      "description": "Header search UX changes (click-outside handler for desktop dropdown, search execution behavior, centered mobile logo positioning, and related UI adjustments).",
+      "reason": "The BuildRequest is scoped to Settings tab alignment and avatar placeholder/refresh behavior; it does not request changes to header search UI/behavior.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (imports `Migration \"migration\"` and uses `(with migration = Migration.run)`)"
+        "frontend/src/components/Header.tsx",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "description": "Global CSS utilities unrelated to Settings alignment/avatar behavior (e.g., action-icon sizing, tag icon circle background, global search input styling).",
+      "reason": "The BuildRequest constraints allow app-level CSS, but these specific utilities are not requested as part of the Settings/Avatar fixes.",
+      "evidence": [
+        "frontend/src/index.css"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.55,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/index.css",
+    "frontend/src/pages/UserSettingsPage.tsx",
     "project_state.json"
   ]
 }

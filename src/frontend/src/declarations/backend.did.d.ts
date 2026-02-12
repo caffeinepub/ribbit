@@ -112,11 +112,7 @@ export interface _SERVICE {
   'assignUserRoleByPhraseHash' : ActorMethod<[string, UserRole], undefined>,
   'canChangeUsernameByPhraseHash' : ActorMethod<[string, string], boolean>,
   'clearPostLikes' : ActorMethod<[string], undefined>,
-  'createPond' : ActorMethod<
-    [string, string, ExternalBlob, ExternalBlob, ExternalBlob, string],
-    undefined
-  >,
-  'createPost' : ActorMethod<
+  'createLily' : ActorMethod<
     [
       string,
       string,
@@ -125,8 +121,13 @@ export interface _SERVICE {
       string,
       string,
       [] | [string],
+      string,
     ],
     string
+  >,
+  'createPond' : ActorMethod<
+    [string, string, ExternalBlob, ExternalBlob, ExternalBlob, string],
+    undefined
   >,
   'createRibbit' : ActorMethod<[string, [] | [string], string, string], string>,
   'deleteLily' : ActorMethod<[string], undefined>,

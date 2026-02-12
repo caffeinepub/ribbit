@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure pond creators are automatically joined to newly created ponds and fix `memberCount` so it matches actual membership.
+**Goal:** Fix Settings desktop tab alignment, ensure a visible avatar placeholder in Settings when none is set, and refresh the header avatar immediately after avatar updates.
 
 **Planned changes:**
-- Update backend pond creation to add the creator’s phrase-hash userId to the new pond’s `members : [Text]` at creation time.
-- Set/derive `memberCount` to accurately reflect `members.length` immediately after creation (no mismatched preset/increment).
-- Update (or create if missing) the creator’s phrase-hash `UserProfile` during pond creation so `joinedPonds` includes the new pond name exactly once.
+- Adjust the md+ Settings page layout so the vertical tabs column aligns flush with the left edge of the Settings content block (consistent left alignment between tabs and main content).
+- In Settings > Avatar, render a clear placeholder avatar when the user has no saved avatar and no local preview selected.
+- After a successful avatar save, update/refresh the relevant React Query cache so the Header avatar re-renders immediately without a page refresh.
 
-**User-visible outcome:** After creating a pond, the creator immediately appears as a member (with a correct member count) and their joined ponds list updates without needing a separate join action or manual refresh.
+**User-visible outcome:** On desktop, Settings tabs line up correctly with the Settings content; the Avatar tab always shows an avatar placeholder when none is selected; and the Header avatar updates right after saving a new avatar.

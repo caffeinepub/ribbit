@@ -134,12 +134,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'clearPostLikes' : IDL.Func([IDL.Text], [], []),
-  'createPond' : IDL.Func(
-      [IDL.Text, IDL.Text, ExternalBlob, ExternalBlob, ExternalBlob, IDL.Text],
-      [],
-      [],
-    ),
-  'createPost' : IDL.Func(
+  'createLily' : IDL.Func(
       [
         IDL.Text,
         IDL.Text,
@@ -148,8 +143,14 @@ export const idlService = IDL.Service({
         IDL.Text,
         IDL.Text,
         IDL.Opt(IDL.Text),
+        IDL.Text,
       ],
       [IDL.Text],
+      [],
+    ),
+  'createPond' : IDL.Func(
+      [IDL.Text, IDL.Text, ExternalBlob, ExternalBlob, ExternalBlob, IDL.Text],
+      [],
       [],
     ),
   'createRibbit' : IDL.Func(
@@ -454,6 +455,20 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'clearPostLikes' : IDL.Func([IDL.Text], [], []),
+    'createLily' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Opt(ExternalBlob),
+          IDL.Opt(IDL.Text),
+          IDL.Text,
+          IDL.Text,
+          IDL.Opt(IDL.Text),
+          IDL.Text,
+        ],
+        [IDL.Text],
+        [],
+      ),
     'createPond' : IDL.Func(
         [
           IDL.Text,
@@ -464,19 +479,6 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
         ],
         [],
-        [],
-      ),
-    'createPost' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(ExternalBlob),
-          IDL.Opt(IDL.Text),
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(IDL.Text),
-        ],
-        [IDL.Text],
         [],
       ),
     'createRibbit' : IDL.Func(

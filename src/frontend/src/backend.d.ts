@@ -97,8 +97,8 @@ export interface backendInterface {
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
-    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
-    createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
+    createLily(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null, userId: string): Promise<string>;
+    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, userId: string): Promise<void>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
@@ -162,7 +162,7 @@ export interface backendInterface {
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
     incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
-    initializeFroggyPhrase(userId: string): Promise<void>;
+    initializeFroggyPhrase(_userId: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isPondAdmin(pondName: string): Promise<boolean>;
     isUserAdminByPhraseHash(userId: string): Promise<boolean>;

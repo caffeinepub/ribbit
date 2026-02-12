@@ -15,7 +15,7 @@ export default function SearchDropdown({
   onClose,
 }: SearchDropdownProps) {
   const { data: trendingSearches = [] } = useGetTrendingSearches();
-  const { data: suggestions = [] } = useGetSearchSuggestions(debouncedQuery);
+  const { data: suggestions = [] } = useGetSearchSuggestions();
 
   const showTrending = !query.trim();
   const showSuggestions = query.trim() && suggestions.length > 0;

@@ -215,19 +215,27 @@ export function useCreateLily() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createPost(
+      const userId = await getPhraseHashUserId();
+      
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
+      }
+      
+      return actor.createLily(
         params.title,
         params.content,
         params.image,
         params.link,
         params.pond,
         params.username,
-        params.tag
+        params.tag,
+        userId
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lilies'] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['ponds'] });
     },
   });
 }
@@ -247,18 +255,26 @@ export function useCreatePost() {
       tag: string | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createPost(
+      const userId = await getPhraseHashUserId();
+      
+      if (!userId) {
+        throw new Error('Unable to compute user identity. Please refresh the page.');
+      }
+      
+      return actor.createLily(
         params.title,
         params.content,
         params.image,
         params.link,
         params.pond,
         params.username,
-        params.tag
+        params.tag,
+        userId
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['ponds'] });
     },
   });
 }
@@ -661,7 +677,7 @@ export function useRegisterUsername() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -683,7 +699,7 @@ export function useReleaseUsername() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usernameAvailable'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['canChangeUsername'] });
     },
   });
 }
@@ -772,45 +788,6 @@ export function useGetTagStats(tag: string) {
   });
 }
 
-export function useGetTagSuggestions(prefix: string, limit: number = 10) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSuggestions', prefix, limit],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTagSuggestions(prefix, BigInt(limit));
-    },
-    enabled: !!actor && !isFetching && !!prefix && prefix.length > 0,
-  });
-}
-
-export function useGetSubcategoriesForTag(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<string[]>({
-    queryKey: ['tagSubcategories', tag],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getSubcategoriesForTag(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
-export function useGetTagRank(tag: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery({
-    queryKey: ['tagRank', tag],
-    queryFn: async () => {
-      if (!actor) return null;
-      return actor.getTagRank(tag);
-    },
-    enabled: !!actor && !isFetching && !!tag,
-  });
-}
-
 export function useGetCanonicalTag(tag: string) {
   const { actor, isFetching } = useActor();
 
@@ -821,6 +798,51 @@ export function useGetCanonicalTag(tag: string) {
       return actor.getCanonicalTagForTag(tag);
     },
     enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetSubcategoriesForTag(tag: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['subcategories', tag],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getSubcategoriesForTag(tag);
+    },
+    enabled: !!actor && !isFetching && !!tag,
+  });
+}
+
+export function useGetTagSuggestions(prefix: string, limit: number = 10) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['tagSuggestions', prefix, limit],
+    queryFn: async () => {
+      if (!actor) return [];
+      if (!prefix.trim()) return [];
+      return actor.getTagSuggestions(prefix, BigInt(limit));
+    },
+    enabled: !!actor && !isFetching && !!prefix.trim(),
+  });
+}
+
+// View count increment
+export function useIncrementLilyViewCount() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.incrementLilyViewCount(postId);
+    },
+    onSuccess: (_, postId) => {
+      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
+      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
   });
 }
 
@@ -854,10 +876,10 @@ export function useMergeSimilarTags() {
       return actor.mergeSimilarTags();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tagRedirects'] });
       queryClient.invalidateQueries({ queryKey: ['topTags'] });
       queryClient.invalidateQueries({ queryKey: ['trendingTags'] });
       queryClient.invalidateQueries({ queryKey: ['newestTags'] });
-      queryClient.invalidateQueries({ queryKey: ['tagStats'] });
     },
   });
 }
@@ -875,43 +897,21 @@ export function useGetTagRedirects() {
   });
 }
 
-// View count increment
-export function useIncrementLilyViewCount() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (postId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.incrementLilyViewCount(postId);
-    },
-    onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ['viewCount', postId] });
-      queryClient.invalidateQueries({ queryKey: ['lily', postId] });
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
-    },
-  });
-}
-
-// Search queries - placeholders that accept parameters
-export function useGetSearchSuggestions(query: string) {
-  // Placeholder for search suggestions - returns empty array
-  return useQuery<string[]>({
-    queryKey: ['searchSuggestions', query],
-    queryFn: async () => {
-      return [];
-    },
-    enabled: false,
-  });
-}
-
+// Search suggestions (placeholder hooks - no parameters)
 export function useGetTrendingSearches() {
-  // Placeholder for trending searches - returns empty array
   return useQuery<string[]>({
     queryKey: ['trendingSearches'],
     queryFn: async () => {
       return [];
     },
-    enabled: false,
+  });
+}
+
+export function useGetSearchSuggestions() {
+  return useQuery<string[]>({
+    queryKey: ['searchSuggestions'],
+    queryFn: async () => {
+      return [];
+    },
   });
 }

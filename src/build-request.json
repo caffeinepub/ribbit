@@ -1,70 +1,71 @@
 {
   "kind": "build_request",
-  "title": "Auto-join pond creator on pond creation and fix memberCount mismatch",
+  "title": "Fix Settings desktop tab alignment and avatar placeholder + header avatar refresh",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-12",
-      "text": "Fix the backend pond creation flow so that the pond creator is automatically added to the new pond’s `members : [Text]` (phrase-hash userId list) at creation time, and ensure `memberCount` accurately reflects actual membership (i.e., do not preset/increment `memberCount` without persisting the creator in `members`).",
-      "target": "backend",
+      "id": "REQ-1",
+      "text": "Adjust the desktop layout of the Settings page so the vertical Settings tabs are visually aligned to the left edge of the Settings content block (desktop mode / md+), with consistent left alignment between the tabs column and the main content column.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "pond creators are still not automatically not joining their ponds. however, when a pond is created it says there is already 1 member that is joined. why?",
-          "ok then fix it"
+          "make sure the tabs in settings are aligned to the left of the content block in desktop mode."
         ]
       },
       "acceptanceCriteria": [
-        "When a pond is created, the returned/stored pond record has `members` containing the creator’s phrase-hash userId.",
-        "Immediately after creation, the pond’s `memberCount` equals the length of `members` (and is consistent with the creator being included).",
-        "A newly created pond no longer shows 1 member unless the creator is actually in `members`."
+        "On md+ viewports, the Settings tabs column and the Settings content area share a consistent left alignment within the Settings page container (no unintended horizontal offset/centering of the tabs relative to the content block).",
+        "The desktop Settings tabs remain vertical and usable; no regressions to mobile tabs behavior."
       ]
     },
     {
-      "id": "REQ-13",
-      "text": "When a pond is created, update (or create if missing) the creator’s phrase-hash `UserProfile` so `joinedPonds` contains the newly created pond name immediately after creation (no separate join action required).",
-      "target": "backend",
+      "id": "REQ-2",
+      "text": "In the Settings > Avatar tab, display a clear placeholder avatar when the user has not selected an avatar yet (i.e., user profile has no avatar and there is no local preview), instead of showing no avatar display.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7",
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "The fix is simply: when creating the pond, push the creator’s userId into pond.members and update their profile’s joinedPonds at the same time.",
-          "ok then fix it"
+          "also make sure the user avatar in settings has a placeholder when no avatar has been selected yet."
         ]
       },
       "acceptanceCriteria": [
-        "Immediately after pond creation, `getUserProfileByPhraseHash(creatorUserId)` returns a profile whose `joinedPonds` includes the new pond name exactly once.",
-        "The frontend’s existing query invalidations in `useCreatePond()` (e.g., `['currentUserProfile']`, `['joinedPonds']`) result in the UI reflecting membership without requiring a manual refresh."
+        "When the logged-in user has no saved avatar and has not chosen a new file to preview, the Settings > Avatar section still renders an avatar placeholder (e.g., fallback initials or existing fallback styling).",
+        "When the user selects a file, the preview continues to show as it does today, and when an avatar exists on the profile it continues to display correctly."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure the header avatar updates immediately after a user uploads/saves a new avatar in Settings, without requiring a full page refresh (keep React Query cache in sync so Header re-renders with the new avatar).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also make sure to update the avatar in the header when a user uploads an avatar."
+        ]
+      },
+      "acceptanceCriteria": [
+        "After successfully saving an avatar in Settings, the avatar shown in the main Header updates to the newly saved avatar without requiring navigation or hard refresh.",
+        "The update works even if the user remains on the Settings page after saving (i.e., Header reflects the new avatar immediately).",
+        "React Query cache keys used for the header avatar (e.g., ['userAvatar', username]) are refreshed/updated as part of the avatar-save flow so the header query is not left stale."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit frontend files under the immutable paths listed in SYSTEM_CONTEXT (compose existing UI components instead).",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/components/ui (shadcn UI sources); compose and override via page/component classes or app-level CSS instead.",
+    "Keep all changes within the existing React + TypeScript + Tailwind + React Query stack."
   ],
   "nonGoals": [
-    "Do not implement a one-off migration/repair job to retroactively fix membership for ponds created before this change unless explicitly requested.",
-    "Do not change unrelated AccessControl behavior beyond what is necessary for pond-creator auto-join.",
-    "Do not redesign the pond creation UI or add new product features."
+    "No backend (Motoko) changes are required for these UI behavior fixes.",
+    "No redesign of the Settings information architecture or adding new settings features."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

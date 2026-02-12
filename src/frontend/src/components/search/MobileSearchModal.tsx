@@ -24,7 +24,7 @@ export default function MobileSearchModal({
   onClose,
 }: MobileSearchModalProps) {
   const { data: trendingSearches = [] } = useGetTrendingSearches();
-  const { data: suggestions = [] } = useGetSearchSuggestions(debouncedQuery);
+  const { data: suggestions = [] } = useGetSearchSuggestions();
 
   const showTrending = !query.trim();
   const showSuggestions = query.trim() && suggestions.length > 0;

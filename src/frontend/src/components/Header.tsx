@@ -225,9 +225,8 @@ export default function Header({ onMobileLeftSidebarToggle }: HeaderProps) {
             <Avatar className="h-8 w-8 bg-primary/10">
               {userAvatar ? (
                 <AvatarImage src={userAvatar.getDirectURL()} alt={username} />
-              ) : (
-                <AvatarFallback>🐸</AvatarFallback>
-              )}
+              ) : null}
+              <AvatarFallback>🐸</AvatarFallback>
             </Avatar>
           </Link>
         </nav>

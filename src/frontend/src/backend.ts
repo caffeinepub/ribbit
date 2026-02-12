@@ -189,8 +189,8 @@ export interface backendInterface {
     assignUserRoleByPhraseHash(userId: string, role: UserRole): Promise<void>;
     canChangeUsernameByPhraseHash(userId: string, username: string): Promise<boolean>;
     clearPostLikes(postId: string): Promise<void>;
-    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, froggyPhrase: string): Promise<void>;
-    createPost(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null): Promise<string>;
+    createLily(title: string, content: string, image: ExternalBlob | null, link: string | null, pond: string, username: string, tag: string | null, userId: string): Promise<string>;
+    createPond(name: string, description: string, image: ExternalBlob, profileImage: ExternalBlob, bannerImage: ExternalBlob, userId: string): Promise<void>;
     createRibbit(postId: string, parentId: string | null, content: string, username: string): Promise<string>;
     deleteLily(postId: string): Promise<void>;
     deleteRibbit(ribbitId: string): Promise<void>;
@@ -254,7 +254,7 @@ export interface backendInterface {
     hasUserLikedRibbit(ribbitId: string): Promise<boolean>;
     incrementLilyViewCount(postId: string): Promise<ViewIncrementResult>;
     initializeAccessControl(): Promise<void>;
-    initializeFroggyPhrase(userId: string): Promise<void>;
+    initializeFroggyPhrase(_userId: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isPondAdmin(pondName: string): Promise<boolean>;
     isUserAdminByPhraseHash(userId: string): Promise<boolean>;
@@ -452,31 +452,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createPond(arg0: string, arg1: string, arg2: ExternalBlob, arg3: ExternalBlob, arg4: ExternalBlob, arg5: string): Promise<void> {
+    async createLily(arg0: string, arg1: string, arg2: ExternalBlob | null, arg3: string | null, arg4: string, arg5: string, arg6: string | null, arg7: string): Promise<string> {
         if (this.processError) {
             try {
-                const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+                const result = await this.actor.createLily(arg0, arg1, await to_candid_opt_n10(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg3), arg4, arg5, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg6), arg7);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+            const result = await this.actor.createLily(arg0, arg1, await to_candid_opt_n10(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg3), arg4, arg5, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg6), arg7);
             return result;
         }
     }
-    async createPost(arg0: string, arg1: string, arg2: ExternalBlob | null, arg3: string | null, arg4: string, arg5: string, arg6: string | null): Promise<string> {
+    async createPond(arg0: string, arg1: string, arg2: ExternalBlob, arg3: ExternalBlob, arg4: ExternalBlob, arg5: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createPost(arg0, arg1, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg3), arg4, arg5, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg6));
+                const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg4), arg5);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createPost(arg0, arg1, await to_candid_opt_n11(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n12(this._uploadFile, this._downloadFile, arg3), arg4, arg5, to_candid_opt_n12(this._uploadFile, this._downloadFile, arg6));
+            const result = await this.actor.createPond(arg0, arg1, await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg2), await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg3), await to_candid_ExternalBlob_n11(this._uploadFile, this._downloadFile, arg4), arg5);
             return result;
         }
     }
@@ -1851,7 +1851,7 @@ function from_candid_vec_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 async function from_candid_vec_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Pond>): Promise<Array<Pond>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Pond_n33(_uploadFile, _downloadFile, x)));
 }
-async function to_candid_ExternalBlob_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
+async function to_candid_ExternalBlob_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);
 }
 async function to_candid_UserProfile_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): Promise<_UserProfile> {
@@ -1869,8 +1869,8 @@ function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: Exte
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
-async function to_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob | null): Promise<[] | [_ExternalBlob]> {
-    return value === null ? candid_none() : candid_some(await to_candid_ExternalBlob_n10(_uploadFile, _downloadFile, value));
+async function to_candid_opt_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob | null): Promise<[] | [_ExternalBlob]> {
+    return value === null ? candid_none() : candid_some(await to_candid_ExternalBlob_n11(_uploadFile, _downloadFile, value));
 }
 function to_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
     return value === null ? candid_none() : candid_some(value);
@@ -1899,7 +1899,7 @@ async function to_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise
     return {
         name: value.name,
         joinedPonds: value.joinedPonds,
-        avatar: value.avatar ? candid_some(await to_candid_ExternalBlob_n10(_uploadFile, _downloadFile, value.avatar)) : candid_none()
+        avatar: value.avatar ? candid_some(await to_candid_ExternalBlob_n11(_uploadFile, _downloadFile, value.avatar)) : candid_none()
     };
 }
 function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Visibility): {
