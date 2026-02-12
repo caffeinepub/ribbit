@@ -1,25 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:44:19.650Z",
-  "summary": "The diff does not show any changes to the pond creation flow to auto-add the creator as a member or to update joinedPonds/memberCount. It does add a new backend migration module and wires it into backend/main.mo, which is not requested by REQ-11 and conflicts with the stated constraint to only add migrations if required.",
+  "generatedAt": "2026-02-12T01:59:58.626Z",
+  "summary": "The diff adds a new backend migration module and wires it into `backend/main.mo`, but the provided truncated diff does not show any changes to the pond creation flow or user profile updates needed to satisfy REQ-12/REQ-13. It also appears to introduce a migration/repair mechanism that was explicitly listed as a non-goal and adds an additional backend file beyond `backend/main.mo`.",
   "missing_requirements": [
     {
-      "id": "REQ-11",
-      "requirement": "Update the backend createPond(...) flow so the pond creator is automatically added as a member (members: [Text] userIds), with memberCount consistent and the creator’s UserProfile.joinedPonds updated immediately (no duplicates, no double-increment).",
-      "reason": "The provided backend/main.mo diff snippet shows no createPond-related logic changes and no evidence of adding the creator userId to pond.members, incrementing memberCount accordingly, or updating the creator’s phrase-hash UserProfile.joinedPonds during pond creation.",
+      "id": "REQ-12",
+      "requirement": "On pond creation, automatically add the creator’s phrase-hash userId to the new pond’s `members : [Text]` and ensure `memberCount` equals `members.length` immediately after creation (no preset/increment without persisting the creator).",
+      "reason": "The truncated `backend/main.mo` diff shows type/state declarations and migration wiring, but contains no visible changes to the pond creation function/logic that would insert the creator into `members` and set `memberCount` based on `members` at creation time.",
       "evidence": [
-        "backend/main.mo (truncated; no createPond changes shown)"
+        "backend/main.mo (truncated; no pond creation logic shown/changed)"
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "requirement": "On pond creation, update or create the creator’s phrase-hash `UserProfile` so `joinedPonds` includes the new pond name exactly once immediately after creation.",
+      "reason": "The diff does not show any code path in `backend/main.mo` that updates `userIdUserProfiles`/`UserProfile.joinedPonds` during pond creation; only migration wiring and type/state definitions are visible in the truncated excerpt.",
+      "evidence": [
+        "backend/main.mo (truncated; no user profile update logic shown/changed)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a backend migration module and wired migration execution into the main actor.",
-      "reason": "BuildRequest explicitly constrains to only generate backend/migration.mo if a stable-state upgrade is required; the diff adds backend/migration.mo and imports/uses it in backend/main.mo without any requested migration-related requirement or evidence that a stable upgrade is needed for REQ-11.",
+      "description": "Introduced a migration/repair module (`backend/migration.mo`) that iterates existing ponds, upserts the admin/creator into `members`, and recomputes `memberCount`.",
+      "reason": "The BuildRequest explicitly lists as a non-goal implementing a one-off migration/repair job for ponds created before the change, and also constrains the backend to remain a single Motoko actor in `backend/main.mo` (no additional backend services/files).",
       "evidence": [
         "backend/migration.mo",
-        "backend/main.mo (import Migration \"migration\"; '(with migration = Migration.run)')"
+        "backend/main.mo (imports `Migration \"migration\"` and uses `(with migration = Migration.run)`)"
       ]
     }
   ],

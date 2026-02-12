@@ -1,18 +1,25 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:44:19.653Z",
+  "generatedAt": "2026-02-12T01:59:58.629Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
+    "total": 2,
     "implemented": 0,
     "items": [
       {
-        "id": "REQ-11",
-        "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time, using the creator’s phrase-hash userId membership model (pond.members is [Text] of userIds). Ensure the new pond’s memberCount and the creator’s joinedPonds (in their UserProfile stored by phrase-hash) reflect this auto-join immediately after creation.",
+        "id": "REQ-12",
+        "summary": "Fix the backend pond creation flow so that the pond creator is automatically added to the new pond’s `members : [Text]` (phrase-hash userId list) at creation time, and ensure `memberCount` accurately reflects actual membership (i.e., do not preset/increment `memberCount` without persisting the creator in `members`).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-13",
+        "summary": "When a pond is created, update (or create if missing) the creator’s phrase-hash `UserProfile` so `joinedPonds` contains the newly created pond name immediately after creation (no separate join action required).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []

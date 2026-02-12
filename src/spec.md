@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure pond creators are automatically added as members of their pond during pond creation, with membership counts and creator profile state updated immediately.
+**Goal:** Ensure pond creators are automatically joined to newly created ponds and fix `memberCount` so it matches actual membership.
 
 **Planned changes:**
-- Update the backend `createPond(...)` flow to include the creator’s phrase-hash userId in `pond.members` at creation time (without duplicates).
-- Ensure the new pond’s `memberCount` reflects the creator membership and remains consistent with `pond.members`.
-- Update the creator’s `UserProfile` (retrieved by phrase-hash) so `joinedPonds` includes the newly created pond immediately after creation.
+- Update backend pond creation to add the creator’s phrase-hash userId to the new pond’s `members : [Text]` at creation time.
+- Set/derive `memberCount` to accurately reflect `members.length` immediately after creation (no mismatched preset/increment).
+- Update (or create if missing) the creator’s phrase-hash `UserProfile` during pond creation so `joinedPonds` includes the new pond name exactly once.
 
-**User-visible outcome:** After creating a pond, the creator is already a member of that pond, the pond’s member count reflects this, and the pond appears in the creator’s joined ponds list without requiring a separate join action.
+**User-visible outcome:** After creating a pond, the creator immediately appears as a member (with a correct member count) and their joined ponds list updates without needing a separate join action or manual refresh.
