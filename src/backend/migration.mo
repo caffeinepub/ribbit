@@ -1,11 +1,11 @@
 module {
-    type OldActor = {
-    };
+  type OldActor = {
+  };
+  type NewActor = {
+  };
 
-    type NewActor = {
+  public func run(_old : OldActor) : NewActor {
+    {
     };
-
-    public func run(old : OldActor) : NewActor {
-        old;
-    };
+  };
 };

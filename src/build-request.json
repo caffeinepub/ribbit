@@ -1,76 +1,52 @@
 {
   "kind": "build_request",
-  "title": "Neutralize AccessControl for normal phrase-hash user flows and auto-join pond creators",
+  "title": "Auto-join pond creator as a member on pond creation",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-8",
-      "text": "Update backend/main.mo to remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive any \"Unauthorized\" traps during standard usage (profiles, usernames, pond membership, posting, liking, etc.). Keep explicit admin-only operations protected.",
+      "id": "REQ-11",
+      "text": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time, using the creator’s phrase-hash userId membership model (pond.members is [Text] of userIds). Ensure the new pond’s memberCount and the creator’s joinedPonds (in their UserProfile stored by phrase-hash) reflect this auto-join immediately after creation.",
       "target": "backend",
       "source": {
         "messageIds": [
+          "msg-6",
           "msg-8"
         ],
         "quotes": [
-          "ok go ahead and do it"
+          "why arent pond creators automatically added as members to their own ponds? --- dont code yet",
+          "ok do that"
         ]
       },
       "acceptanceCriteria": [
-        "Normal user actions (e.g., create/update profile, register/release username, join/leave pond, create posts/ribbits, like/unlike) do not call AccessControl.hasPermission(..., #user) and do not trap with \"Unauthorized\" for anonymous/phrase-hash callers.",
-        "Admin-only actions (e.g., role assignment, tag merging, any operation guarded by #admin) still trap/reject when caller is not an admin.",
-        "Backend no longer emits \"Unauthorized: Only users can ...\" for normal user flows during typical app usage."
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "text": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so first-time phrase-hash users can establish linkage and perform normal phrase-hash operations without relying on AccessControl.initialize or any #user permission state.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "ok go ahead and do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Operations that create or update userIdLinkage entries (e.g., initializeFroggyPhrase and first-time phrase-hash profile/username flows) do not require AccessControl.initialize and do not depend on AccessControl roles.",
-        "Phrase-hash endpoints that currently gate on AccessControl.hasPermission(..., #user) are adjusted so first-time users can proceed without an authorization trap.",
-        "Where ownership checks are needed, they are enforced via userIdLinkage (caller must match the linked principal for that userId), with admin override where appropriate—without requiring a #user role."
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "text": "Update the backend pond creation flow in backend/main.mo so the pond creator is automatically added as a member of the pond at creation time (auto-join), using the creator’s phrase-hash userId membership model.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "ok go ahead and do it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After creating a pond, the newly created pond’s members list includes the creator’s userId and memberCount reflects the membership.",
-        "The creator can immediately perform member-only pond actions (if any) without needing to manually join.",
-        "Auto-join does not require AccessControl #user permission and does not introduce new \"Unauthorized\" traps."
+        "After calling the existing backend createPond(...) method, getPond(name) returns a pond where members includes the creator’s phrase-hash userId.",
+        "The newly created pond’s memberCount is 1 higher than it would otherwise be, reflecting inclusion of the creator (and is consistent with the members array).",
+        "After successful pond creation, fetching the creator’s profile via getUserProfileByPhraseHash(userId) shows the pond name included in joinedPonds (without requiring a separate joinPond call).",
+        "If the creator is already present in the member list for any reason, the implementation does not create duplicate entries in pond.members and does not double-increment memberCount."
       ]
     }
   ],
   "constraints": [
     "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not introduce external databases or third-party auth providers; Internet Identity remains as-is on the frontend.",
-    "Only generate/modify backend/migration.mo if state shape changes require a migration (otherwise leave state intact).",
-    "Do not modify frontend immutable paths listed in SYSTEM_CONTEXT (if frontend changes become necessary, work around via non-immutable files)."
+    "Only generate backend/migration.mo if a stable-state upgrade is required; otherwise do not add migrations.",
+    "Do not edit frontend immutable paths listed in SYSTEM_CONTEXT (not needed for this change).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing a new authentication system or adding third-party login providers.",
-    "Adding new product features unrelated to removing recurring authorization failures and pond creator auto-join.",
-    "Major UI redesign or visual theme changes (unless required to address authorization error messaging)."
+    "Do not implement the broader AccessControl neutralization/authorization audit in this change (only auto-join on pond creation).",
+    "Do not change pond visibility, moderator/admin assignment behavior, or pond naming/validation rules beyond what is required to auto-join the creator."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

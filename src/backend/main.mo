@@ -11,7 +11,9 @@ import Debug "mo:base/Debug";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor Ribbit {
   let storage = Storage.new();
   include MixinStorage(storage);
@@ -543,7 +545,7 @@ actor Ribbit {
           Debug.trap("Unauthorized: Can only release your own username");
         };
       };
-      case (null) { 
+      case (null) {
         // If no linkage exists but caller is trying to release, allow if username matches userId registry
         switch (textMap.get(userIdUsernameRegistry, userId)) {
           case (null) { Debug.trap("User ID not found") };
@@ -1767,3 +1769,4 @@ actor Ribbit {
     subcategories;
   };
 };
+

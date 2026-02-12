@@ -1,32 +1,18 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:27:33.530Z",
+  "generatedAt": "2026-02-12T01:44:19.653Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 1,
     "implemented": 0,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Update the backend pond creation flow in backend/main.mo so the pond creator is automatically added as a member of the pond at creation time (auto-join), using the creator’s phrase-hash userId membership model.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Update backend/main.mo to remove/neutralize AccessControl role/permission checks for all normal (non-admin) user actions so anonymous/phrase-hash users do not receive any \"Unauthorized\" traps during standard usage (profiles, usernames, pond membership, posting, liking, etc.). Keep explicit admin-only operations protected.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-9",
-        "summary": "Audit and adjust phrase-hash identity linkage logic in backend/main.mo so first-time phrase-hash users can establish linkage and perform normal phrase-hash operations without relying on AccessControl.initialize or any #user permission state.",
+        "id": "REQ-11",
+        "summary": "Update the backend pond creation flow so that the pond creator is automatically added as a member of the pond at creation time, using the creator’s phrase-hash userId membership model (pond.members is [Text] of userIds). Ensure the new pond’s memberCount and the creator’s joinedPonds (in their UserProfile stored by phrase-hash) reflect this auto-join immediately after creation.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
@@ -35,6 +21,7 @@
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-implementation-plan.json",
